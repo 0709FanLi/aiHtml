@@ -1204,6 +1204,25 @@
           background-color: rgba(0, 0, 0, 0.5);
           z-index: 2000;
         }
+        
+        /* 自定义select样式 */
+        .form-select {
+          background-color: #ffffff !important;
+          border: 1px solid #ced4da;
+          color: #212529;
+        }
+        
+        /* 特别为GradeLevel和Subject下拉框自定义样式 */
+        #grade-select, #subject-select {
+          background-color: #ffffff !important;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
+        }
+        
+        #grade-select:focus, #subject-select:focus {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-color: var(--primary);
+        }
       </style>
     </head>
     <body>
@@ -5823,27 +5842,116 @@
           // 获取登录表单中的邮箱值（如果有）
           const loginEmail = document.getElementById("login-email").value;
           
-          // 隐藏认证模态框
-          const authModal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-          if (authModal) {
-            authModal.hide();
+          // 不再隐藏认证模态框
+          // const authModal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
+          // if (authModal) {
+          //   authModal.hide();
+          // }
+          
+          // 如果登录表单中有邮箱，则填入重置表单
+          if (loginEmail) {
+            document.getElementById("reset-email").value = loginEmail;
           }
           
-          // 延迟一点打开重置密码模态框，确保一个模态框完全关闭
-          setTimeout(function() {
-            // 如果登录表单中有邮箱，则填入重置表单
-            if (loginEmail) {
-              document.getElementById("reset-email").value = loginEmail;
-            }
+          // 设置重置密码模态框的z-index，确保其显示在认证模态框之上
+          const resetPasswordModal = document.getElementById("resetPasswordModal");
+          resetPasswordModal.style.zIndex = "1060"; // 比默认模态框z-index高
+          
+          // 创建一个额外的半透明背景，放在两个模态框之间
+          const extraBackdrop = document.createElement('div');
+          extraBackdrop.className = 'modal-backdrop fade show extra-backdrop';
+          extraBackdrop.style.zIndex = "1055"; // 在第一个模态框和第二个模态框z-index之间
+          extraBackdrop.style.opacity = "0.5";
+          document.body.appendChild(extraBackdrop);
+          
+          // 打开重置密码模态框
+          const resetModal = new bootstrap.Modal(resetPasswordModal);
+          resetModal.show();
+          
+          // 监听resetPasswordModal关闭事件，移除额外的背景
+          resetPasswordModal.addEventListener('hidden.bs.modal', function removeExtraBackdrop() {
+            // 移除额外的背景
+            document.querySelectorAll('.extra-backdrop').forEach(el => el.remove());
             
-            // 打开重置密码模态框
-            const resetPasswordModal = new bootstrap.Modal(document.getElementById("resetPasswordModal"));
-            resetPasswordModal.show();
-          }, 400);
+            // 重置z-index
+            resetPasswordModal.style.zIndex = "";
+            
+            // 移除事件监听器，防止多次绑定
+            resetPasswordModal.removeEventListener('hidden.bs.modal', removeExtraBackdrop);
+          }, { once: true });
         });
         
-        // 发送验证码按钮功能
-        document.getElementById("send-code-btn").addEventListener("click", function() {
+        // 修改重置密码表单提交成功后的逻辑，不再打开登录模态框（因为它已经打开）
+        document.getElementById("resetPasswordModal").addEventListener("show.bs.modal", function() {
+          // 获取重置密码表单
+          const resetForm = document.getElementById("reset-password-form");
+          
+          // 移除之前可能绑定的事件监听器
+          const newResetForm = resetForm.cloneNode(true);
+          resetForm.parentNode.replaceChild(newResetForm, resetForm);
+          
+          // 添加新的表单提交事件监听器
+          newResetForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById("reset-email").value;
+            const verificationCode = document.getElementById("verification-code").value;
+            const newPassword = document.getElementById("new-password").value;
+            const confirmPassword = document.getElementById("confirm-new-password").value;
+            
+            // 验证密码匹配
+            if (newPassword !== confirmPassword) {
+              document.getElementById("confirm-new-password").setCustomValidity("Passwords do not match");
+              document.getElementById("confirm-new-password").reportValidity();
+              return;
+            }
+            
+            // 模拟重置密码API调用
+            const submitBtn = document.getElementById("reset-password-submit");
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Processing...";
+            
+            // 模拟API调用延迟
+            setTimeout(function() {
+              // 关闭重置密码模态框
+              const resetPasswordModal = bootstrap.Modal.getInstance(document.getElementById("resetPasswordModal"));
+              resetPasswordModal.hide();
+              
+              // 显示成功通知
+              showNotification(
+                "success",
+                "Password Reset Successfully",
+                "Your password has been reset. You can now login with your new password."
+              );
+              
+              // 重置表单
+              document.getElementById("reset-password-form").reset();
+              submitBtn.disabled = false;
+              submitBtn.textContent = "Reset Password";
+              
+              // 恢复模态框元素状态
+              document.getElementById("verification-feedback").textContent = "We'll send a verification code to your email";
+              document.getElementById("verification-feedback").classList.remove("text-success", "text-danger");
+              document.getElementById("new-password-strength").style.width = "0%";
+              document.getElementById("new-password-strength").className = "progress-bar bg-danger";
+              document.getElementById("new-password-feedback").textContent = "Password strength will be shown here";
+              
+              // 重置密码成功后，在登录表单自动填写邮箱
+              document.getElementById("login-email").value = email;
+              // 聚焦密码字段
+              setTimeout(() => document.getElementById("login-password").focus(), 300);
+            }, 2000);
+          });
+          
+          // 确保验证码按钮功能正常
+          document.getElementById("send-code-btn").addEventListener("click", sendVerificationCode);
+          
+          // 确保密码强度检测正常
+          document.getElementById("new-password").addEventListener("input", checkPasswordStrength);
+        });
+        
+        // 抽取发送验证码功能为单独的函数
+        function sendVerificationCode() {
           const resetEmail = document.getElementById("reset-email").value;
           
           // 验证邮箱格式
@@ -5891,10 +5999,10 @@
             // 在测试环境中，自动填写验证码（实际应用中不应这样做）
             document.getElementById("verification-code").value = verificationCode;
           }, 1500);
-        });
+        }
         
-        // 新密码强度检测
-        document.getElementById("new-password").addEventListener("input", function() {
+        // 抽取密码强度检测为单独的函数
+        function checkPasswordStrength() {
           const password = this.value;
           let strength = 0;
           
@@ -5925,7 +6033,7 @@
             strengthBar.className = "progress-bar bg-success";
             document.getElementById("new-password-feedback").textContent = "Strong password";
           }
-        });
+        }
 
         // 在document ready或初始化部分添加authModal关闭事件监听
         document
