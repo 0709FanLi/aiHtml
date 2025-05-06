@@ -5926,6 +5926,79 @@
             document.getElementById("new-password-feedback").textContent = "Strong password";
           }
         });
+
+        // 在document ready或初始化部分添加authModal关闭事件监听
+        document
+          .getElementById("authModal")
+          .addEventListener("hidden.bs.modal", function () {
+            // 重置表单数据
+            document.getElementById("login-form-element").reset();
+            document.getElementById("register-form-element").reset();
+            
+            // 重置密码强度指示
+            const strengthBar = document.getElementById("register-password-strength");
+            strengthBar.style.width = "0%";
+            strengthBar.className = "progress-bar bg-danger";
+            document.getElementById("register-password-feedback").textContent = "Password strength will be shown here";
+            
+            // 清除可能的自定义验证消息
+            document.querySelectorAll('#login-form-element input, #register-form-element input').forEach(input => {
+              input.setCustomValidity('');
+            });
+          });
+
+        // 处理登录和注册按钮点击事件，打开相应标签页
+        document.getElementById("login-button").addEventListener("click", function(e) {
+          // 打开模态框后Bootstrap会自动处理，所以我们只需要处理激活标签
+          setTimeout(function() {
+            // 切换到登录表单
+            document.getElementById("login-form").style.display = "block";
+            document.getElementById("register-form").style.display = "none";
+            
+            // 更新活动标签
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+              tab.classList.remove('active');
+            });
+            document.getElementById("login-tab").classList.add('active');
+          }, 150); // 短暂延迟确保模态框已打开
+        });
+        
+        document.getElementById("register-button").addEventListener("click", function(e) {
+          // 打开模态框后Bootstrap会自动处理，所以我们只需要处理激活标签
+          setTimeout(function() {
+            // 切换到注册表单
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("register-form").style.display = "block";
+            
+            // 更新活动标签
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+              tab.classList.remove('active');
+            });
+            document.getElementById("register-tab").classList.add('active');
+          }, 150); // 短暂延迟确保模态框已打开
+        });
+
+        // 修改页面上的其他注册按钮，使其打开模态框并切换到注册tab
+        document.querySelectorAll('.register-btn, .get-started-btn, #try-free-button').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            // 避免链接的默认行为
+            e.preventDefault();
+            
+            // 打开认证模态框
+            const authModal = new bootstrap.Modal(document.getElementById("authModal"));
+            authModal.show();
+            
+            // 切换到注册表单
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("register-form").style.display = "block";
+            
+            // 更新活动标签
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+              tab.classList.remove('active');
+            });
+            document.getElementById("register-tab").classList.add('active');
+          });
+        });
       </script>
     </body>
   </html>
