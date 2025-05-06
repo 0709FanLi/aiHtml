@@ -3696,6 +3696,8 @@
                       class="form-control"
                       id="login-email"
                       required
+                      oninvalid="this.setCustomValidity('Please enter your email address')"
+                      oninput="this.setCustomValidity('')"
                     />
                   </div>
                   <div class="mb-3">
@@ -3707,6 +3709,8 @@
                       class="form-control"
                       id="login-password"
                       required
+                      oninvalid="this.setCustomValidity('Please enter your password')"
+                      oninput="this.setCustomValidity('')"
                     />
                   </div>
                   <div class="mb-3 form-check">
@@ -3755,6 +3759,8 @@
                       class="form-control"
                       id="register-name"
                       required
+                      oninvalid="this.setCustomValidity('Please enter your full name')"
+                      oninput="this.setCustomValidity('')"
                     />
                   </div>
                   <div class="mb-3">
@@ -3766,6 +3772,8 @@
                       class="form-control"
                       id="register-email"
                       required
+                      oninvalid="this.setCustomValidity('Please enter your email address')"
+                      oninput="this.setCustomValidity('')"
                     />
                   </div>
                   <div class="mb-3">
@@ -3777,6 +3785,8 @@
                       class="form-control"
                       id="register-password"
                       required
+                      oninvalid="this.setCustomValidity('Please enter a password')"
+                      oninput="this.setCustomValidity('')"
                     />
                     <div class="progress mt-2" style="height: 5px">
                       <div
@@ -3799,6 +3809,8 @@
                       class="form-control"
                       id="register-confirm-password"
                       required
+                      oninvalid="this.setCustomValidity('Please confirm your password')"
+                      oninput="this.setCustomValidity('')"
                     />
                   </div>
                   <div class="mb-3 form-check">
@@ -3807,6 +3819,8 @@
                       class="form-check-input"
                       id="agree-terms"
                       required
+                      oninvalid="this.setCustomValidity('Please accept the Terms of Service and Privacy Policy')"
+                      oninput="this.setCustomValidity('')"
                     />
                     <label class="form-check-label" for="agree-terms">
                       I agree to the
@@ -4192,6 +4206,108 @@
                 >
                   Send Message
                 </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset Password Modal -->
+      <div
+        class="modal fade"
+        id="resetPasswordModal"
+        tabindex="-1"
+        aria-labelledby="resetPasswordModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="resetPasswordModalLabel">
+                Reset Password
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form id="reset-password-form">
+                <div class="mb-3">
+                  <label for="reset-email" class="form-label">Email Address</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="reset-email"
+                    required
+                    oninvalid="this.setCustomValidity('Please enter your email address')"
+                    oninput="this.setCustomValidity('')"
+                  />
+                </div>
+                
+                <div class="mb-3 verification-section">
+                  <label for="verification-code" class="form-label">Verification Code</label>
+                  <div class="d-flex">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="verification-code"
+                      required
+                      pattern="[0-9]{4,6}"
+                      oninvalid="this.setCustomValidity('Please enter the 4-6 digit verification code')"
+                      oninput="this.setCustomValidity('')"
+                    />
+                    <button type="button" class="btn btn-secondary ms-2" id="send-code-btn">
+                      Get Code
+                    </button>
+                  </div>
+                  <small class="text-muted" id="verification-feedback">
+                    We'll send a verification code to your email
+                  </small>
+                </div>
+                
+                <div class="mb-3 password-section">
+                  <label for="new-password" class="form-label">New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="new-password"
+                    required
+                    oninvalid="this.setCustomValidity('Please enter your new password')"
+                    oninput="this.setCustomValidity('')"
+                  />
+                  <div class="progress mt-2" style="height: 5px">
+                    <div
+                      class="progress-bar bg-danger"
+                      role="progressbar"
+                      style="width: 0%"
+                      id="new-password-strength"
+                    ></div>
+                  </div>
+                  <small class="text-muted" id="new-password-feedback">
+                    Password strength will be shown here
+                  </small>
+                </div>
+                
+                <div class="mb-3 password-section">
+                  <label for="confirm-new-password" class="form-label">Confirm New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="confirm-new-password"
+                    required
+                    oninvalid="this.setCustomValidity('Please confirm your new password')"
+                    oninput="this.setCustomValidity('')"
+                  />
+                </div>
+                
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary" id="reset-password-submit">
+                    Reset Password
+                  </button>
+                </div>
               </form>
             </div>
           </div>
@@ -5622,7 +5738,195 @@
           // 移除自定义backdrop
           document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
         }
+
+        // 在其他模态框后添加忘记密码模态框
+        // Reset Password Modal
+        document
+          .getElementById("resetPasswordModal")
+          .addEventListener("show.bs.modal", function () {
+            // 添加忘记密码相关功能
+            document.getElementById("reset-password-form").addEventListener("submit", function(e) {
+              e.preventDefault();
+              
+              const email = document.getElementById("reset-email").value;
+              const verificationCode = document.getElementById("verification-code").value;
+              const newPassword = document.getElementById("new-password").value;
+              const confirmPassword = document.getElementById("confirm-new-password").value;
+              
+              // 验证密码匹配
+              if (newPassword !== confirmPassword) {
+                document.getElementById("confirm-new-password").setCustomValidity("Passwords do not match");
+                document.getElementById("confirm-new-password").reportValidity();
+                return;
+              }
+              
+              // 模拟重置密码API调用
+              const submitBtn = document.getElementById("reset-password-submit");
+              submitBtn.disabled = true;
+              submitBtn.textContent = "Processing...";
+              
+              // 模拟API调用延迟
+              setTimeout(function() {
+                // 关闭重置密码模态框
+                const resetPasswordModal = bootstrap.Modal.getInstance(document.getElementById("resetPasswordModal"));
+                resetPasswordModal.hide();
+                
+                // 显示成功通知
+                showNotification(
+                  "success",
+                  "Password Reset Successfully",
+                  "Your password has been reset. You can now login with your new password."
+                );
+                
+                // 重置表单
+                document.getElementById("reset-password-form").reset();
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Reset Password";
+                
+                // 恢复模态框元素状态
+                document.getElementById("verification-feedback").textContent = "We'll send a verification code to your email";
+                document.getElementById("verification-feedback").classList.remove("text-success", "text-danger");
+                document.getElementById("new-password-strength").style.width = "0%";
+                document.getElementById("new-password-strength").className = "progress-bar bg-danger";
+                document.getElementById("new-password-feedback").textContent = "Password strength will be shown here";
+                
+                // 延迟一点打开登录模态框
+                setTimeout(function() {
+                  // 打开认证模态框并切换到登录
+                  const authModal = new bootstrap.Modal(document.getElementById("authModal"));
+                  authModal.show();
+                  
+                  // 切换到登录表单
+                  document.getElementById("login-form").style.display = "block";
+                  document.getElementById("register-form").style.display = "none";
+                  
+                  // 更新活动标签
+                  document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                  });
+                  document.querySelector('[data-tab="login-form"]').classList.add('active');
+                  
+                  // 自动填写邮箱
+                  document.getElementById("login-email").value = email;
+                  // 聚焦密码字段
+                  setTimeout(() => document.getElementById("login-password").focus(), 500);
+                }, 500);
+              }, 2000);
+            });
+          });
+        
+
+        // 添加忘记密码相关功能
+        document.getElementById("forgot-password").addEventListener("click", function(e) {
+          e.preventDefault();
+          
+          // 获取登录表单中的邮箱值（如果有）
+          const loginEmail = document.getElementById("login-email").value;
+          
+          // 隐藏认证模态框
+          const authModal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
+          if (authModal) {
+            authModal.hide();
+          }
+          
+          // 延迟一点打开重置密码模态框，确保一个模态框完全关闭
+          setTimeout(function() {
+            // 如果登录表单中有邮箱，则填入重置表单
+            if (loginEmail) {
+              document.getElementById("reset-email").value = loginEmail;
+            }
+            
+            // 打开重置密码模态框
+            const resetPasswordModal = new bootstrap.Modal(document.getElementById("resetPasswordModal"));
+            resetPasswordModal.show();
+          }, 400);
+        });
+        
+        // 发送验证码按钮功能
+        document.getElementById("send-code-btn").addEventListener("click", function() {
+          const resetEmail = document.getElementById("reset-email").value;
+          
+          // 验证邮箱格式
+          if (!resetEmail || !resetEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            document.getElementById("verification-feedback").textContent = "Please enter a valid email address first";
+            document.getElementById("verification-feedback").classList.add("text-danger");
+            return;
+          }
+          
+          // 随机生成4-6位验证码
+          const verificationCode = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 4 + Math.floor(Math.random() * 3));
+          
+          // 模拟发送验证码
+          const sendBtn = this;
+          sendBtn.disabled = true;
+          sendBtn.textContent = "Sending...";
+          
+          // 模拟API调用延迟
+          setTimeout(function() {
+            // 将验证码存储在控制台中，方便调试（实际应用中不应这样做）
+            console.log("Verification code for " + resetEmail + ": " + verificationCode);
+            
+            // 显示成功消息
+            document.getElementById("verification-feedback").textContent = "Verification code sent! Check your email";
+            document.getElementById("verification-feedback").classList.remove("text-danger");
+            document.getElementById("verification-feedback").classList.add("text-success");
+            
+            // 60秒倒计时
+            let countdown = 60;
+            sendBtn.textContent = `Resend (${countdown}s)`;
+            
+            const timer = setInterval(function() {
+              countdown--;
+              if (countdown <= 0) {
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Get Code";
+                document.getElementById("verification-feedback").textContent = "Need a new code?";
+                document.getElementById("verification-feedback").classList.remove("text-success");
+              } else {
+                sendBtn.textContent = `Resend (${countdown}s)`;
+              }
+            }, 1000);
+            
+            // 在测试环境中，自动填写验证码（实际应用中不应这样做）
+            document.getElementById("verification-code").value = verificationCode;
+          }, 1500);
+        });
+        
+        // 新密码强度检测
+        document.getElementById("new-password").addEventListener("input", function() {
+          const password = this.value;
+          let strength = 0;
+          
+          // 检查密码长度
+          if (password.length >= 8) strength += 25;
+          
+          // 检查是否包含数字
+          if (/\d/.test(password)) strength += 25;
+          
+          // 检查是否包含小写字母
+          if (/[a-z]/.test(password)) strength += 25;
+          
+          // 检查是否包含大写字母或特殊字符
+          if (/[A-Z]/.test(password) || /[^a-zA-Z0-9]/.test(password)) strength += 25;
+          
+          // 更新密码强度条
+          const strengthBar = document.getElementById("new-password-strength");
+          strengthBar.style.width = strength + "%";
+          
+          // 更新颜色和文本
+          if (strength < 50) {
+            strengthBar.className = "progress-bar bg-danger";
+            document.getElementById("new-password-feedback").textContent = "Weak password";
+          } else if (strength < 75) {
+            strengthBar.className = "progress-bar bg-warning";
+            document.getElementById("new-password-feedback").textContent = "Medium strength password";
+          } else {
+            strengthBar.className = "progress-bar bg-success";
+            document.getElementById("new-password-feedback").textContent = "Strong password";
+          }
+        });
       </script>
     </body>
   </html>
-</html_code>
+
