@@ -1183,6 +1183,27 @@
           font-size: 0.875rem;
           margin: 0;
         }
+        
+        /* 确保条款和隐私政策模态框在其他模态框之上 */
+        #termsModal, #privacyModal {
+          z-index: 2050 !important;
+        }
+        
+        /* 移除多余的模态框背景样式 */
+        body.multiple-modals .modal-backdrop.fade.show:not(:last-child) {
+          display: none !important;
+        }
+        
+        /* 确保只有最上层的蒙层可见 */
+        .custom-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.5);
+          z-index: 2000;
+        }
       </style>
     </head>
     <body>
@@ -3340,10 +3361,9 @@
             <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
               <h5 class="footer-heading">Legal</h5>
               <ul class="footer-links">
-                <li><a href="#">Terms of Service</a></li>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Cookie Policy</a></li>
-                <!-- <li><a href="#">GDPR Compliance</a></li> -->
+                <li><a href="#" id="terms-link">Terms of Service</a></li>
+                <li><a href="#" id="privacy-link">Privacy Policy</a></li>
+                <li><a href="#" id="cookie-link">Cookie Policy</a></li>
               </ul>
             </div>
             <div class="col-lg-2">
@@ -3378,6 +3398,241 @@
           </div>
         </div>
       </footer>
+
+      <!-- Terms of Service Modal -->
+      <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="termsModalLabel">Terms of Service</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <h4>QuizCraft AI Terms of Service</h4>
+              <p>Last Updated: February 15, 2024</p>
+              
+              <h5>1. Introduction</h5>
+              <p>Welcome to QuizCraft AI. These Terms of Service ("Terms") govern your access to and use of the QuizCraft AI platform, including our website at www.quizcraftai.com, our mobile applications, and all related services (collectively, the "Service"). By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of the Terms, you do not have permission to access the Service.</p>
+              
+              <h5>2. Definitions</h5>
+              <p>Throughout these Terms, we use certain defined terms:</p>
+              <ul>
+                <li>"QuizCraft AI", "we", "us", and "our" refer to QuizCraft AI, Inc., the company that operates the Service.</li>
+                <li>"User", "you", and "your" refer to you, the person accessing or using the Service.</li>
+                <li>"Content" refers to all questions, quizzes, worksheets, text, information, data, graphics, images, and other materials that may be viewed on or accessed through the Service.</li>
+                <li>"User Content" refers to all Content that a User creates, uploads, or generates using the Service.</li>
+              </ul>
+              
+              <h5>3. Account Registration</h5>
+              <p>To access certain features of the Service, you may be required to register for an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete. You are responsible for safeguarding your password and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.</p>
+              
+              <h5>4. Subscription and Billing</h5>
+              <p>4.1 <strong>Free Trial.</strong> We offer a free trial to new users. The free trial provides limited access to the Service and does not require payment information.</p>
+              <p>4.2 <strong>Paid Plans.</strong> We offer various paid plans with different features and generation limits. By selecting a paid plan, you agree to pay the subscription fees indicated for that plan. Payments are charged at the beginning of the subscription period.</p>
+              <p>4.3 <strong>Automatic Renewal.</strong> Subscription plans automatically renew at the end of each billing period unless canceled prior to the renewal date.</p>
+              <p>4.4 <strong>Refunds.</strong> For subscription plans, we offer a 7-day money-back guarantee if you're not satisfied. For one-time purchases, refunds are considered on a case-by-case basis and are generally only provided if there are technical issues that prevent you from using the Service.</p>
+              
+              <h5>5. Acceptable Use</h5>
+              <p>You agree not to use the Service to:</p>
+              <ul>
+                <li>Violate any applicable law or regulation.</li>
+                <li>Infringe the intellectual property rights of others.</li>
+                <li>Harass, abuse, or harm another person.</li>
+                <li>Generate or distribute harmful, offensive, or inappropriate content.</li>
+                <li>Attempt to gain unauthorized access to the Service or its related systems.</li>
+                <li>Interfere with or disrupt the Service or servers connected to the Service.</li>
+                <li>Reverse engineer or attempt to extract the source code of the Service.</li>
+              </ul>
+              
+              <h5>6. Content and Intellectual Property</h5>
+              <p>6.1 <strong>Service Content.</strong> All Content provided by QuizCraft AI, including but not limited to the website design, logo, and software, is owned by or licensed to QuizCraft AI and is protected by copyright, trademark, and other intellectual property laws.</p>
+              <p>6.2 <strong>User Content.</strong> You retain ownership of any User Content you create, upload, or generate using the Service. By creating User Content through the Service, you grant us a worldwide, non-exclusive, royalty-free license to use, copy, modify, and display your User Content in connection with providing and improving the Service.</p>
+              <p>6.3 <strong>Educational Standards Alignment.</strong> While we make efforts to align our Content with various educational standards, we do not guarantee complete compliance with all standards or requirements for every educational context.</p>
+              
+              <h5>7. User Content Guidelines</h5>
+              <p>You are solely responsible for your User Content. We reserve the right, but not the obligation, to review and remove any User Content that violates these Terms or that we find objectionable for any reason, without prior notice to you.</p>
+              
+              <h5>8. Privacy</h5>
+              <p>Your privacy is important to us. Our Privacy Policy explains how we collect, use, and protect your personal information. By using the Service, you agree to the collection and use of information as set forth in our Privacy Policy.</p>
+              
+              <h5>9. Third-Party Links and Services</h5>
+              <p>The Service may contain links to third-party websites or services. We are not responsible for the content or practices of these third-party sites and do not endorse them. Your use of third-party sites is subject to their terms and policies.</p>
+              
+              <h5>10. Limitation of Liability</h5>
+              <p>To the maximum extent permitted by law, QuizCraft AI shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising out of or in connection with your access to or use of the Service.</p>
+              
+              <h5>11. Disclaimer of Warranties</h5>
+              <p>The Service is provided on an "as is" and "as available" basis, without warranties of any kind, either express or implied. We do not warrant that the Service will be uninterrupted, error-free, or secure.</p>
+              
+              <h5>12. Indemnification</h5>
+              <p>You agree to indemnify and hold harmless QuizCraft AI and its officers, directors, employees, and agents from any claims, liabilities, damages, losses, and expenses (including legal fees) arising from your use of the Service or violation of these Terms.</p>
+              
+              <h5>13. Termination</h5>
+              <p>We reserve the right to suspend or terminate your access to the Service at any time for any reason, including violation of these Terms. Upon termination, your right to use the Service will immediately cease.</p>
+              
+              <h5>14. Changes to Terms</h5>
+              <p>We may modify these Terms at any time by posting the revised Terms on the Service. Your continued use of the Service after the posting of revised Terms constitutes your acceptance of the changes.</p>
+              
+              <h5>15. Governing Law</h5>
+              <p>These Terms shall be governed by the laws of the State of California, without regard to its conflict of law provisions. Any disputes arising under these Terms that cannot be resolved through negotiation shall be subject to the exclusive jurisdiction of the courts located in San Francisco County, California.</p>
+              
+              <h5>16. Contact Information</h5>
+              <p>If you have any questions about these Terms, please contact us at legal@quizcraftai.com.</p>
+              
+              <h5>17. Entire Agreement</h5>
+              <p>These Terms, together with our Privacy Policy and any other legal notices published by us on the Service, constitute the entire agreement between you and QuizCraft AI concerning the Service.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy Policy Modal -->
+      <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <h4>QuizCraft AI Privacy Policy</h4>
+              <p>Last Updated: February 15, 2024</p>
+              
+              <h5>1. Introduction</h5>
+              <p>At QuizCraft AI, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this Privacy Policy carefully. If you do not agree with the terms of this Privacy Policy, please do not access the Service.</p>
+              
+              <h5>2. Information We Collect</h5>
+              <p>We collect several types of information from and about users of our Service, including:</p>
+              <ul>
+                <li><strong>Personal Information:</strong> Name, email address, payment information, and other identifiers.</li>
+                <li><strong>Usage Data:</strong> Information about how you interact with our Service, including generated content, preferences, and settings.</li>
+                <li><strong>Device Information:</strong> IP address, browser type, operating system, and other technical information.</li>
+                <li><strong>Location Data:</strong> General location information based on your IP address.</li>
+              </ul>
+              
+              <h5>3. How We Use Your Information</h5>
+              <p>We use the information we collect to:</p>
+              <ul>
+                <li>Provide and maintain our Service</li>
+                <li>Process your payments and manage your account</li>
+                <li>Improve and personalize your experience</li>
+                <li>Communicate with you about updates and changes</li>
+                <li>Detect and prevent fraud and abuse</li>
+                <li>Comply with legal obligations</li>
+              </ul>
+              
+              <h5>4. Information Sharing and Disclosure</h5>
+              <p>We may share your information with:</p>
+              <ul>
+                <li>Service providers who assist in operating our Service</li>
+                <li>Payment processors for handling transactions</li>
+                <li>Law enforcement when required by law</li>
+                <li>Other parties with your consent</li>
+              </ul>
+              
+              <h5>5. Data Security</h5>
+              <p>We implement appropriate technical and organizational measures to protect your personal information. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.</p>
+              
+              <h5>6. Your Rights and Choices</h5>
+              <p>You have certain rights regarding your personal information:</p>
+              <ul>
+                <li>Access and update your information</li>
+                <li>Request deletion of your information</li>
+                <li>Opt-out of marketing communications</li>
+                <li>Object to certain processing activities</li>
+              </ul>
+              
+              <h5>7. Children's Privacy</h5>
+              <p>Our Service is not intended for children under 13. We do not knowingly collect personal information from children under 13. If we learn we have collected personal information from a child under 13, we will delete that information.</p>
+              
+              <h5>8. International Data Transfers</h5>
+              <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for such transfers.</p>
+              
+              <h5>9. Changes to This Privacy Policy</h5>
+              <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+              
+              <h5>10. Contact Us</h5>
+              <p>If you have any questions about this Privacy Policy, please contact us at privacy@quizcraftai.com.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cookie Policy Modal -->
+      <div class="modal fade" id="cookieModal" tabindex="-1" aria-labelledby="cookieModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="cookieModalLabel">Cookie Policy</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <h4>QuizCraft AI Cookie Policy</h4>
+              <p>Last Updated: February 15, 2024</p>
+              
+              <h5>1. What Are Cookies?</h5>
+              <p>Cookies are small text files that are placed on your computer or mobile device when you visit a website. They are widely used to make websites work more efficiently and provide useful information to website owners.</p>
+              
+              <h5>2. How We Use Cookies</h5>
+              <p>We use cookies for the following purposes:</p>
+              <ul>
+                <li><strong>Essential Cookies:</strong> Required for the website to function properly</li>
+                <li><strong>Authentication Cookies:</strong> Help us identify you when you log in</li>
+                <li><strong>Preference Cookies:</strong> Remember your settings and preferences</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand how visitors use our website</li>
+                <li><strong>Marketing Cookies:</strong> Used to deliver relevant advertisements</li>
+              </ul>
+              
+              <h5>3. Types of Cookies We Use</h5>
+              <p>We use the following types of cookies:</p>
+              <ul>
+                <li><strong>Session Cookies:</strong> Temporary cookies that expire when you close your browser</li>
+                <li><strong>Persistent Cookies:</strong> Remain on your device for a set period of time</li>
+                <li><strong>First-party Cookies:</strong> Set by our website</li>
+                <li><strong>Third-party Cookies:</strong> Set by other websites that provide content on our pages</li>
+              </ul>
+              
+              <h5>4. Cookie Management</h5>
+              <p>You can control and/or delete cookies as you wish. You can delete all cookies that are already on your computer and you can set most browsers to prevent them from being placed. However, if you do this, you may have to manually adjust some preferences every time you visit our site and some services and functionalities may not work.</p>
+              
+              <h5>5. Specific Cookies We Use</h5>
+              <p>Here are the specific cookies we use on our website:</p>
+              <ul>
+                <li><strong>Authentication:</strong> auth_token, user_session</li>
+                <li><strong>Preferences:</strong> language, theme, settings</li>
+                <li><strong>Analytics:</strong> _ga, _gid, _gat</li>
+                <li><strong>Marketing:</strong> _fbp, _gcl_au</li>
+              </ul>
+              
+              <h5>6. Third-Party Cookies</h5>
+              <p>We use services from third parties that may set cookies on your device:</p>
+              <ul>
+                <li>Google Analytics for website analytics</li>
+                <li>Facebook Pixel for advertising</li>
+                <li>Stripe for payment processing</li>
+              </ul>
+              
+              <h5>7. Cookie Consent</h5>
+              <p>When you first visit our website, we will ask for your consent to set cookies on your device. You can change your cookie preferences at any time through your browser settings or by contacting us.</p>
+              
+              <h5>8. Updates to This Policy</h5>
+              <p>We may update this Cookie Policy from time to time. We will notify you of any changes by posting the new Cookie Policy on this page and updating the "Last Updated" date.</p>
+              
+              <h5>9. Contact Us</h5>
+              <p>If you have any questions about our use of cookies, please contact us at privacy@quizcraftai.com.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Authentication Modal -->
       <div
@@ -3420,7 +3675,7 @@
 
               <!-- Login Form -->
               <div id="login-form">
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <button class="social-login-btn google-btn">
                     <i class="fab fa-google"></i> Continue with Google
                   </button>
@@ -3430,7 +3685,7 @@
                 </div>
                 <div class="text-center mb-4">
                   <span class="text-muted">or login with email</span>
-                </div>
+                </div> -->
                 <form id="login-form-element">
                   <div class="mb-3">
                     <label for="login-email" class="form-label"
@@ -3479,7 +3734,7 @@
 
               <!-- Register Form -->
               <div id="register-form" style="display: none">
-                <div class="mb-4">
+                <!-- <div class="mb-4">
                   <button class="social-login-btn google-btn">
                     <i class="fab fa-google"></i> Continue with Google
                   </button>
@@ -3489,7 +3744,7 @@
                 </div>
                 <div class="text-center mb-4">
                   <span class="text-muted">or register with email</span>
-                </div>
+                </div> -->
                 <form id="register-form-element">
                   <div class="mb-3">
                     <label for="register-name" class="form-label"
@@ -3555,8 +3810,8 @@
                     />
                     <label class="form-check-label" for="agree-terms">
                       I agree to the
-                      <a href="#" target="_blank">Terms of Service</a> and
-                      <a href="#" target="_blank">Privacy Policy</a>
+                      <a href="#" id="register-terms-link" onclick="openTermsModal(event)">Terms of Service</a> and
+                      <a href="#" id="register-privacy-link" onclick="openPrivacyModal(event)">Privacy Policy</a>
                     </label>
                   </div>
                   <button
@@ -4275,6 +4530,25 @@
 
           // Setup SPA functionality
           setupRouting();
+          
+          // 手动添加模态框事件监听器，确保它们在页面加载后正确初始化
+          document.getElementById("terms-link").addEventListener("click", function(e) {
+            e.preventDefault();
+            const termsModal = new bootstrap.Modal(document.getElementById("termsModal"));
+            termsModal.show();
+          });
+          
+          document.getElementById("privacy-link").addEventListener("click", function(e) {
+            e.preventDefault();
+            const privacyModal = new bootstrap.Modal(document.getElementById("privacyModal"));
+            privacyModal.show();
+          });
+          
+          document.getElementById("cookie-link").addEventListener("click", function(e) {
+            e.preventDefault();
+            const cookieModal = new bootstrap.Modal(document.getElementById("cookieModal"));
+            cookieModal.show();
+          });
         });
 
         // ===== EVENT LISTENERS =====
@@ -4395,6 +4669,33 @@
             .getElementById("view-plans-btn")
             .addEventListener("click", function () {
               navigateTo("pricing");
+            });
+            
+          // Terms of Service link
+          document
+            .getElementById("terms-link")
+            .addEventListener("click", function(e) {
+              e.preventDefault();
+              const termsModal = new bootstrap.Modal(document.getElementById("termsModal"));
+              termsModal.show();
+            });
+            
+          // Privacy Policy link
+          document
+            .getElementById("privacy-link")
+            .addEventListener("click", function(e) {
+              e.preventDefault();
+              const privacyModal = new bootstrap.Modal(document.getElementById("privacyModal"));
+              privacyModal.show();
+            });
+            
+          // Cookie Policy link
+          document
+            .getElementById("cookie-link")
+            .addEventListener("click", function(e) {
+              e.preventDefault();
+              const cookieModal = new bootstrap.Modal(document.getElementById("cookieModal"));
+              cookieModal.show();
             });
         }
 
@@ -5212,6 +5513,114 @@
             "Preferences Saved",
             "Your preferences have been updated successfully."
           );
+        }
+
+        // 移除所有多余的backdrop
+        function removeExtraBackdrops() {
+          const backdrops = document.querySelectorAll('.modal-backdrop');
+          if (backdrops.length > 1) {
+            for (let i = 0; i < backdrops.length - 1; i++) {
+              backdrops[i].remove();
+            }
+          }
+        }
+        
+        // 直接打开Terms of Service模态框的函数
+        function openTermsModal(event) {
+          event.preventDefault();
+          
+          // 首先移除所有现有的backdrop
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+          document.body.classList.remove('modal-open');
+          
+          // 手动创建自定义backdrop
+          const customBackdrop = document.createElement('div');
+          customBackdrop.className = 'custom-backdrop';
+          document.body.appendChild(customBackdrop);
+          
+          // 将条款模态框内容设置为最高层级
+          const termsModal = document.getElementById("termsModal");
+          termsModal.style.zIndex = "2050";
+          
+          // 手动显示模态框，不使用Bootstrap自带的backdrop
+          termsModal.classList.add('show');
+          termsModal.style.display = 'block';
+          termsModal.setAttribute('aria-modal', 'true');
+          termsModal.removeAttribute('aria-hidden');
+          
+          // 添加事件监听器到关闭按钮
+          termsModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', closeTermsModal, { once: true });
+          });
+          
+          // 添加点击自定义背景关闭模态框的功能
+          customBackdrop.addEventListener('click', closeTermsModal, { once: true });
+          
+          // 阻止事件冒泡，避免点击模态框内容关闭模态框
+          termsModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        }
+        
+        // 关闭条款模态框的函数
+        function closeTermsModal() {
+          const termsModal = document.getElementById("termsModal");
+          termsModal.classList.remove('show');
+          termsModal.style.display = 'none';
+          termsModal.setAttribute('aria-hidden', 'true');
+          termsModal.removeAttribute('aria-modal');
+          
+          // 移除自定义backdrop
+          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
+        }
+        
+        // 直接打开Privacy Policy模态框的函数
+        function openPrivacyModal(event) {
+          event.preventDefault();
+          
+          // 首先移除所有现有的backdrop
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+          document.body.classList.remove('modal-open');
+          
+          // 手动创建自定义backdrop
+          const customBackdrop = document.createElement('div');
+          customBackdrop.className = 'custom-backdrop';
+          document.body.appendChild(customBackdrop);
+          
+          // 将隐私政策模态框内容设置为最高层级
+          const privacyModal = document.getElementById("privacyModal");
+          privacyModal.style.zIndex = "2050";
+          
+          // 手动显示模态框，不使用Bootstrap自带的backdrop
+          privacyModal.classList.add('show');
+          privacyModal.style.display = 'block';
+          privacyModal.setAttribute('aria-modal', 'true');
+          privacyModal.removeAttribute('aria-hidden');
+          
+          // 添加事件监听器到关闭按钮
+          privacyModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', closePrivacyModal, { once: true });
+          });
+          
+          // 添加点击自定义背景关闭模态框的功能
+          customBackdrop.addEventListener('click', closePrivacyModal, { once: true });
+          
+          // 阻止事件冒泡，避免点击模态框内容关闭模态框
+          privacyModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        }
+        
+        // 关闭隐私政策模态框的函数
+        function closePrivacyModal() {
+          const privacyModal = document.getElementById("privacyModal");
+          privacyModal.classList.remove('show');
+          privacyModal.style.display = 'none';
+          privacyModal.setAttribute('aria-hidden', 'true');
+          privacyModal.removeAttribute('aria-modal');
+          
+          // 移除自定义backdrop
+          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
         }
       </script>
     </body>
