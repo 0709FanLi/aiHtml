@@ -1204,6 +1204,9 @@
           background-color: rgba(0, 0, 0, 0.5);
           z-index: 2000;
         }
+        .relative {
+          position: relative;
+        }
         
         /* 自定义select样式 */
         .form-select {
@@ -1673,7 +1676,7 @@
                 </div>
                 <div class="col-lg-6 d-none d-lg-block animate-slide-left">
                   <img
-                    src="https://images.unsplash.com/photo-1629202224988-02f68a0ff8c1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80"
+                    src="https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="Students studying"
                     class="img-fluid rounded shadow"
                   />
@@ -2616,12 +2619,12 @@
                             >
                               <i class="fas fa-file-word me-1"></i> Word
                             </button>
-                            <button
+                            <!-- <button
                               class="btn btn-outline-primary"
                               id="print-quiz"
                             >
                               <i class="fas fa-print me-1"></i> Print
-                            </button>
+                            </button> -->
                           </div>
                         </div>
                       </div>
@@ -3334,7 +3337,7 @@
       <!-- Footer -->
       <footer class="footer">
         <div class="container">
-          <div class="row">
+          <div class="row relative">
             <div class="col-lg-4 mb-4 mb-lg-0">
               <div class="footer-logo">
                 <i class="fas fa-brain me-2"></i> QuizCraft AI
@@ -3344,76 +3347,17 @@
                 content tailored to every student's needs. Making personalized
                 learning accessible to everyone.
               </p>
-              <!-- <div class="footer-social">
-                <a href="#" aria-label="Facebook"
-                  ><i class="fab fa-facebook-f"></i
-                ></a>
-                <a href="#" aria-label="Twitter"
-                  ><i class="fab fa-twitter"></i
-                ></a>
-                <a href="#" aria-label="Instagram"
-                  ><i class="fab fa-instagram"></i
-                ></a>
-                <a href="#" aria-label="LinkedIn"
-                  ><i class="fab fa-linkedin-in"></i
-                ></a>
-              </div> -->
             </div>
-            <!-- <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-              <h5 class="footer-heading">Company</h5>
-              <ul class="footer-links">
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Press</a></li>
-              </ul>
-            </div> -->
-            <!-- <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-              <h5 class="footer-heading">Resources</h5>
-              <ul class="footer-links">
-                <li><a href="#">Help Center</a></li>
-                <li><a href="#">Tutorials</a></li>
-                <li><a href="#">API Documentation</a></li>
-                <li><a href="#">Community Forum</a></li>
-              </ul>
-            </div> -->
-            <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
-              <h5 class="footer-heading">Legal</h5>
-              <ul class="footer-links">
-                <li><a href="#" id="terms-link">Terms of Service</a></li>
-                <li><a href="#" id="privacy-link">Privacy Policy</a></li>
+            <div class="col-lg-8 col-md-8 mb-4 mb-md-0">
+              <ul class="footer-links d-flex justify-content-around align-items-center" style="position: relative;top:50%;">
+                <li class="me-4"><a href="#" id="terms-link">Terms of Service</a></li>
+                <li class="me-4"><a href="#" id="privacy-link">Privacy Policy</a></li>
                 <li><a href="#" id="cookie-link">Cookie Policy</a></li>
               </ul>
             </div>
-            <div class="col-lg-2">
-              <h5 class="footer-heading">Stay Updated</h5>
-              <div class="footer-newsletter">
-                <p class="small mb-3">
-                  Join our newsletter for tips and product updates
-                </p>
-                <form>
-                  <div class="input-group mb-3">
-                    <input
-                      type="email"
-                      class="form-control"
-                      placeholder="Your Email"
-                      aria-label="Your Email"
-                      aria-describedby="subscribe-btn"
-                    />
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      id="subscribe-btn"
-                    >
-                      <i class="fas fa-paper-plane"></i>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
           </div>
           <div class="footer-bottom">
-            <p>© 2023 QuizCraft AI. All rights reserved.</p>
+            <p>© 2025 QuizCraft AI. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -4667,23 +4611,11 @@
           setupRouting();
           
           // 手动添加模态框事件监听器，确保它们在页面加载后正确初始化
-          document.getElementById("terms-link").addEventListener("click", function(e) {
-            e.preventDefault();
-            const termsModal = new bootstrap.Modal(document.getElementById("termsModal"));
-            termsModal.show();
-          });
+          document.getElementById("terms-link").addEventListener("click", openTermsModal);
           
-          document.getElementById("privacy-link").addEventListener("click", function(e) {
-            e.preventDefault();
-            const privacyModal = new bootstrap.Modal(document.getElementById("privacyModal"));
-            privacyModal.show();
-          });
+          document.getElementById("privacy-link").addEventListener("click", openPrivacyModal);
           
-          document.getElementById("cookie-link").addEventListener("click", function(e) {
-            e.preventDefault();
-            const cookieModal = new bootstrap.Modal(document.getElementById("cookieModal"));
-            cookieModal.show();
-          });
+          document.getElementById("cookie-link").addEventListener("click", openCookieModal);
         });
 
         // ===== EVENT LISTENERS =====
@@ -4809,29 +4741,17 @@
           // Terms of Service link
           document
             .getElementById("terms-link")
-            .addEventListener("click", function(e) {
-              e.preventDefault();
-              const termsModal = new bootstrap.Modal(document.getElementById("termsModal"));
-              termsModal.show();
-            });
+            .addEventListener("click", openTermsModal);
             
           // Privacy Policy link
           document
             .getElementById("privacy-link")
-            .addEventListener("click", function(e) {
-              e.preventDefault();
-              const privacyModal = new bootstrap.Modal(document.getElementById("privacyModal"));
-              privacyModal.show();
-            });
+            .addEventListener("click", openPrivacyModal);
             
           // Cookie Policy link
           document
             .getElementById("cookie-link")
-            .addEventListener("click", function(e) {
-              e.preventDefault();
-              const cookieModal = new bootstrap.Modal(document.getElementById("cookieModal"));
-              cookieModal.show();
-            });
+            .addEventListener("click", openCookieModal);
         }
 
         // ===== UI HANDLERS =====
@@ -5000,6 +4920,7 @@
             ".progress-bar"
           ).style.width = `${progressPercent}%`;
         }
+
 
         function handleLogin(e) {
           e.preventDefault();
@@ -5753,6 +5674,55 @@
           privacyModal.style.display = 'none';
           privacyModal.setAttribute('aria-hidden', 'true');
           privacyModal.removeAttribute('aria-modal');
+          
+          // 移除自定义backdrop
+          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
+        }
+        
+        // 直接打开Cookie Policy模态框的函数
+        function openCookieModal(event) {
+          event.preventDefault();
+          
+          // 首先移除所有现有的backdrop
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+          document.body.classList.remove('modal-open');
+          
+          // 手动创建自定义backdrop
+          const customBackdrop = document.createElement('div');
+          customBackdrop.className = 'custom-backdrop';
+          document.body.appendChild(customBackdrop);
+          
+          // 将Cookie策略模态框内容设置为最高层级
+          const cookieModal = document.getElementById("cookieModal");
+          cookieModal.style.zIndex = "2050";
+          
+          // 手动显示模态框，不使用Bootstrap自带的backdrop
+          cookieModal.classList.add('show');
+          cookieModal.style.display = 'block';
+          cookieModal.setAttribute('aria-modal', 'true');
+          cookieModal.removeAttribute('aria-hidden');
+          
+          // 添加事件监听器到关闭按钮
+          cookieModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+            button.addEventListener('click', closeCookieModal, { once: true });
+          });
+          
+          // 添加点击自定义背景关闭模态框的功能
+          customBackdrop.addEventListener('click', closeCookieModal, { once: true });
+          
+          // 阻止事件冒泡，避免点击模态框内容关闭模态框
+          cookieModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        }
+        
+        // 关闭Cookie策略模态框的函数
+        function closeCookieModal() {
+          const cookieModal = document.getElementById("cookieModal");
+          cookieModal.classList.remove('show');
+          cookieModal.style.display = 'none';
+          cookieModal.setAttribute('aria-hidden', 'true');
+          cookieModal.removeAttribute('aria-modal');
           
           // 移除自定义backdrop
           document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
