@@ -2360,6 +2360,8 @@
                             class="form-select"
                             id="grade-select"
                             required
+                            oninvalid="this.setCustomValidity('Please select a grade level')"
+                            oninput="this.setCustomValidity('')"
                           >
                             <option value="" selected disabled>
                               Select grade level
@@ -2385,6 +2387,8 @@
                             class="form-select"
                             id="subject-select"
                             required
+                            oninvalid="this.setCustomValidity('Please select a subject')"
+                            oninput="this.setCustomValidity('')"
                           >
                             <option value="" selected disabled>
                               Select subject
