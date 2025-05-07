@@ -1,105 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NovaCraft - AI-Powered Story Generator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        /* Base Styles */
-        :root {
-            --primary-color: #6a3093;
-            --primary-gradient: linear-gradient(135deg, #a044ff 0%, #6a3093 100%);
-            --secondary-color: #f5f5f5;
-            --text-color: #333;
-            --text-light: #f5f5f5;
-            --accent-color: #ff9a44;
-            --dark-bg: #1a1a2e;
-            --card-bg: #16213e;
-            --error-color: #ff4757;
-            --success-color: #2ed573;
-        }
-        * {
+      /* Base Styles */
+      :root {
+        --primary-color: #6a3093;
+        --primary-gradient: linear-gradient(135deg, #a044ff 0%, #6a3093 100%);
+        --secondary-color: #f5f5f5;
+        --text-color: #333;
+        --text-light: #f5f5f5;
+        --accent-color: #ff9a44;
+        --dark-bg: #1a1a2e;
+        --card-bg: #16213e;
+        --error-color: #ff4757;
+        --success-color: #2ed573;
+      }
+      * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
         background-color: var(--dark-bg);
         color: var(--text-light);
         line-height: 1.6;
-    }
-    
-    .container {
+      }
+
+      .container {
         width: 100%;
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 20px;
-    }
-    
-    /* Header Styles */
-    header {
+      }
+
+      /* Header Styles */
+      header {
         background: var(--primary-gradient);
         padding: 1rem 0;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         position: sticky;
         top: 0;
         z-index: 100;
-    }
-    
-    .header-content {
+      }
+
+      .header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-    
-    .logo {
+      }
+
+      .logo {
         display: flex;
         align-items: center;
-    }
-    
-    .logo h1 {
+      }
+
+      .logo h1 {
         font-size: 1.8rem;
         margin-left: 10px;
         background: linear-gradient(45deg, #fff, #a044ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-    
-    .logo i {
+      }
+
+      .logo i {
         font-size: 2rem;
         color: var(--accent-color);
-    }
-    
-    .nav-links {
+      }
+
+      .nav-links {
         display: flex;
         list-style: none;
-    }
-    
-    .nav-links li {
+      }
+
+      .nav-links li {
         margin-left: 2rem;
-    }
-    
-    .nav-links a {
+      }
+
+      .nav-links a {
         color: var(--text-light);
         text-decoration: none;
         font-weight: 500;
         transition: color 0.3s;
-    }
-    
-    .nav-links a:hover {
+      }
+
+      .nav-links a:hover {
         color: var(--accent-color);
-    }
-    
-    /* User Profile */
-    .user-profile {
+      }
+
+      /* User Profile */
+      .user-profile {
         display: flex;
         align-items: center;
-    }
-    
-    .user-avatar {
+      }
+
+      .user-avatar {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -109,19 +112,19 @@
         justify-content: center;
         margin-right: 10px;
         font-weight: bold;
-    }
-    
-    .user-info {
+      }
+
+      .user-info {
         display: none; /* Hidden initially, shown when logged in */
-    }
-    
-    .user-info .credits {
+      }
+
+      .user-info .credits {
         font-size: 0.8rem;
         color: #ddd;
-    }
-    
-    /* Button Styles */
-    .btn {
+      }
+
+      /* Button Styles */
+      .btn {
         padding: 8px 16px;
         border: none;
         border-radius: 4px;
@@ -131,125 +134,130 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         display: inline-block;
-    }
-    
-    .btn-primary {
+      }
+
+      .btn-primary {
         background: var(--primary-gradient);
         color: white;
-    }
-    
-    .btn-primary:hover {
+      }
+
+      .btn-primary:hover {
         box-shadow: 0 5px 15px rgba(106, 48, 147, 0.4);
         transform: translateY(-2px);
-    }
-    
-    .btn-secondary {
+      }
+
+      .btn-secondary {
         background-color: transparent;
         color: var(--secondary-color);
         border: 1px solid var(--secondary-color);
-    }
-    
-    .btn-secondary:hover {
+      }
+
+      .btn-secondary:hover {
         background-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    .btn-accent {
+      }
+
+      .btn-accent {
         background-color: var(--accent-color);
         color: white;
-    }
-    
-    .btn-accent:hover {
+      }
+
+      .btn-accent:hover {
         box-shadow: 0 5px 15px rgba(255, 154, 68, 0.4);
         transform: translateY(-2px);
-    }
-    
-    /* Hero Section */
-    .hero {
+      }
+
+      /* Hero Section */
+      .hero {
         padding: 4rem 0;
         text-align: center;
-        background: url('https://images.unsplash.com/photo-1518655048521-f130df041f66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+        background: url("https://images.unsplash.com/photo-1518655048521-f130df041f66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")
+          no-repeat center center/cover;
         position: relative;
-    }
-    
-    .hero::before {
-        content: '';
+      }
+
+      .hero::before {
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         background: rgba(26, 26, 46, 0.85);
-    }
-    
-    .hero-content {
+      }
+
+      .hero-content {
         position: relative;
         z-index: 1;
-    }
-    
-    .hero h2 {
+      }
+
+      .hero h2 {
         font-size: 2.5rem;
         margin-bottom: 1rem;
         color: white;
-    }
-    
-    .hero p {
+      }
+
+      .hero p {
         font-size: 1.2rem;
         margin-bottom: 2rem;
         color: #ddd;
         max-width: 800px;
         margin-left: auto;
         margin-right: auto;
-    }
-    
-    /* Generator Section */
-    .generator-section {
+      }
+
+      /* Generator Section */
+      .generator-section {
         padding: 3rem 0;
-    }
-    
-    .generator-card {
+      }
+
+      .generator-card {
         background-color: var(--card-bg);
         border-radius: 10px;
         padding: 2rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         margin-bottom: 2rem;
-    }
-    
-    .generator-header {
+      }
+
+      .generator-header {
         text-align: center;
         margin-bottom: 2rem;
-    }
-    
-    .generator-header h3 {
+      }
+
+      .generator-header h3 {
         font-size: 1.8rem;
         margin-bottom: 0.5rem;
-        background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
+        background: linear-gradient(
+          45deg,
+          var(--accent-color),
+          var(--primary-color)
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-    
-    .generator-form {
+      }
+
+      .generator-form {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 1.5rem;
-    }
-    
-    @media (max-width: 768px) {
+      }
+
+      @media (max-width: 768px) {
         .generator-form {
-            grid-template-columns: 1fr;
+          grid-template-columns: 1fr;
         }
-    }
-    
-    .form-group {
+      }
+
+      .form-group {
         margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
+      }
+
+      .form-group label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-    }
-    
-    .form-control {
+      }
+
+      .form-control {
         width: 100%;
         padding: 12px;
         border-radius: 5px;
@@ -257,53 +265,53 @@
         background-color: #222;
         color: white;
         font-size: 1rem;
-    }
-    
-    .form-control:focus {
+      }
+
+      .form-control:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(106, 48, 147, 0.2);
-    }
-    
-    .generator-actions {
+      }
+
+      .generator-actions {
         text-align: center;
         margin-top: 1.5rem;
-    }
-    
-    .generator-button {
+      }
+
+      .generator-button {
         padding: 12px 24px;
         font-size: 1.1rem;
-    }
-    
-    /* Story Output */
-    .story-output {
+      }
+
+      /* Story Output */
+      .story-output {
         display: none;
         background-color: var(--card-bg);
         border-radius: 10px;
         padding: 2rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    
-    .story-header {
+      }
+
+      .story-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
         border-bottom: 1px solid #444;
-    }
-    
-    .story-title h3 {
+      }
+
+      .story-title h3 {
         font-size: 1.8rem;
         color: white;
-    }
-    
-    .story-actions {
+      }
+
+      .story-actions {
         display: flex;
         gap: 1rem;
-    }
-    
-    .story-content {
+      }
+
+      .story-content {
         max-height: 500px;
         overflow-y: auto;
         padding: 1rem;
@@ -312,24 +320,24 @@
         margin-bottom: 1.5rem;
         white-space: pre-wrap;
         line-height: 1.8;
-    }
-    
-    .story-content::-webkit-scrollbar {
+      }
+
+      .story-content::-webkit-scrollbar {
         width: 8px;
-    }
-    
-    .story-content::-webkit-scrollbar-track {
+      }
+
+      .story-content::-webkit-scrollbar-track {
         background: #333;
         border-radius: 10px;
-    }
-    
-    .story-content::-webkit-scrollbar-thumb {
+      }
+
+      .story-content::-webkit-scrollbar-thumb {
         background: var(--primary-color);
         border-radius: 10px;
-    }
-    
-    /* Modal Styles */
-    .modal-overlay {
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
         display: none;
         position: fixed;
         top: 0;
@@ -339,82 +347,98 @@
         background-color: rgba(0, 0, 0, 0.7);
         z-index: 1000;
         backdrop-filter: blur(5px);
-    }
-    
-    .modal {
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .modal {
+        position: relative;
+        margin: 30px auto;
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        width: 90%;
+        max-width: 1000px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        top: 0;
+        left: 0;
+        transform: none;
+      }
+
+      /* 为登录/注册弹框设置特定宽度 */
+      #authModal .modal {
+        max-width: 700px;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background-color: var(--card-bg);
-        border-radius: 10px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-    }
-    
-    .modal-header {
+        margin: 0;
+      }
+
+      .modal-header {
         padding: 1.5rem;
         border-bottom: 1px solid #444;
         display: flex;
         justify-content: space-between;
         align-items: center;
-    }
-    
-    .modal-header h3 {
+      }
+
+      .modal-header h3 {
         font-size: 1.5rem;
         color: white;
-    }
-    
-    .modal-close {
+      }
+
+      .modal-close {
         background: none;
         border: none;
         color: #888;
         font-size: 1.5rem;
         cursor: pointer;
         transition: color 0.3s;
-    }
-    
-    .modal-close:hover {
+        z-index: 1002;
+      }
+
+      .modal-close:hover {
         color: var(--error-color);
-    }
-    
-    .modal-body {
+      }
+
+      .modal-body {
         padding: 1.5rem;
-    }
-    
-    .modal-footer {
+      }
+
+      .modal-footer {
         padding: 1.5rem;
         border-top: 1px solid #444;
         text-align: right;
-    }
-    
-    /* Auth Form */
-    .auth-form {
+      }
+
+      /* Auth Form */
+      .auth-form {
         display: flex;
         flex-direction: column;
-    }
-    
-    .auth-switch {
+      }
+
+      .auth-switch {
         text-align: center;
         margin-top: 1rem;
         font-size: 0.9rem;
-    }
-    
-    .auth-switch a {
+      }
+
+      .auth-switch a {
         color: var(--accent-color);
         text-decoration: none;
         font-weight: 500;
-    }
-    
-    .social-login {
+      }
+
+      .social-login {
         display: flex;
         justify-content: center;
         gap: 1rem;
         margin-top: 1.5rem;
-    }
-    
-    .social-btn {
+      }
+
+      .social-btn {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -425,92 +449,92 @@
         font-size: 1.2rem;
         cursor: pointer;
         transition: transform 0.3s;
-    }
-    
-    .social-btn:hover {
+      }
+
+      .social-btn:hover {
         transform: scale(1.1);
-    }
-    
-    .facebook {
+      }
+
+      .facebook {
         background-color: #3b5998;
-    }
-    
-    .google {
+      }
+
+      .google {
         background-color: #db4437;
-    }
-    
-    .twitter {
+      }
+
+      .twitter {
         background-color: #1da1f2;
-    }
-    
-    /* User Dashboard */
-    .dashboard {
+      }
+
+      /* User Dashboard */
+      .dashboard {
         display: none; /* Hidden initially, shown after login */
-    }
-    
-    .dashboard-section {
+      }
+
+      .dashboard-section {
         margin-bottom: 3rem;
-    }
-    
-    .dashboard-header {
+      }
+
+      .dashboard-header {
         margin-bottom: 1.5rem;
-    }
-    
-    .dashboard-header h3 {
+      }
+
+      .dashboard-header h3 {
         font-size: 1.8rem;
         margin-bottom: 0.5rem;
         color: white;
-    }
-    
-    .dashboard-cards {
+      }
+
+      .dashboard-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 1.5rem;
-    }
-    
-    .history-card {
+      }
+
+      .history-card {
         background-color: var(--card-bg);
         border-radius: 10px;
         padding: 1.5rem;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         transition: transform 0.3s;
         cursor: pointer;
-    }
-    
-    .history-card:hover {
+      }
+
+      .history-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .history-card h4 {
+      }
+
+      .history-card h4 {
         font-size: 1.2rem;
         margin-bottom: 0.5rem;
         color: white;
-    }
-    
-    .history-meta {
+      }
+
+      .history-meta {
         color: #888;
         font-size: 0.9rem;
         margin-bottom: 1rem;
-    }
-    
-    .history-preview {
+      }
+
+      .history-preview {
         color: #ddd;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-    
-    /* Pricing Plans */
-    .pricing-plans {
+      }
+
+      /* Pricing Plans */
+      .pricing-plans {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 1.5rem;
-    }
-    
-    .pricing-card {
+      }
+
+      .pricing-card {
         background-color: var(--card-bg);
         border-radius: 10px;
         padding: 1.5rem;
@@ -518,20 +542,20 @@
         text-align: center;
         transition: transform 0.3s;
         border: 1px solid #444;
-    }
-    
-    .pricing-card:hover {
+      }
+
+      .pricing-card:hover {
         transform: translateY(-5px);
         border-color: var(--primary-color);
-    }
-    
-    .pricing-card.popular {
+      }
+
+      .pricing-card.popular {
         border-color: var(--accent-color);
         position: relative;
         overflow: hidden;
-    }
-    
-    .popular-tag {
+      }
+
+      .popular-tag {
         position: absolute;
         top: 10px;
         right: -30px;
@@ -541,43 +565,43 @@
         transform: rotate(45deg);
         font-size: 0.8rem;
         font-weight: bold;
-    }
-    
-    .price {
+      }
+
+      .price {
         font-size: 2.5rem;
         font-weight: bold;
         margin: 1rem 0;
         color: white;
-    }
-    
-    .price-period {
+      }
+
+      .price-period {
         font-size: 0.9rem;
         color: #888;
         display: block;
         margin-top: -0.5rem;
-    }
-    
-    .pricing-features {
+      }
+
+      .pricing-features {
         list-style: none;
         margin: 1.5rem 0;
         text-align: left;
-    }
-    
-    .pricing-features li {
+      }
+
+      .pricing-features li {
         margin-bottom: 0.5rem;
         padding-left: 1.5rem;
         position: relative;
-    }
-    
-    .pricing-features li::before {
-        content: '✓';
+      }
+
+      .pricing-features li::before {
+        content: "✓";
         color: var(--success-color);
         position: absolute;
         left: 0;
-    }
-    
-    /* Loading Spinner */
-    .spinner {
+      }
+
+      /* Loading Spinner */
+      .spinner {
         display: inline-block;
         width: 40px;
         height: 40px;
@@ -585,13 +609,15 @@
         border-radius: 50%;
         border-top-color: var(--primary-color);
         animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .loading-overlay {
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-overlay {
         display: none;
         position: fixed;
         top: 0;
@@ -603,23 +629,23 @@
         align-items: center;
         justify-content: center;
         flex-direction: column;
-    }
-    
-    .loading-text {
+      }
+
+      .loading-text {
         margin-top: 1rem;
         color: white;
         font-size: 1.2rem;
-    }
-    
-    /* Toast Notifications */
-    .toast-container {
+      }
+
+      /* Toast Notifications */
+      .toast-container {
         position: fixed;
         bottom: 20px;
         right: 20px;
         z-index: 1001;
-    }
-    
-    .toast {
+      }
+
+      .toast {
         min-width: 250px;
         padding: 15px;
         margin-bottom: 10px;
@@ -628,1048 +654,1544 @@
         display: flex;
         align-items: center;
         animation: slideIn 0.3s ease forwards;
-    }
-    
-    .toast.success {
+      }
+
+      .toast.success {
         background-color: var(--success-color);
         color: white;
-    }
-    
-    .toast.error {
+      }
+
+      .toast.error {
         background-color: var(--error-color);
         color: white;
-    }
-    
-    .toast i {
+      }
+
+      .toast i {
         margin-right: 10px;
         font-size: 1.2rem;
-    }
-    
-    @keyframes slideIn {
+      }
+
+      @keyframes slideIn {
         from {
-            transform: translateX(100%);
-            opacity: 0;
+          transform: translateX(100%);
+          opacity: 0;
         }
         to {
-            transform: translateX(0);
-            opacity: 1;
+          transform: translateX(0);
+          opacity: 1;
         }
-    }
-    
-    /* Footer */
-    footer {
+      }
+
+      /* Footer */
+      footer {
         background-color: var(--card-bg);
         padding: 2rem 0;
         text-align: center;
         margin-top: 3rem;
-    }
-    
-    .footer-content {
+      }
+
+      .footer-content {
         max-width: 600px;
         margin: 0 auto;
-    }
-    
-    .footer-links {
+      }
+
+      .footer-links {
         display: flex;
         justify-content: center;
         list-style: none;
         margin: 1rem 0;
-    }
-    
-    .footer-links li {
+      }
+
+      .footer-links li {
         margin: 0 1rem;
-    }
-    
-    .footer-links a {
+      }
+
+      .footer-links a {
         color: #888;
         text-decoration: none;
         transition: color 0.3s;
-    }
-    
-    .footer-links a:hover {
+      }
+
+      .footer-links a:hover {
         color: var(--accent-color);
-    }
-    
-    .copyright {
+      }
+
+      .copyright {
         color: #666;
         font-size: 0.9rem;
-    }
-</style>
-</head>
-<body>
+      }
+
+      /* Policy Content Styles */
+      .policy-content {
+        color: var(--text-light);
+        line-height: 1.6;
+      }
+
+      .policy-content h4 {
+        color: var(--accent-color);
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+      }
+
+      .policy-content ul {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .policy-content li {
+        margin-bottom: 0.5rem;
+      }
+
+      .policy-date {
+        margin-top: 2rem;
+        font-style: italic;
+        color: #888;
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <div class="loading-text">Crafting your story...</div>
+      <div class="spinner"></div>
+      <div class="loading-text">Crafting your story...</div>
     </div>
     <!-- Toast Notifications -->
-<div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
-<!-- Login/Register Modal -->
-<div class="modal-overlay" id="authModal">
-    <div class="modal">
+    <!-- Login/Register Modal -->
+    <div class="modal-overlay" id="authModal">
+      <div class="modal">
         <div class="modal-header">
-            <h3 id="authTitle">Login</h3>
-            <button class="modal-close" id="authClose">&times;</button>
+          <h3 id="authTitle">Login</h3>
+          <button class="modal-close" id="authClose">&times;</button>
         </div>
         <div class="modal-body">
-            <form class="auth-form" id="authForm">
-                <div class="form-group" id="nameGroup" style="display: none;">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" class="form-control" placeholder="Your name">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" class="form-control" placeholder="Your email">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" class="form-control" placeholder="Your password">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-            </form>
-            <div class="auth-switch">
-                <p id="authSwitch">Don't have an account? <a href="#" id="switchAuthMode">Register</a></p>
+          <form class="auth-form" id="authForm">
+            <div class="form-group" id="nameGroup" style="display: none">
+              <label for="name">Full Name</label>
+              <input
+                type="text"
+                id="name"
+                class="form-control"
+                placeholder="Your name"
+              />
             </div>
-            <div class="social-login">
-                <div class="social-btn facebook"><i class="fab fa-facebook-f"></i></div>
-                <div class="social-btn google"><i class="fab fa-google"></i></div>
-                <div class="social-btn twitter"><i class="fab fa-twitter"></i></div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                placeholder="Your email"
+              />
             </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                placeholder="Your password"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%">
+              Login
+            </button>
+          </form>
+          <div class="auth-switch">
+            <p id="authSwitch">
+              Don't have an account?
+              <a href="#" id="switchAuthMode">Register</a>
+            </p>
+          </div>
+          <div class="social-login">
+            <div class="social-btn facebook">
+              <i class="fab fa-facebook-f"></i>
+            </div>
+            <div class="social-btn google"><i class="fab fa-google"></i></div>
+            <div class="social-btn twitter"><i class="fab fa-twitter"></i></div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Pricing Modal -->
-<div class="modal-overlay" id="pricingModal">
-    <div class="modal">
+    <!-- Pricing Modal -->
+    <div class="modal-overlay" id="pricingModal">
+      <div class="modal">
         <div class="modal-header">
-            <h3>Purchase Credits</h3>
-            <button class="modal-close" id="pricingClose">&times;</button>
+          <h3>Purchase Credits</h3>
+          <button class="modal-close" id="pricingClose">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="pricing-plans">
-                <div class="pricing-card">
-                    <h4>Basic</h4>
-                    <div class="price">$0.99</div>
-                    <ul class="pricing-features">
-                        <li>2 Story Generations</li>
-                        <li>Download as Text File</li>
-                        <li>30 Days Validity</li>
-                    </ul>
-                    <button class="btn btn-primary buy-plan" data-plan="basic">Purchase</button>
-                </div>
-                <div class="pricing-card">
-                    <h4>Standard</h4>
-                    <div class="price">$4.99</div>
-                    <ul class="pricing-features">
-                        <li>10 Story Generations</li>
-                        <li>Download as Text File</li>
-                        <li>60 Days Validity</li>
-                    </ul>
-                    <button class="btn btn-primary buy-plan" data-plan="standard">Purchase</button>
-                </div>
-                <div class="pricing-card popular">
-                    <div class="popular-tag">Best Value</div>
-                    <h4>Premium</h4>
-                    <div class="price">$9.99</div>
-                    <ul class="pricing-features">
-                        <li>30 Story Generations</li>
-                        <li>Download as Text File</li>
-                        <li>90 Days Validity</li>
-                    </ul>
-                    <button class="btn btn-primary buy-plan" data-plan="premium">Purchase</button>
-                </div>
+          <div class="pricing-plans">
+            <div class="pricing-card">
+              <h4>Basic</h4>
+              <div class="price">$0.99</div>
+              <ul class="pricing-features">
+                <li>2 Story Generations</li>
+                <li>Download as Text File</li>
+                <li>30 Days Validity</li>
+              </ul>
+              <button class="btn btn-primary buy-plan" data-plan="basic">
+                Purchase
+              </button>
             </div>
-            
-            <h4 style="margin-top: 2rem; text-align: center;">Subscription Plans</h4>
-            <div class="pricing-plans" style="margin-top: 1rem;">
-                <div class="pricing-card">
-                    <h4>Monthly</h4>
-                    <div class="price">$10.99<span class="price-period">/month</span></div>
-                    <ul class="pricing-features">
-                        <li>50 Story Generations</li>
-                        <li>Download as Text File</li>
-                        <li>Priority Support</li>
-                    </ul>
-                    <button class="btn btn-primary buy-plan" data-plan="monthly">Subscribe</button>
-                </div>
-                <div class="pricing-card popular">
-                    <div class="popular-tag">Best Value</div>
-                    <h4>Annual</h4>
-                    <div class="price">$99.90<span class="price-period">/year</span></div>
-                    <ul class="pricing-features">
-                        <li>1000 Story Generations</li>
-                        <li>Download as Text & PDF</li>
-                        <li>Priority Support</li>
-                        <li>Extended Story Length</li>
-                    </ul>
-                    <button class="btn btn-primary buy-plan" data-plan="annual">Subscribe</button>
-                </div>
+            <div class="pricing-card">
+              <h4>Standard</h4>
+              <div class="price">$4.99</div>
+              <ul class="pricing-features">
+                <li>10 Story Generations</li>
+                <li>Download as Text File</li>
+                <li>60 Days Validity</li>
+              </ul>
+              <button class="btn btn-primary buy-plan" data-plan="standard">
+                Purchase
+              </button>
             </div>
+            <div class="pricing-card popular">
+              <div class="popular-tag">Best Value</div>
+              <h4>Premium</h4>
+              <div class="price">$9.99</div>
+              <ul class="pricing-features">
+                <li>30 Story Generations</li>
+                <li>Download as Text File</li>
+                <li>90 Days Validity</li>
+              </ul>
+              <button class="btn btn-primary buy-plan" data-plan="premium">
+                Purchase
+              </button>
+            </div>
+          </div>
+
+          <h4 style="margin-top: 2rem; text-align: center">
+            Subscription Plans
+          </h4>
+          <div class="pricing-plans" style="margin-top: 1rem">
+            <div class="pricing-card">
+              <h4>Monthly</h4>
+              <div class="price">
+                $10.99<span class="price-period">/month</span>
+              </div>
+              <ul class="pricing-features">
+                <li>50 Story Generations</li>
+                <li>Download as Text File</li>
+                <li>Priority Support</li>
+              </ul>
+              <button class="btn btn-primary buy-plan" data-plan="monthly">
+                Subscribe
+              </button>
+            </div>
+            <div class="pricing-card popular">
+              <div class="popular-tag">Best Value</div>
+              <h4>Annual</h4>
+              <div class="price">
+                $99.90<span class="price-period">/year</span>
+              </div>
+              <ul class="pricing-features">
+                <li>1000 Story Generations</li>
+                <li>Download as Text & PDF</li>
+                <li>Priority Support</li>
+                <li>Extended Story Length</li>
+              </ul>
+              <button class="btn btn-primary buy-plan" data-plan="annual">
+                Subscribe
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Payment Confirmation Modal -->
-<div class="modal-overlay" id="paymentModal">
-    <div class="modal">
+    <!-- Payment Confirmation Modal -->
+    <div class="modal-overlay" id="paymentModal">
+      <div class="modal">
         <div class="modal-header">
-            <h3>Payment Confirmation</h3>
-            <button class="modal-close" id="paymentClose">&times;</button>
+          <h3>Payment Confirmation</h3>
+          <button class="modal-close" id="paymentClose">&times;</button>
         </div>
         <div class="modal-body">
-            <p>Thank you for your purchase! You have successfully added <span id="creditsAmount"></span> credits to your account.</p>
-            <div style="text-align: center; margin-top: 2rem;">
-                <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success-color);"></i>
-            </div>
+          <p>
+            Thank you for your purchase! You have successfully added
+            <span id="creditsAmount"></span> credits to your account.
+          </p>
+          <div style="text-align: center; margin-top: 2rem">
+            <i
+              class="fas fa-check-circle"
+              style="font-size: 4rem; color: var(--success-color)"
+            ></i>
+          </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-primary" id="paymentConfirm">Continue</button>
+          <button class="btn btn-primary" id="paymentConfirm">Continue</button>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- History Modal -->
-<div class="modal-overlay" id="historyDetailModal">
-    <div class="modal">
+    <!-- History Modal -->
+    <div class="modal-overlay" id="historyDetailModal">
+      <div class="modal">
         <div class="modal-header">
-            <h3 id="historyTitle">Story Title</h3>
-            <button class="modal-close" id="historyClose">&times;</button>
+          <h3 id="historyTitle">Story Title</h3>
+          <button class="modal-close" id="historyClose">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="story-content" id="historyContent"></div>
+          <div class="story-content" id="historyContent"></div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" id="historyDownload">Download</button>
+          <button class="btn btn-secondary" id="historyDownload">
+            Download
+          </button>
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Header Section -->
-<header>
-    <div class="container header-content">
+    <!-- Privacy Policy Modal -->
+    <div class="modal-overlay" id="privacyPolicyModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Privacy Policy</h3>
+          <button class="modal-close" id="privacyPolicyClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="policy-content">
+            <h2>Privacy Policy</h2>
+            <div class="privacy-content">
+              <h3>1. Information We Collect</h3>
+              <p>1.1 Personal Information</p>
+              <ul>
+                <li>Email address (when provided)</li>
+                <li>User preferences and settings</li>
+                <li>Generated story content</li>
+              </ul>
+
+              <p>1.2 Usage Information</p>
+              <ul>
+                <li>Browser type and version</li>
+                <li>Operating system</li>
+                <li>IP address</li>
+                <li>Time and date of access</li>
+                <li>Pages visited and features used</li>
+              </ul>
+
+              <h3>2. How We Use Your Information</h3>
+              <p>
+                We use the collected information for the following purposes:
+              </p>
+              <ul>
+                <li>To provide and maintain our service</li>
+                <li>To improve user experience</li>
+                <li>To analyze usage patterns</li>
+                <li>To detect and prevent technical issues</li>
+                <li>To communicate with you about updates and changes</li>
+              </ul>
+
+              <h3>3. Data Storage and Security</h3>
+              <p>3.1 Storage</p>
+              <ul>
+                <li>
+                  Your generated stories are stored locally in your browser
+                </li>
+                <li>We use secure cloud storage for backup purposes</li>
+                <li>Data is encrypted during transmission</li>
+              </ul>
+
+              <p>3.2 Security Measures</p>
+              <ul>
+                <li>Regular security assessments</li>
+                <li>Encryption of sensitive data</li>
+                <li>Access controls and authentication</li>
+                <li>Regular backups and disaster recovery plans</li>
+              </ul>
+
+              <h3>4. Third-Party Services</h3>
+              <p>
+                We may use third-party services that collect, monitor, and
+                analyze data. These services include:
+              </p>
+              <ul>
+                <li>Analytics providers</li>
+                <li>Cloud storage services</li>
+                <li>Content delivery networks</li>
+              </ul>
+
+              <h3>5. User Rights</h3>
+              <p>You have the right to:</p>
+              <ul>
+                <li>Access your personal data</li>
+                <li>Correct inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Export your data</li>
+                <li>Opt-out of data collection</li>
+              </ul>
+
+              <h3>6. Cookies and Tracking</h3>
+              <p>We use cookies and similar tracking technologies to:</p>
+              <ul>
+                <li>Remember your preferences</li>
+                <li>Analyze site usage</li>
+                <li>Improve our services</li>
+              </ul>
+
+              <h3>7. Children's Privacy</h3>
+              <p>
+                Our service is not intended for use by children under 13. We do
+                not knowingly collect personal information from children under
+                13.
+              </p>
+
+              <h3>8. Changes to Privacy Policy</h3>
+              <p>
+                We may update this privacy policy from time to time. We will
+                notify you of any changes by posting the new privacy policy on
+                this page.
+              </p>
+
+              <h3>9. Contact Us</h3>
+              <p>
+                If you have any questions about this Privacy Policy, please
+                contact us at:
+              </p>
+              <ul>
+                <li>Email: privacy@storygenerator.com</li>
+                <li>Website: www.storygenerator.com/contact</li>
+              </ul>
+
+              <p class="last-updated">Last updated: March 2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal-overlay" id="termsOfServiceModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Terms of Service</h3>
+          <button class="modal-close" id="termsOfServiceClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="policy-content">
+            <h2>Terms of Service</h2>
+            <div class="terms-content">
+              <h3>1. Acceptance of Terms</h3>
+              <p>
+                By accessing and using NovaCraft's services, you agree to be
+                bound by these Terms of Service. If you do not agree to these
+                terms, please do not use our service.
+              </p>
+
+              <h3>2. Service Description</h3>
+              <p>
+                NovaCraft provides an AI-powered story generation service that
+                allows users to create unique stories based on selected
+                parameters. The service includes:
+              </p>
+              <ul>
+                <li>AI-powered story generation</li>
+                <li>Story customization options</li>
+                <li>Story history storage</li>
+                <li>Download and sharing capabilities</li>
+              </ul>
+
+              <h3>3. User Accounts</h3>
+              <p>3.1 Account Creation</p>
+              <ul>
+                <li>Users must provide accurate and complete information</li>
+                <li>Users are responsible for maintaining account security</li>
+                <li>Users must be at least 13 years old</li>
+              </ul>
+
+              <p>3.2 Account Responsibilities</p>
+              <ul>
+                <li>Maintain confidentiality of login credentials</li>
+                <li>Notify us of any unauthorized access</li>
+                <li>Not share account access with others</li>
+              </ul>
+
+              <h3>4. Credits and Payments</h3>
+              <p>4.1 Credit System</p>
+              <ul>
+                <li>Credits are required for story generation</li>
+                <li>Credits are non-refundable</li>
+                <li>Credits expire according to purchased plan</li>
+              </ul>
+
+              <p>4.2 Payment Terms</p>
+              <ul>
+                <li>All payments are processed securely</li>
+                <li>Prices are subject to change with notice</li>
+                <li>Subscription plans auto-renew unless cancelled</li>
+              </ul>
+
+              <h3>5. Content and Usage</h3>
+              <p>5.1 Generated Content</p>
+              <ul>
+                <li>Users retain rights to generated stories</li>
+                <li>Stories must not violate copyright laws</li>
+                <li>Content must be appropriate and legal</li>
+              </ul>
+
+              <p>5.2 Usage Restrictions</p>
+              <ul>
+                <li>No commercial resale of generated content</li>
+                <li>No automated or bulk generation</li>
+                <li>No reverse engineering of the service</li>
+              </ul>
+
+              <h3>6. Service Limitations</h3>
+              <p>We reserve the right to:</p>
+              <ul>
+                <li>Modify or discontinue the service</li>
+                <li>Limit access to certain features</li>
+                <li>Change pricing and credit policies</li>
+                <li>Enforce usage restrictions</li>
+              </ul>
+
+              <h3>7. Termination</h3>
+              <p>We may terminate or suspend access to our service:</p>
+              <ul>
+                <li>For violations of these terms</li>
+                <li>For fraudulent or illegal activity</li>
+                <li>For extended periods of inactivity</li>
+              </ul>
+
+              <h3>8. Disclaimer of Warranties</h3>
+              <p>
+                The service is provided "as is" without warranties of any kind,
+                either express or implied, including but not limited to:
+              </p>
+              <ul>
+                <li>Accuracy of generated content</li>
+                <li>Service availability</li>
+                <li>Fitness for particular purpose</li>
+              </ul>
+
+              <h3>9. Limitation of Liability</h3>
+              <p>NovaCraft shall not be liable for:</p>
+              <ul>
+                <li>Indirect or consequential damages</li>
+                <li>Loss of data or content</li>
+                <li>Service interruptions</li>
+                <li>Third-party actions</li>
+              </ul>
+
+              <h3>10. Changes to Terms</h3>
+              <p>
+                We reserve the right to modify these terms at any time. Users
+                will be notified of significant changes. Continued use of the
+                service constitutes acceptance of modified terms.
+              </p>
+
+              <h3>11. Contact Information</h3>
+              <p>
+                For questions about these Terms of Service, please contact us
+                at:
+              </p>
+              <ul>
+                <li>Email: terms@storygenerator.com</li>
+                <li>Website: www.storygenerator.com/contact</li>
+              </ul>
+
+              <p class="last-updated">Last updated: March 2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Section -->
+    <header>
+      <div class="container header-content">
         <div class="logo">
-            <i class="fas fa-feather-alt"></i>
-            <h1>NovaCraft</h1>
+          <i class="fas fa-feather-alt"></i>
+          <h1>NovaCraft</h1>
         </div>
         <ul class="nav-links">
-            <li><a href="#" class="nav-home">Home</a></li>
-            <li><a href="#" class="nav-pricing">Pricing</a></li>
-            <li><a href="#" class="nav-dashboard">Dashboard</a></li>
-            <li><a href="#" class="nav-login" id="loginBtn">Login</a></li>
+          <li><a href="#" class="nav-home">Home</a></li>
+          <li><a href="#" class="nav-pricing">Pricing</a></li>
+          <li><a href="#" class="nav-dashboard">Dashboard</a></li>
+          <li><a href="#" class="nav-login" id="loginBtn">Login</a></li>
         </ul>
         <div class="user-profile">
-            <div class="user-info" id="userInfo">
-                <div class="user-avatar" id="userAvatar">JD</div>
-                <div>
-                    <p id="userName">John Doe</p>
-                    <p class="credits" id="userCredits">Credits: 5</p>
-                </div>
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar" id="userAvatar">JD</div>
+            <div>
+              <p id="userName">John Doe</p>
+              <p class="credits" id="userCredits">Credits: 5</p>
             </div>
+          </div>
         </div>
-    </div>
-</header>
+      </div>
+    </header>
 
-<!-- Main Content -->
-<main>
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- Main Content -->
+    <main>
+      <!-- Hero Section -->
+      <section class="hero">
         <div class="container hero-content">
-            <h2>Craft Compelling Stories with AI</h2>
-            <p>NovaCraft helps writers generate unique short stories based on your preferences. Select your desired story type, time period, and background, and let our AI create an engaging narrative for you.</p>
-            <button class="btn btn-accent" id="startWritingBtn">Start Writing</button>
+          <h2>Craft Compelling Stories with AI</h2>
+          <p>
+            NovaCraft helps writers generate unique short stories based on your
+            preferences. Select your desired story type, time period, and
+            background, and let our AI create an engaging narrative for you.
+          </p>
+          <button class="btn btn-accent" id="startWritingBtn">
+            Start Writing
+          </button>
         </div>
-    </section>
+      </section>
 
-    <!-- Generator Section -->
-    <section class="generator-section" id="generatorSection">
+      <!-- Generator Section -->
+      <section class="generator-section" id="generatorSection">
         <div class="container">
-            <div class="generator-card">
-                <div class="generator-header">
-                    <h3>Story Generator</h3>
-                    <p>Select your preferences and let our AI craft a unique story for you</p>
-                </div>
-                <form id="generatorForm" class="generator-form">
-                    <div class="form-group">
-                        <label for="storyType">Story Type</label>
-                        <select id="storyType" class="form-control">
-                            <option value="">Select a type</option>
-                            <option value="fantasy">Fantasy</option>
-                            <option value="martial-arts">Martial Arts</option>
-                            <option value="romance">Romance</option>
-                            <option value="sci-fi">Science Fiction</option>
-                            <option value="horror">Horror</option>
-                            <option value="mystery">Mystery</option>
-                            <option value="adventure">Adventure</option>
-                            <option value="historical">Historical</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="timePeriod">Time Period</label>
-                        <select id="timePeriod" class="form-control">
-                            <option value="">Select a time period</option>
-                            <option value="modern">Modern</option>
-                            <option value="future">Future</option>
-                            <option value="ancient">Ancient</option>
-                            <option value="medieval">Medieval</option>
-                            <option value="victorian">Victorian</option>
-                            <option value="prehistoric">Prehistoric</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="storyBackground">Story Background</label>
-                        <select id="storyBackground" class="form-control">
-                            <option value="">Select a background</option>
-                            <option value="fictional-world">Fictional World</option>
-                            <option value="alternate-world">Alternate World</option>
-                            <option value="real-world">Real World</option>
-                            <option value="post-apocalyptic">Post-Apocalyptic</option>
-                            <option value="utopian">Utopian</option>
-                            <option value="dystopian">Dystopian</option>
-                        </select>
-                    </div>
-                </form>
-                <div class="generator-actions">
-                    <button class="btn btn-accent generator-button" id="generateBtn">Generate Story</button>
-                </div>
+          <div class="generator-card">
+            <div class="generator-header">
+              <h3>Story Generator</h3>
+              <p>
+                Select your preferences and let our AI craft a unique story for
+                you
+              </p>
             </div>
+            <form id="generatorForm" class="generator-form">
+              <div class="form-group">
+                <label for="storyType">Story Type</label>
+                <select id="storyType" class="form-control">
+                  <option value="">Select a type</option>
+                  <option value="fantasy">Fantasy</option>
+                  <option value="martial-arts">Martial Arts</option>
+                  <option value="romance">Romance</option>
+                  <option value="sci-fi">Science Fiction</option>
+                  <option value="horror">Horror</option>
+                  <option value="mystery">Mystery</option>
+                  <option value="adventure">Adventure</option>
+                  <option value="historical">Historical</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="timePeriod">Time Period</label>
+                <select id="timePeriod" class="form-control">
+                  <option value="">Select a time period</option>
+                  <option value="modern">Modern</option>
+                  <option value="future">Future</option>
+                  <option value="ancient">Ancient</option>
+                  <option value="medieval">Medieval</option>
+                  <option value="victorian">Victorian</option>
+                  <option value="prehistoric">Prehistoric</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="storyBackground">Story Background</label>
+                <select id="storyBackground" class="form-control">
+                  <option value="">Select a background</option>
+                  <option value="fictional-world">Fictional World</option>
+                  <option value="alternate-world">Alternate World</option>
+                  <option value="real-world">Real World</option>
+                  <option value="post-apocalyptic">Post-Apocalyptic</option>
+                  <option value="utopian">Utopian</option>
+                  <option value="dystopian">Dystopian</option>
+                </select>
+              </div>
+            </form>
+            <div class="generator-actions">
+              <button class="btn btn-accent generator-button" id="generateBtn">
+                Generate Story
+              </button>
+            </div>
+          </div>
 
-            <!-- Story Output Section -->
-            <div class="story-output" id="storyOutput">
-                <div class="story-header">
-                    <div class="story-title">
-                        <h3 id="outputTitle">Your Generated Story</h3>
-                    </div>
-                    <div class="story-actions">
-                        <button class="btn btn-secondary" id="downloadBtn">
-                            <i class="fas fa-download"></i> Download
-                        </button>
-                        <button class="btn btn-secondary" id="copyBtn">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                </div>
-                <div class="story-content" id="storyContent"></div>
-                <div style="text-align: center;">
-                    <button class="btn btn-primary" id="newStoryBtn">Create New Story</button>
-                </div>
+          <!-- Story Output Section -->
+          <div class="story-output" id="storyOutput">
+            <div class="story-header">
+              <div class="story-title">
+                <h3 id="outputTitle">Your Generated Story</h3>
+              </div>
+              <div class="story-actions">
+                <button class="btn btn-secondary" id="downloadBtn">
+                  <i class="fas fa-download"></i> Download
+                </button>
+                <button class="btn btn-secondary" id="copyBtn">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
             </div>
+            <div class="story-content" id="storyContent"></div>
+            <div style="text-align: center">
+              <button class="btn btn-primary" id="newStoryBtn">
+                Create New Story
+              </button>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Dashboard Section -->
-    <section class="dashboard" id="dashboardSection">
+      <!-- Dashboard Section -->
+      <section class="dashboard" id="dashboardSection">
         <div class="container">
-            <div class="dashboard-section">
-                <div class="dashboard-header">
-                    <h3>Your Credits</h3>
-                    <p>You have <span id="dashboardCredits">5</span> story generations available</p>
-                </div>
-                <button class="btn btn-accent" id="buyCreditsBtn">Buy More Credits</button>
+          <div class="dashboard-section">
+            <div class="dashboard-header">
+              <h3>Your Credits</h3>
+              <p>
+                You have <span id="dashboardCredits">5</span> story generations
+                available
+              </p>
             </div>
-            
-            <div class="dashboard-section">
-                <div class="dashboard-header">
-                    <h3>Your Story History</h3>
-                    <p>View and manage your previously generated stories</p>
-                </div>
-                <div class="dashboard-cards" id="historyCards">
-                    <!-- History cards will be dynamically added here -->
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
+            <button class="btn btn-accent" id="buyCreditsBtn">
+              Buy More Credits
+            </button>
+          </div>
 
-<!-- Footer -->
-<footer>
-    <div class="container footer-content">
-        <div class="logo" style="justify-content: center; margin-bottom: 1rem;">
-            <i class="fas fa-feather-alt"></i>
-            <h1>NovaCraft</h1>
+          <div class="dashboard-section">
+            <div class="dashboard-header">
+              <h3>Your Story History</h3>
+              <p>View and manage your previously generated stories</p>
+            </div>
+            <div class="dashboard-cards" id="historyCards">
+              <!-- History cards will be dynamically added here -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container footer-content">
+        <div class="logo" style="justify-content: center; margin-bottom: 1rem">
+          <i class="fas fa-feather-alt"></i>
+          <h1>NovaCraft</h1>
         </div>
         <p>The ultimate AI-powered story generator for writers and creatives</p>
         <ul class="footer-links">
-            <li><a href="#">About</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">Contact</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Contact</a></li>
         </ul>
         <p class="copyright">&copy; 2023 NovaCraft. All rights reserved.</p>
-    </div>
-</footer>
+      </div>
+    </footer>
 
-<!-- JavaScript -->
-<script>
-    // Global state to manage application data
-    const state = {
+    <!-- JavaScript -->
+    <script>
+      // Global state to manage application data
+      const state = {
         isLoggedIn: false,
         user: null,
         currentStory: null,
         storyHistory: [],
         credits: 0,
-        freeUsage: true
-    };
+        freeUsage: true,
+      };
 
-    // DOM Elements
-    const elements = {
+      // DOM Elements
+      const elements = {
         // Navigation
-        navLogin: document.querySelector('.nav-login'),
-        navDashboard: document.querySelector('.nav-dashboard'),
-        navPricing: document.querySelector('.nav-pricing'),
-        navHome: document.querySelector('.nav-home'),
-        
-        // User Info
-        userInfo: document.getElementById('userInfo'),
-        userAvatar: document.getElementById('userAvatar'),
-        userName: document.getElementById('userName'),
-        userCredits: document.getElementById('userCredits'),
-        dashboardCredits: document.getElementById('dashboardCredits'),
-        
-        // Generator
-        generatorSection: document.getElementById('generatorSection'),
-        generatorForm: document.getElementById('generatorForm'),
-        storyType: document.getElementById('storyType'),
-        timePeriod: document.getElementById('timePeriod'),
-        storyBackground: document.getElementById('storyBackground'),
-        generateBtn: document.getElementById('generateBtn'),
-        
-        // Story Output
-        storyOutput: document.getElementById('storyOutput'),
-        outputTitle: document.getElementById('outputTitle'),
-        storyContent: document.getElementById('storyContent'),
-        downloadBtn: document.getElementById('downloadBtn'),
-        copyBtn: document.getElementById('copyBtn'),
-        newStoryBtn: document.getElementById('newStoryBtn'),
-        
-        // Modals
-        authModal: document.getElementById('authModal'),
-        pricingModal: document.getElementById('pricingModal'),
-        paymentModal: document.getElementById('paymentModal'),
-        historyDetailModal: document.getElementById('historyDetailModal'),
-        
-        // Auth Form
-        authForm: document.getElementById('authForm'),
-        authTitle: document.getElementById('authTitle'),
-        authSwitch: document.getElementById('authSwitch'),
-        switchAuthMode: document.getElementById('switchAuthMode'),
-        nameGroup: document.getElementById('nameGroup'),
-        
-        // Modal Close Buttons
-        authClose: document.getElementById('authClose'),
-        pricingClose: document.getElementById('pricingClose'),
-        paymentClose: document.getElementById('paymentClose'),
-        historyClose: document.getElementById('historyClose'),
-        
-        // Loading Overlay
-        loadingOverlay: document.getElementById('loadingOverlay'),
-        
-        // Dashboard
-        dashboardSection: document.getElementById('dashboardSection'),
-        historyCards: document.getElementById('historyCards'),
-        buyCreditsBtn: document.getElementById('buyCreditsBtn'),
-        
-        // Payment Modal
-        creditsAmount: document.getElementById('creditsAmount'),
-        paymentConfirm: document.getElementById('paymentConfirm'),
-        
-        // History Modal
-        historyTitle: document.getElementById('historyTitle'),
-        historyContent: document.getElementById('historyContent'),
-        historyDownload: document.getElementById('historyDownload'),
-        
-        // Hero
-        startWritingBtn: document.getElementById('startWritingBtn'),
-        
-        // Toast Container
-        toastContainer: document.getElementById('toastContainer')
-    };
+        navLogin: document.querySelector(".nav-login"),
+        navDashboard: document.querySelector(".nav-dashboard"),
+        navPricing: document.querySelector(".nav-pricing"),
+        navHome: document.querySelector(".nav-home"),
 
-    // Initialize the application
-    function init() {
+        // User Info
+        userInfo: document.getElementById("userInfo"),
+        userAvatar: document.getElementById("userAvatar"),
+        userName: document.getElementById("userName"),
+        userCredits: document.getElementById("userCredits"),
+        dashboardCredits: document.getElementById("dashboardCredits"),
+
+        // Generator
+        generatorSection: document.getElementById("generatorSection"),
+        generatorForm: document.getElementById("generatorForm"),
+        storyType: document.getElementById("storyType"),
+        timePeriod: document.getElementById("timePeriod"),
+        storyBackground: document.getElementById("storyBackground"),
+        generateBtn: document.getElementById("generateBtn"),
+
+        // Story Output
+        storyOutput: document.getElementById("storyOutput"),
+        outputTitle: document.getElementById("outputTitle"),
+        storyContent: document.getElementById("storyContent"),
+        downloadBtn: document.getElementById("downloadBtn"),
+        copyBtn: document.getElementById("copyBtn"),
+        newStoryBtn: document.getElementById("newStoryBtn"),
+
+        // Modals
+        authModal: document.getElementById("authModal"),
+        pricingModal: document.getElementById("pricingModal"),
+        paymentModal: document.getElementById("paymentModal"),
+        historyDetailModal: document.getElementById("historyDetailModal"),
+        privacyPolicyModal: document.getElementById("privacyPolicyModal"),
+        termsOfServiceModal: document.getElementById("termsOfServiceModal"),
+
+        // Auth Form
+        authForm: document.getElementById("authForm"),
+        authTitle: document.getElementById("authTitle"),
+        authSwitch: document.getElementById("authSwitch"),
+        switchAuthMode: document.getElementById("switchAuthMode"),
+        nameGroup: document.getElementById("nameGroup"),
+
+        // Modal Close Buttons
+        authClose: document.getElementById("authClose"),
+        pricingClose: document.getElementById("pricingClose"),
+        paymentClose: document.getElementById("paymentClose"),
+        historyClose: document.getElementById("historyClose"),
+        privacyPolicyClose: document.getElementById("privacyPolicyClose"),
+        termsOfServiceClose: document.getElementById("termsOfServiceClose"),
+
+        // Loading Overlay
+        loadingOverlay: document.getElementById("loadingOverlay"),
+
+        // Dashboard
+        dashboardSection: document.getElementById("dashboardSection"),
+        historyCards: document.getElementById("historyCards"),
+        buyCreditsBtn: document.getElementById("buyCreditsBtn"),
+
+        // Payment Modal
+        creditsAmount: document.getElementById("creditsAmount"),
+        paymentConfirm: document.getElementById("paymentConfirm"),
+
+        // History Modal
+        historyTitle: document.getElementById("historyTitle"),
+        historyContent: document.getElementById("historyContent"),
+        historyDownload: document.getElementById("historyDownload"),
+
+        // Hero
+        startWritingBtn: document.getElementById("startWritingBtn"),
+
+        // Toast Container
+        toastContainer: document.getElementById("toastContainer"),
+      };
+
+      // Initialize the application
+      function init() {
         // Attach event listeners
         attachEventListeners();
-        
+
         // Check if user is logged in (simulate with localStorage)
         checkLoginStatus();
-        
+
         // Generate some fake history for logged in users
         if (state.isLoggedIn) {
-            generateFakeHistory();
-            renderHistoryCards();
+          generateFakeHistory();
+          renderHistoryCards();
         }
-    }
+      }
 
-    // Event Listeners
-    function attachEventListeners() {
+      // Event Listeners
+      function attachEventListeners() {
         // Navigation
-        elements.navLogin.addEventListener('click', toggleAuthModal);
-        elements.navDashboard.addEventListener('click', showDashboard);
-        elements.navPricing.addEventListener('click', togglePricingModal);
-        elements.navHome.addEventListener('click', showGenerator);
-        
+        elements.navLogin.addEventListener("click", toggleAuthModal);
+        elements.navDashboard.addEventListener("click", showDashboard);
+        elements.navPricing.addEventListener("click", togglePricingModal);
+        elements.navHome.addEventListener("click", showGenerator);
+
         // Auth Modal
-        elements.authClose.addEventListener('click', toggleAuthModal);
-        elements.authForm.addEventListener('submit', handleAuth);
-        elements.switchAuthMode.addEventListener('click', switchAuthMode);
-        
+        elements.authClose.addEventListener("click", toggleAuthModal);
+        elements.authForm.addEventListener("submit", handleAuth);
+        elements.switchAuthMode.addEventListener("click", switchAuthMode);
+
         // Pricing Modal
-        elements.pricingClose.addEventListener('click', togglePricingModal);
-        document.querySelectorAll('.buy-plan').forEach(btn => {
-            btn.addEventListener('click', handlePurchase);
+        elements.pricingClose.addEventListener("click", togglePricingModal);
+        document.querySelectorAll(".buy-plan").forEach((btn) => {
+          btn.addEventListener("click", handlePurchase);
         });
-        
+
         // Payment Modal
-        elements.paymentClose.addEventListener('click', togglePaymentModal);
-        elements.paymentConfirm.addEventListener('click', togglePaymentModal);
-        
+        elements.paymentClose.addEventListener("click", togglePaymentModal);
+        elements.paymentConfirm.addEventListener("click", togglePaymentModal);
+
         // History Modal
-        elements.historyClose.addEventListener('click', toggleHistoryModal);
-        elements.historyDownload.addEventListener('click', downloadHistoryStory);
-        
-        // Story Generator
-        elements.generateBtn.addEventListener('click', generateStory);
-        elements.downloadBtn.addEventListener('click', downloadStory);
-        elements.copyBtn.addEventListener('click', copyStory);
-        elements.newStoryBtn.addEventListener('click', resetGenerator);
-        
-        // Dashboard
-        elements.buyCreditsBtn.addEventListener('click', togglePricingModal);
-        
-        // Hero
-        elements.startWritingBtn.addEventListener('click', scrollToGenerator);
-    }
+        elements.historyClose.addEventListener("click", toggleHistoryModal);
+        elements.historyDownload.addEventListener(
+          "click",
+          downloadHistoryStory
+        );
 
-    // Check login status (simulated)
-    function checkLoginStatus() {
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-            state.isLoggedIn = true;
-            state.user = JSON.parse(savedUser);
-            state.credits = state.user.credits;
-            updateUIForLoggedInUser();
-        } else {
-            updateUIForLoggedOutUser();
+        // Privacy Policy Modal
+        if (elements.privacyPolicyClose) {
+          elements.privacyPolicyClose.addEventListener(
+            "click",
+            togglePrivacyPolicyModal
+          );
         }
-    }
 
-    // Update UI for logged-in user
-    function updateUIForLoggedInUser() {
-        elements.navLogin.textContent = 'Logout';
-        elements.navDashboard.style.display = 'block';
-        elements.userInfo.style.display = 'flex';
+        // Terms of Service Modal
+        if (elements.termsOfServiceClose) {
+          elements.termsOfServiceClose.addEventListener(
+            "click",
+            toggleTermsOfServiceModal
+          );
+        }
+
+        // Add click event to Privacy Policy link in footer
+        const privacyPolicyLink = document.querySelector(
+          ".footer-links li:nth-child(2) a"
+        );
+        if (privacyPolicyLink) {
+          privacyPolicyLink.addEventListener("click", togglePrivacyPolicyModal);
+        }
+
+        // Add click event to Terms of Service link in footer
+        const termsOfServiceLink = document.querySelector(
+          ".footer-links li:nth-child(3) a"
+        );
+        if (termsOfServiceLink) {
+          termsOfServiceLink.addEventListener(
+            "click",
+            toggleTermsOfServiceModal
+          );
+        }
+
+        // Story Generator
+        elements.generateBtn.addEventListener("click", generateStory);
+        elements.downloadBtn.addEventListener("click", downloadStory);
+        elements.copyBtn.addEventListener("click", copyStory);
+        elements.newStoryBtn.addEventListener("click", resetGenerator);
+
+        // Dashboard
+        elements.buyCreditsBtn.addEventListener("click", togglePricingModal);
+
+        // Hero
+        elements.startWritingBtn.addEventListener("click", scrollToGenerator);
+      }
+
+      // Check login status (simulated)
+      function checkLoginStatus() {
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          state.isLoggedIn = true;
+          state.user = JSON.parse(savedUser);
+          state.credits = state.user.credits;
+          updateUIForLoggedInUser();
+        } else {
+          updateUIForLoggedOutUser();
+        }
+      }
+
+      // Update UI for logged-in user
+      function updateUIForLoggedInUser() {
+        elements.navLogin.textContent = "Logout";
+        elements.navDashboard.style.display = "block";
+        elements.userInfo.style.display = "flex";
         elements.userName.textContent = state.user.name;
         elements.userCredits.textContent = `Credits: ${state.credits}`;
         elements.dashboardCredits.textContent = state.credits;
         elements.userAvatar.textContent = getInitials(state.user.name);
-    }
+      }
 
-    // Update UI for logged-out user
-    function updateUIForLoggedOutUser() {
-        elements.navLogin.textContent = 'Login';
-        elements.navDashboard.style.display = 'none';
-        elements.userInfo.style.display = 'none';
-        elements.dashboardSection.style.display = 'none';
-        elements.generatorSection.style.display = 'block';
-    }
+      // Update UI for logged-out user
+      function updateUIForLoggedOutUser() {
+        elements.navLogin.textContent = "Login";
+        elements.navDashboard.style.display = "none";
+        elements.userInfo.style.display = "none";
+        elements.dashboardSection.style.display = "none";
+        elements.generatorSection.style.display = "block";
+      }
 
-    // Get user initials for avatar
-    function getInitials(name) {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
+      // Get user initials for avatar
+      function getInitials(name) {
+        return name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase();
+      }
 
-    // Toggle authentication modal
-    function toggleAuthModal(e) {
+      // Toggle authentication modal
+      function toggleAuthModal(e) {
         if (e) e.preventDefault();
-        
+
         if (state.isLoggedIn) {
-            logout();
-            return;
+          logout();
+          return;
         }
-        
-        elements.authModal.style.display = elements.authModal.style.display === 'block' ? 'none' : 'block';
-    }
 
-    // Toggle pricing modal
-    function togglePricingModal(e) {
+        elements.authModal.style.display =
+          elements.authModal.style.display === "block" ? "none" : "block";
+      }
+
+      // Toggle pricing modal
+      function togglePricingModal(e) {
         if (e) e.preventDefault();
-        elements.pricingModal.style.display = elements.pricingModal.style.display === 'block' ? 'none' : 'block';
-    }
+        elements.pricingModal.style.display =
+          elements.pricingModal.style.display === "block" ? "none" : "block";
+      }
 
-    // Toggle payment confirmation modal
-    function togglePaymentModal() {
-        elements.paymentModal.style.display = elements.paymentModal.style.display === 'block' ? 'none' : 'block';
-        if (elements.paymentModal.style.display === 'none') {
-            elements.pricingModal.style.display = 'none';
+      // Toggle payment confirmation modal
+      function togglePaymentModal() {
+        elements.paymentModal.style.display =
+          elements.paymentModal.style.display === "block" ? "none" : "block";
+        if (elements.paymentModal.style.display === "none") {
+          elements.pricingModal.style.display = "none";
         }
-    }
+      }
 
-    // Toggle history detail modal
-    function toggleHistoryModal() {
-        elements.historyDetailModal.style.display = elements.historyDetailModal.style.display === 'block' ? 'none' : 'block';
-    }
+      // Toggle history detail modal
+      function toggleHistoryModal() {
+        elements.historyDetailModal.style.display =
+          elements.historyDetailModal.style.display === "block"
+            ? "none"
+            : "block";
+      }
 
-    // Switch between login and register mode
-    function switchAuthMode(e) {
+      // Toggle privacy policy modal
+      function togglePrivacyPolicyModal(e) {
+        if (e) e.preventDefault();
+        elements.privacyPolicyModal.style.display =
+          elements.privacyPolicyModal.style.display === "block"
+            ? "none"
+            : "block";
+      }
+
+      // Toggle terms of service modal
+      function toggleTermsOfServiceModal(e) {
+        if (e) e.preventDefault();
+        elements.termsOfServiceModal.style.display =
+          elements.termsOfServiceModal.style.display === "block"
+            ? "none"
+            : "block";
+      }
+
+      // Switch between login and register mode
+      function switchAuthMode(e) {
         e.preventDefault();
-        const isLogin = elements.authTitle.textContent === 'Login';
-        
+        const isLogin = elements.authTitle.textContent === "Login";
+
         if (isLogin) {
-            elements.authTitle.textContent = 'Register';
-            elements.authForm.querySelector('button[type="submit"]').textContent = 'Register';
-            elements.authSwitch.innerHTML = 'Already have an account? <a href="#" id="switchAuthMode">Login</a>';
-            elements.nameGroup.style.display = 'block';
+          elements.authTitle.textContent = "Register";
+          elements.authForm.querySelector('button[type="submit"]').textContent =
+            "Register";
+          elements.authSwitch.innerHTML =
+            'Already have an account? <a href="#" id="switchAuthMode">Login</a>';
+          elements.nameGroup.style.display = "block";
         } else {
-            elements.authTitle.textContent = 'Login';
-            elements.authForm.querySelector('button[type="submit"]').textContent = 'Login';
-            elements.authSwitch.innerHTML = 'Don\'t have an account? <a href="#" id="switchAuthMode">Register</a>';
-            elements.nameGroup.style.display = 'none';
+          elements.authTitle.textContent = "Login";
+          elements.authForm.querySelector('button[type="submit"]').textContent =
+            "Login";
+          elements.authSwitch.innerHTML =
+            'Don\'t have an account? <a href="#" id="switchAuthMode">Register</a>';
+          elements.nameGroup.style.display = "none";
         }
-        
-        document.getElementById('switchAuthMode').addEventListener('click', switchAuthMode);
-    }
 
-    // Handle authentication (login/register)
-    function handleAuth(e) {
+        document
+          .getElementById("switchAuthMode")
+          .addEventListener("click", switchAuthMode);
+      }
+
+      // Handle authentication (login/register)
+      function handleAuth(e) {
         e.preventDefault();
-        const isLogin = elements.authTitle.textContent === 'Login';
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
+        const isLogin = elements.authTitle.textContent === "Login";
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
         if (!email || !password) {
-            showToast('Please fill in all fields', 'error');
-            return;
+          showToast("Please fill in all fields", "error");
+          return;
         }
-        
+
         if (!isLogin) {
-            const name = document.getElementById('name').value;
-            if (!name) {
-                showToast('Please enter your name', 'error');
-                return;
-            }
-            
-            // Simulate registration
-            state.user = {
-                id: generateId(),
-                name,
-                email,
-                credits: 5
-            };
+          const name = document.getElementById("name").value;
+          if (!name) {
+            showToast("Please enter your name", "error");
+            return;
+          }
+
+          // Simulate registration
+          state.user = {
+            id: generateId(),
+            name,
+            email,
+            credits: 5,
+          };
         } else {
-            // Simulate login
-            state.user = {
-                id: generateId(),
-                name: 'John Doe',
-                email,
-                credits: 5
-            };
+          // Simulate login
+          state.user = {
+            id: generateId(),
+            name: "John Doe",
+            email,
+            credits: 5,
+          };
         }
-        
+
         // Update state and UI
         state.isLoggedIn = true;
         state.credits = state.user.credits;
-        
+
         // Save to localStorage
-        localStorage.setItem('user', JSON.stringify(state.user));
-        
+        localStorage.setItem("user", JSON.stringify(state.user));
+
         // Generate fake history
         generateFakeHistory();
-        
+
         // Update UI
         updateUIForLoggedInUser();
         toggleAuthModal();
-        showToast(isLogin ? 'Login successful!' : 'Registration successful!', 'success');
-    }
+        showToast(
+          isLogin ? "Login successful!" : "Registration successful!",
+          "success"
+        );
+      }
 
-    // Logout function
-    function logout() {
+      // Logout function
+      function logout() {
         state.isLoggedIn = false;
         state.user = null;
         state.credits = 0;
         state.storyHistory = [];
-        localStorage.removeItem('user');
+        localStorage.removeItem("user");
         updateUIForLoggedOutUser();
-        showToast('Logged out successfully', 'success');
-    }
+        showToast("Logged out successfully", "success");
+      }
 
-    // Show dashboard
-    function showDashboard(e) {
+      // Show dashboard
+      function showDashboard(e) {
         if (e) e.preventDefault();
-        
+
         if (!state.isLoggedIn) {
-            toggleAuthModal();
-            return;
+          toggleAuthModal();
+          return;
         }
-        
-        elements.dashboardSection.style.display = 'block';
-        elements.generatorSection.style.display = 'none';
+
+        elements.dashboardSection.style.display = "block";
+        elements.generatorSection.style.display = "none";
         renderHistoryCards();
-    }
+      }
 
-    // Show generator
-    function showGenerator(e) {
+      // Show generator
+      function showGenerator(e) {
         if (e) e.preventDefault();
-        elements.dashboardSection.style.display = 'none';
-        elements.generatorSection.style.display = 'block';
-    }
+        elements.dashboardSection.style.display = "none";
+        elements.generatorSection.style.display = "block";
+      }
 
-    // Scroll to generator
-    function scrollToGenerator(e) {
+      // Scroll to generator
+      function scrollToGenerator(e) {
         if (e) e.preventDefault();
-        elements.generatorSection.scrollIntoView({ behavior: 'smooth' });
-    }
+        elements.generatorSection.scrollIntoView({ behavior: "smooth" });
+      }
 
-    // Generate story
-    function generateStory(e) {
+      // Generate story
+      function generateStory(e) {
         e.preventDefault();
-        
+
         const storyType = elements.storyType.value;
         const timePeriod = elements.timePeriod.value;
         const background = elements.storyBackground.value;
-        
+
         if (!storyType || !timePeriod || !background) {
-            showToast('Please select all story options', 'error');
-            return;
+          showToast("Please select all story options", "error");
+          return;
         }
-        
+
         // Check if user has credits or free usage available
         if (!state.isLoggedIn && !state.freeUsage) {
-            showToast('Please login to generate more stories', 'error');
-            toggleAuthModal();
-            return;
+          showToast("Please login to generate more stories", "error");
+          toggleAuthModal();
+          return;
         }
-        
+
         if (state.isLoggedIn && state.credits <= 0) {
-            showToast('You have no credits left. Please purchase more.', 'error');
-            togglePricingModal();
-            return;
+          showToast("You have no credits left. Please purchase more.", "error");
+          togglePricingModal();
+          return;
         }
-        
+
         // Show loading overlay
-        elements.loadingOverlay.style.display = 'flex';
-        
+        elements.loadingOverlay.style.display = "flex";
+
         // Simulate AI generation with a delay
         setTimeout(() => {
-            // Generate story based on selections
-            const story = generateFakeStory(storyType, timePeriod, background);
-            
-            // Update state
-            state.currentStory = story;
-            
-            if (state.isLoggedIn) {
-                state.credits--;
-                state.user.credits = state.credits;
-                localStorage.setItem('user', JSON.stringify(state.user));
-                elements.userCredits.textContent = `Credits: ${state.credits}`;
-                elements.dashboardCredits.textContent = state.credits;
-                
-                // Add to history
-                state.storyHistory.unshift(story);
-            } else {
-                state.freeUsage = false;
-            }
-            
-            // Update UI
-            elements.outputTitle.textContent = story.title;
-            elements.storyContent.textContent = story.content;
-            elements.storyOutput.style.display = 'block';
-            
-            // Hide loading overlay
-            elements.loadingOverlay.style.display = 'none';
-            
-            // Scroll to the output
-            elements.storyOutput.scrollIntoView({ behavior: 'smooth' });
-        }, 2000);
-    }
+          // Generate story based on selections
+          const story = generateFakeStory(storyType, timePeriod, background);
 
-    // Generate a fake story based on user selections
-    function generateFakeStory(type, period, background) {
+          // Update state
+          state.currentStory = story;
+
+          if (state.isLoggedIn) {
+            state.credits--;
+            state.user.credits = state.credits;
+            localStorage.setItem("user", JSON.stringify(state.user));
+            elements.userCredits.textContent = `Credits: ${state.credits}`;
+            elements.dashboardCredits.textContent = state.credits;
+
+            // Add to history
+            state.storyHistory.unshift(story);
+          } else {
+            state.freeUsage = false;
+          }
+
+          // Update UI
+          elements.outputTitle.textContent = story.title;
+          elements.storyContent.textContent = story.content;
+          elements.storyOutput.style.display = "block";
+
+          // Hide loading overlay
+          elements.loadingOverlay.style.display = "none";
+
+          // Scroll to the output
+          elements.storyOutput.scrollIntoView({ behavior: "smooth" });
+        }, 2000);
+      }
+
+      // Generate a fake story based on user selections
+      function generateFakeStory(type, period, background) {
         const titles = {
-            'fantasy': ['The Crystal Shard', 'Realm of the Ancients', 'The Wizard\'s Apprentice'],
-            'martial-arts': ['The Dragon Warrior', 'Fist of Legend', 'The Way of the Blade'],
-            'romance': ['Hearts Entwined', 'Autumn Love', 'Chance Encounter'],
-            'sci-fi': ['Beyond the Stars', 'Neural Connection', 'The Last Colony'],
-            'horror': ['Whispers in the Dark', 'The Haunting', 'Shadows Within'],
-            'mystery': ['The Silent Witness', 'Murder at Midnight', 'The Missing Heirloom'],
-            'adventure': ['Journey to the Unknown', 'The Lost Expedition', 'Treasure of the Deep'],
-            'historical': ['The King\'s Guard', 'Revolution', 'Empire of Sand']
+          fantasy: [
+            "The Crystal Shard",
+            "Realm of the Ancients",
+            "The Wizard's Apprentice",
+          ],
+          "martial-arts": [
+            "The Dragon Warrior",
+            "Fist of Legend",
+            "The Way of the Blade",
+          ],
+          romance: ["Hearts Entwined", "Autumn Love", "Chance Encounter"],
+          "sci-fi": [
+            "Beyond the Stars",
+            "Neural Connection",
+            "The Last Colony",
+          ],
+          horror: ["Whispers in the Dark", "The Haunting", "Shadows Within"],
+          mystery: [
+            "The Silent Witness",
+            "Murder at Midnight",
+            "The Missing Heirloom",
+          ],
+          adventure: [
+            "Journey to the Unknown",
+            "The Lost Expedition",
+            "Treasure of the Deep",
+          ],
+          historical: ["The King's Guard", "Revolution", "Empire of Sand"],
         };
-        
+
         const storyIntros = {
-            'fantasy': "The air shimmered with arcane energy as Elara approached the ancient temple. Her fingers tingled, sensing the old magic that permeated the stone walls. The prophecy had led her here, to this forgotten place, where the veil between worlds grew thin...",
-            
-            'martial-arts': "Master Wei watched his student with careful eyes. The young man moved through the forms with precision, but lacked the spirit that would transform technique into art. Decades of training had taught Wei that true mastery came not from the body, but from within...",
-            
-            'romance': "The coffee shop was crowded as usual, but somehow, through the sea of faces, their eyes met. Time seemed to slow as Sarah felt a strange familiarity wash over her. She had never seen this person before, yet something deep within recognized a connection that transcended their first meeting...",
-            
-            'sci-fi': "The colony ship Artemis broke through the cloud layer, revealing the landscape of Proxima b for the first time. Captain Chen held her breath as the sensors analyzed the atmosphere. After two hundred years in cryosleep, humanity's new home was finally within reach...",
-            
-            'horror': "The old house at the end of Blackwood Lane had been abandoned for decades. Local children dared each other to approach it, but none ventured inside. Mark had dismissed the stories as superstition, but as night fell and the temperature dropped unnaturally around him, he began to question his skepticism...",
-            
-            'mystery': "Detective Morgan examined the room with practiced eyes. Nothing appeared disturbed, yet the victim's expression was frozen in terror. No signs of forced entry, no weapon found. It was the third death this month with the same mysterious circumstances. What was he missing?",
-            
-            'adventure': "The ancient map felt fragile in Jack's weathered hands. Twenty years of searching, following fragments of legends and whispered rumors, had led to this moment. If his calculations were correct, the lost city of Azcalon lay just beyond the mountain range...",
-            
-            'historical': "The year was 1789, and Paris simmered with revolutionary fervor. Marie clutched the letter tightly as she navigated the narrow streets. Its contents could save her brother from the guillotine, but delivering it meant risking her own neck..."
+          fantasy:
+            "The air shimmered with arcane energy as Elara approached the ancient temple. Her fingers tingled, sensing the old magic that permeated the stone walls. The prophecy had led her here, to this forgotten place, where the veil between worlds grew thin...",
+
+          "martial-arts":
+            "Master Wei watched his student with careful eyes. The young man moved through the forms with precision, but lacked the spirit that would transform technique into art. Decades of training had taught Wei that true mastery came not from the body, but from within...",
+
+          romance:
+            "The coffee shop was crowded as usual, but somehow, through the sea of faces, their eyes met. Time seemed to slow as Sarah felt a strange familiarity wash over her. She had never seen this person before, yet something deep within recognized a connection that transcended their first meeting...",
+
+          "sci-fi":
+            "The colony ship Artemis broke through the cloud layer, revealing the landscape of Proxima b for the first time. Captain Chen held her breath as the sensors analyzed the atmosphere. After two hundred years in cryosleep, humanity's new home was finally within reach...",
+
+          horror:
+            "The old house at the end of Blackwood Lane had been abandoned for decades. Local children dared each other to approach it, but none ventured inside. Mark had dismissed the stories as superstition, but as night fell and the temperature dropped unnaturally around him, he began to question his skepticism...",
+
+          mystery:
+            "Detective Morgan examined the room with practiced eyes. Nothing appeared disturbed, yet the victim's expression was frozen in terror. No signs of forced entry, no weapon found. It was the third death this month with the same mysterious circumstances. What was he missing?",
+
+          adventure:
+            "The ancient map felt fragile in Jack's weathered hands. Twenty years of searching, following fragments of legends and whispered rumors, had led to this moment. If his calculations were correct, the lost city of Azcalon lay just beyond the mountain range...",
+
+          historical:
+            "The year was 1789, and Paris simmered with revolutionary fervor. Marie clutched the letter tightly as she navigated the narrow streets. Its contents could save her brother from the guillotine, but delivering it meant risking her own neck...",
         };
-        
+
         // Generate title
-        const titleOptions = titles[type] || titles['fantasy'];
-        const title = titleOptions[Math.floor(Math.random() * titleOptions.length)];
-        
+        const titleOptions = titles[type] || titles["fantasy"];
+        const title =
+          titleOptions[Math.floor(Math.random() * titleOptions.length)];
+
         // Generate content
-        let content = storyIntros[type] || storyIntros['fantasy'];
-        
+        let content = storyIntros[type] || storyIntros["fantasy"];
+
         // Add background and period details
         let periodText = "";
-        if (period === 'modern') {
-            periodText = "\n\nThe modern world had lost much of its wonder, with technology replacing belief in the extraordinary. Yet beneath the surface of everyday life, ancient powers still moved, unseen by most...";
-        } else if (period === 'future') {
-            periodText = "\n\nIn the year 2250, humanity had spread across the solar system. Quantum computing and neural interfaces had transformed society, yet some challenges remained stubbornly resistant to technological solutions...";
-        } else if (period === 'ancient') {
-            periodText = "\n\nIn an age before written history, when gods walked among mortals and the first great civilizations were rising from the dust, legends were not stories but living truths...";
-        } else if (period === 'medieval') {
-            periodText = "\n\nCastles dominated the landscape, their stone walls offering protection in troubled times. Lords and ladies played at politics while common folk worked the land, and on the borders, ancient threats stirred once more...";
-        } else if (period === 'victorian') {
-            periodText = "\n\nGas lamps cast pools of light on cobblestone streets, while steam engines drove the industrial revolution forward. Society operated under strict codes of conduct, but beneath the proper exterior, secrets and passions simmered...";
+        if (period === "modern") {
+          periodText =
+            "\n\nThe modern world had lost much of its wonder, with technology replacing belief in the extraordinary. Yet beneath the surface of everyday life, ancient powers still moved, unseen by most...";
+        } else if (period === "future") {
+          periodText =
+            "\n\nIn the year 2250, humanity had spread across the solar system. Quantum computing and neural interfaces had transformed society, yet some challenges remained stubbornly resistant to technological solutions...";
+        } else if (period === "ancient") {
+          periodText =
+            "\n\nIn an age before written history, when gods walked among mortals and the first great civilizations were rising from the dust, legends were not stories but living truths...";
+        } else if (period === "medieval") {
+          periodText =
+            "\n\nCastles dominated the landscape, their stone walls offering protection in troubled times. Lords and ladies played at politics while common folk worked the land, and on the borders, ancient threats stirred once more...";
+        } else if (period === "victorian") {
+          periodText =
+            "\n\nGas lamps cast pools of light on cobblestone streets, while steam engines drove the industrial revolution forward. Society operated under strict codes of conduct, but beneath the proper exterior, secrets and passions simmered...";
         } else {
-            periodText = "\n\nTime had its own rhythm here, following patterns set in motion at the dawn of existence. The present moment was but one point in an endless cycle of renewal and decay...";
+          periodText =
+            "\n\nTime had its own rhythm here, following patterns set in motion at the dawn of existence. The present moment was but one point in an endless cycle of renewal and decay...";
         }
-        
+
         content += periodText;
-        
+
         let backgroundText = "";
-        if (background === 'fictional-world') {
-            backgroundText = "\n\nThe world of Eldoria had never known Earth. It operated by different physical laws, where magic flowed like water and mythical creatures roamed vast, unexplored territories. The five kingdoms maintained an uneasy peace, but ancient rivalries threatened to ignite a conflict that could reshape the continent...";
-        } else if (background === 'alternate-world') {
-            backgroundText = "\n\nHistory had taken a different turn when the Roman Empire never fell. Now, in an alternate present, steam-powered airships connected imperial provinces spanning every continent, and mechanical calculating engines were the backbone of an advanced society that never experienced the Dark Ages...";
-        } else if (background === 'real-world') {
-            backgroundText = "\n\nThough the setting was familiar—the streets, buildings, and people indistinguishable from any major city—what lurked beneath the surface reality remained hidden to most. Only those with the gift could sense the true nature of things, the invisible currents that shaped events...";
-        } else if (background === 'post-apocalyptic') {
-            backgroundText = "\n\nDecades after the collapse, nature reclaimed what civilization had built. Vines crawled up the skeletons of skyscrapers, and forests grew through cracked highways. The survivors had formed new societies from the remnants of the old world, preserving some technologies while losing others to time...";
-        } else if (background === 'utopian') {
-            backgroundText = "\n\nThe Great Transition had solved humanity's most pressing problems. Clean energy, automated production, and a universal basic income had eliminated poverty and most crime. People pursued creative and intellectual interests, free from material concerns. Yet in this paradise, some questioned whether something essential had been lost...";
-        } else if (background === 'dystopian') {
-            backgroundText = "\n\nThe Corporation controlled every aspect of citizens' lives—where they lived, what they consumed, even what they thought. Surveillance was omnipresent, dissent swiftly punished. Most accepted their reality without question, finding comfort in routine. But within the cracks of the system, resistance took root...";
+        if (background === "fictional-world") {
+          backgroundText =
+            "\n\nThe world of Eldoria had never known Earth. It operated by different physical laws, where magic flowed like water and mythical creatures roamed vast, unexplored territories. The five kingdoms maintained an uneasy peace, but ancient rivalries threatened to ignite a conflict that could reshape the continent...";
+        } else if (background === "alternate-world") {
+          backgroundText =
+            "\n\nHistory had taken a different turn when the Roman Empire never fell. Now, in an alternate present, steam-powered airships connected imperial provinces spanning every continent, and mechanical calculating engines were the backbone of an advanced society that never experienced the Dark Ages...";
+        } else if (background === "real-world") {
+          backgroundText =
+            "\n\nThough the setting was familiar—the streets, buildings, and people indistinguishable from any major city—what lurked beneath the surface reality remained hidden to most. Only those with the gift could sense the true nature of things, the invisible currents that shaped events...";
+        } else if (background === "post-apocalyptic") {
+          backgroundText =
+            "\n\nDecades after the collapse, nature reclaimed what civilization had built. Vines crawled up the skeletons of skyscrapers, and forests grew through cracked highways. The survivors had formed new societies from the remnants of the old world, preserving some technologies while losing others to time...";
+        } else if (background === "utopian") {
+          backgroundText =
+            "\n\nThe Great Transition had solved humanity's most pressing problems. Clean energy, automated production, and a universal basic income had eliminated poverty and most crime. People pursued creative and intellectual interests, free from material concerns. Yet in this paradise, some questioned whether something essential had been lost...";
+        } else if (background === "dystopian") {
+          backgroundText =
+            "\n\nThe Corporation controlled every aspect of citizens' lives—where they lived, what they consumed, even what they thought. Surveillance was omnipresent, dissent swiftly punished. Most accepted their reality without question, finding comfort in routine. But within the cracks of the system, resistance took root...";
         } else {
-            backgroundText = "\n\nThe boundaries between worlds had always been thin in certain places. Those sensitive to such things could feel the overlap, the moments when alternate realities brushed against each other like overlapping circles in a cosmic Venn diagram...";
+          backgroundText =
+            "\n\nThe boundaries between worlds had always been thin in certain places. Those sensitive to such things could feel the overlap, the moments when alternate realities brushed against each other like overlapping circles in a cosmic Venn diagram...";
         }
-        
+
         content += backgroundText;
-        
+
         // Add more paragraphs to make it substantial
         content += `\n\nThe morning light filtered through ancient trees, casting dappled shadows on the forest floor. In the distance, a bird called, its song echoing in the stillness. This was a moment of peace before the journey would truly begin, before choices would need to be made that could not be undone.Many had attempted this path before, leaving behind only whispered warnings and fragmentary journals. Some spoke of treasures beyond imagination, others of horrors that defied description. Which was true? Perhaps both, perhaps neither. The only certainty was that those who ventured forward would not return unchanged.
 A cool breeze stirred the leaves, carrying the scent of pine and something else—something older and more primal. It was said that in places like this, where the extraordinary touched the ordinary world, one could hear the heartbeat of creation itself if one knew how to listen.
 The decision to continue was not made lightly. It meant leaving behind the familiar, the comfortable, the known. Yet the alternative—returning to a life of predictable days and unanswered questions—seemed somehow more frightening than facing whatever lay ahead.
 With a deep breath and a silent prayer to forgotten gods, the first step was taken on a path that would lead to either glory or ruin. The journey had begun.`;
-return {
-            id: generateId(),
-            title,
-            type,
-            period,
-            background,
-            content,
-            date: new Date().toISOString()
+        return {
+          id: generateId(),
+          title,
+          type,
+          period,
+          background,
+          content,
+          date: new Date().toISOString(),
         };
-    }
+      }
 
-    // Download the current story
-    function downloadStory() {
+      // Download the current story
+      function downloadStory() {
         if (!state.currentStory) return;
-        
+
         const title = state.currentStory.title;
         const content = state.currentStory.content;
-        const blob = new Blob([`${title}\n\n${content}`], { type: 'text/plain' });
+        const blob = new Blob([`${title}\n\n${content}`], {
+          type: "text/plain",
+        });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `${title.replace(/\s+/g, '-').toLowerCase()}.txt`;
+        a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
-        showToast('Story downloaded successfully', 'success');
-    }
 
-    // Copy the current story to clipboard
-    function copyStory() {
+        showToast("Story downloaded successfully", "success");
+      }
+
+      // Copy the current story to clipboard
+      function copyStory() {
         if (!state.currentStory) return;
-        
+
         const title = state.currentStory.title;
         const content = state.currentStory.content;
         const fullText = `${title}\n\n${content}`;
-        
-        navigator.clipboard.writeText(fullText)
-            .then(() => {
-                showToast('Story copied to clipboard', 'success');
-            })
-            .catch(() => {
-                showToast('Failed to copy to clipboard', 'error');
-            });
-    }
 
-    // Reset the generator form
-    function resetGenerator() {
-        elements.storyType.value = '';
-        elements.timePeriod.value = '';
-        elements.storyBackground.value = '';
-        elements.storyOutput.style.display = 'none';
+        navigator.clipboard
+          .writeText(fullText)
+          .then(() => {
+            showToast("Story copied to clipboard", "success");
+          })
+          .catch(() => {
+            showToast("Failed to copy to clipboard", "error");
+          });
+      }
+
+      // Reset the generator form
+      function resetGenerator() {
+        elements.storyType.value = "";
+        elements.timePeriod.value = "";
+        elements.storyBackground.value = "";
+        elements.storyOutput.style.display = "none";
         state.currentStory = null;
-    }
+      }
 
-    // Handle purchase of credits
-    function handlePurchase(e) {
+      // Handle purchase of credits
+      function handlePurchase(e) {
         const plan = e.target.dataset.plan;
         let credits = 0;
-        
+
         // Set credits based on plan
         switch (plan) {
-            case 'basic':
-                credits = 2;
-                break;
-            case 'standard':
-                credits = 10;
-                break;
-            case 'premium':
-                credits = 30;
-                break;
-            case 'monthly':
-                credits = 50;
-                break;
-            case 'annual':
-                credits = 1000;
-                break;
-            default:
-                credits = 5;
+          case "basic":
+            credits = 2;
+            break;
+          case "standard":
+            credits = 10;
+            break;
+          case "premium":
+            credits = 30;
+            break;
+          case "monthly":
+            credits = 50;
+            break;
+          case "annual":
+            credits = 1000;
+            break;
+          default:
+            credits = 5;
         }
-        
+
         // Update state
         if (state.isLoggedIn) {
-            state.credits += credits;
-            state.user.credits = state.credits;
-            localStorage.setItem('user', JSON.stringify(state.user));
-            elements.userCredits.textContent = `Credits: ${state.credits}`;
-            elements.dashboardCredits.textContent = state.credits;
+          state.credits += credits;
+          state.user.credits = state.credits;
+          localStorage.setItem("user", JSON.stringify(state.user));
+          elements.userCredits.textContent = `Credits: ${state.credits}`;
+          elements.dashboardCredits.textContent = state.credits;
         }
-        
+
         // Show payment confirmation
         elements.creditsAmount.textContent = credits;
         togglePaymentModal();
-    }
+      }
 
-    // Generate unique ID
-    function generateId() {
+      // Generate unique ID
+      function generateId() {
         return Math.random().toString(36).substr(2, 9);
-    }
+      }
 
-    // Generate fake history
-    function generateFakeHistory() {
+      // Generate fake history
+      function generateFakeHistory() {
         if (!state.isLoggedIn) return;
-        
+
         // Clear previous history
         state.storyHistory = [];
-        
-        // Generate 5 random stories
-        const types = ['fantasy', 'sci-fi', 'mystery', 'romance', 'adventure'];
-        const periods = ['modern', 'future', 'ancient', 'medieval', 'victorian'];
-        const backgrounds = ['fictional-world', 'real-world', 'post-apocalyptic', 'dystopian', 'utopian'];
-        
-        for (let i = 0; i < 5; i++) {
-            const type = types[Math.floor(Math.random() * types.length)];
-            const period = periods[Math.floor(Math.random() * periods.length)];
-            const background = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-            
-            const story = generateFakeStory(type, period, background);
-            story.date = new Date(Date.now() - i * 86400000).toISOString(); // Subtract days
-            state.storyHistory.push(story);
-        }
-    }
 
-    // Render history cards
-    function renderHistoryCards() {
+        // Generate 5 random stories
+        const types = ["fantasy", "sci-fi", "mystery", "romance", "adventure"];
+        const periods = [
+          "modern",
+          "future",
+          "ancient",
+          "medieval",
+          "victorian",
+        ];
+        const backgrounds = [
+          "fictional-world",
+          "real-world",
+          "post-apocalyptic",
+          "dystopian",
+          "utopian",
+        ];
+
+        for (let i = 0; i < 5; i++) {
+          const type = types[Math.floor(Math.random() * types.length)];
+          const period = periods[Math.floor(Math.random() * periods.length)];
+          const background =
+            backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+          const story = generateFakeStory(type, period, background);
+          story.date = new Date(Date.now() - i * 86400000).toISOString(); // Subtract days
+          state.storyHistory.push(story);
+        }
+      }
+
+      // Render history cards
+      function renderHistoryCards() {
         if (!state.isLoggedIn || !state.storyHistory.length) return;
-        
-        elements.historyCards.innerHTML = '';
-        
-        state.storyHistory.forEach(story => {
-            const date = new Date(story.date);
-            const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-            
-            const card = document.createElement('div');
-            card.className = 'history-card';
-            card.dataset.id = story.id;
-            card.innerHTML = `
+
+        elements.historyCards.innerHTML = "";
+
+        state.storyHistory.forEach((story) => {
+          const date = new Date(story.date);
+          const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
+          const card = document.createElement("div");
+          card.className = "history-card";
+          card.dataset.id = story.id;
+          card.innerHTML = `
                 <h4>${story.title}</h4>
                 <div class="history-meta">
                     <span>${formattedDate}</span> | 
                     <span>${capitalizeFirst(story.type)}</span> | 
                     <span>${capitalizeFirst(story.period)}</span>
                 </div>
-                <div class="history-preview">${story.content.substring(0, 150)}...</div>
+                <div class="history-preview">${story.content.substring(
+                  0,
+                  150
+                )}...</div>
             `;
-            
-            card.addEventListener('click', () => showHistoryDetail(story));
-            elements.historyCards.appendChild(card);
-        });
-    }
 
-    // Show history detail
-    function showHistoryDetail(story) {
+          card.addEventListener("click", () => showHistoryDetail(story));
+          elements.historyCards.appendChild(card);
+        });
+      }
+
+      // Show history detail
+      function showHistoryDetail(story) {
         elements.historyTitle.textContent = story.title;
         elements.historyContent.textContent = story.content;
         elements.historyDetailModal.dataset.id = story.id;
         toggleHistoryModal();
-    }
+      }
 
-    // Download history story
-    function downloadHistoryStory() {
+      // Download history story
+      function downloadHistoryStory() {
         const storyId = elements.historyDetailModal.dataset.id;
-        const story = state.storyHistory.find(s => s.id === storyId);
-        
+        const story = state.storyHistory.find((s) => s.id === storyId);
+
         if (!story) return;
-        
+
         const title = story.title;
         const content = story.content;
-        const blob = new Blob([`${title}\n\n${content}`], { type: 'text/plain' });
+        const blob = new Blob([`${title}\n\n${content}`], {
+          type: "text/plain",
+        });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `${title.replace(/\s+/g, '-').toLowerCase()}.txt`;
+        a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
-        showToast('Story downloaded successfully', 'success');
-    }
 
-    // Show toast notification
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
+        showToast("Story downloaded successfully", "success");
+      }
+
+      // Show toast notification
+      function showToast(message, type = "success") {
+        const toast = document.createElement("div");
         toast.className = `toast ${type}`;
         toast.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <i class="fas ${
+              type === "success" ? "fa-check-circle" : "fa-exclamation-circle"
+            }"></i>
             <span>${message}</span>
         `;
-        
+
         elements.toastContainer.appendChild(toast);
-        
+
         // Remove toast after 3 seconds
         setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                elements.toastContainer.removeChild(toast);
-            }, 300);
+          toast.style.opacity = "0";
+          setTimeout(() => {
+            elements.toastContainer.removeChild(toast);
+          }, 300);
         }, 3000);
-    }
+      }
 
-    // Helper function to capitalize first letter
-    function capitalizeFirst(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1).replace(/-/g, ' ');
-    }
+      // Helper function to capitalize first letter
+      function capitalizeFirst(string) {
+        return (
+          string.charAt(0).toUpperCase() + string.slice(1).replace(/-/g, " ")
+        );
+      }
 
-    // Initialize the application when DOM is loaded
-    document.addEventListener('DOMContentLoaded', init);
-</script>
+      // Initialize the application when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
+    </script>
+  </body>
+</html>
