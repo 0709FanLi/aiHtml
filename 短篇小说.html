@@ -749,6 +749,227 @@
         color: #888;
         text-align: right;
       }
+
+      /* About Section Styles */
+      .about-section {
+        padding: 3rem 0;
+        padding-top: 6rem; /* 增加顶部内边距，确保标题不被遮挡 */
+        background-color: var(--dark-bg);
+      }
+
+      .about-header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .about-header h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(
+          45deg,
+          var(--accent-color),
+          var(--primary-color)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .about-header p {
+        font-size: 1.2rem;
+        color: #ddd;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .about-intro {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3rem;
+        gap: 2rem;
+      }
+
+      @media (max-width: 768px) {
+        .about-intro {
+          flex-direction: column;
+        }
+      }
+
+      .about-image {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .about-text h3 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: var(--accent-color);
+      }
+
+      .about-text p {
+        margin-bottom: 1rem;
+        line-height: 1.8;
+      }
+
+      .about-features {
+        margin-bottom: 3rem;
+      }
+
+      .about-features h3,
+      .about-team h3,
+      .contact-section h3 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: var(--accent-color);
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .feature-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .feature-card i {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .feature-card h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: white;
+      }
+
+      .feature-card p {
+        color: #ddd;
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+      }
+
+      .team-member {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s;
+      }
+
+      .team-member:hover {
+        transform: translateY(-5px);
+      }
+
+      .team-member img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+      }
+
+      .team-member h4 {
+        padding: 1rem 1rem 0.5rem;
+        font-size: 1.2rem;
+        color: white;
+      }
+
+      .team-member p {
+        padding: 0 1rem;
+        color: #ddd;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .team-member p:last-child {
+        padding-bottom: 1rem;
+        font-style: italic;
+        color: #aaa;
+      }
+
+      .contact-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .contact-container {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .contact-item i {
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        margin-right: 1rem;
+        width: 25px;
+        text-align: center;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .social-link {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        transition: transform 0.3s;
+      }
+
+      .social-link:hover {
+        transform: scale(1.1);
+      }
+
+      .contact-form .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .contact-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .contact-form .btn {
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -1211,6 +1432,7 @@
         </div>
         <ul class="nav-links">
           <li><a href="#" class="nav-home">Home</a></li>
+          <li><a href="#" class="nav-about">About</a></li>
           <li><a href="#" class="nav-pricing">Pricing</a></li>
           <li id="dashboardItem">
             <a href="#" class="nav-dashboard">Dashboard</a>
@@ -1356,6 +1578,194 @@
           </div>
         </div>
       </section>
+
+      <!-- About Section -->
+      <section class="about-section" id="aboutSection" style="display: none">
+        <div class="container">
+          <div class="about-header">
+            <h2>About NovaCraft</h2>
+            <p>
+              Inspiring creativity and exploring infinite possibilities with AI
+              story generation
+            </p>
+          </div>
+
+          <div class="about-content">
+            <div class="about-intro">
+              <img
+                src="https://images.unsplash.com/photo-1519682577862-22b62b24e493?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                alt="Writing desk with laptop"
+                class="about-image"
+              />
+              <div class="about-text">
+                <h3>Our Mission</h3>
+                <p>
+                  NovaCraft was founded in 2023 by a group of innovators
+                  passionate about literature and technology. Our mission is to
+                  help writers, educators, and creative enthusiasts overcome
+                  writing blocks and inspire creativity through artificial
+                  intelligence.
+                </p>
+                <p>
+                  We believe everyone has the ability to tell compelling
+                  stories, and our AI tools are designed to be valuable
+                  assistants in your creative process, not replacements for your
+                  unique creative perspective.
+                </p>
+              </div>
+            </div>
+
+            <div class="about-features">
+              <h3>Why Choose NovaCraft?</h3>
+              <div class="features-grid">
+                <div class="feature-card">
+                  <i class="fas fa-robot"></i>
+                  <h4>Advanced AI Technology</h4>
+                  <p>
+                    Our platform uses the latest natural language processing
+                    technology to generate fluid, coherent, and creative story
+                    content.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <i class="fas fa-user-edit"></i>
+                  <h4>Personalized Experience</h4>
+                  <p>
+                    Customize stories according to your preferences and choices
+                    to create truly unique works.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <i class="fas fa-users"></i>
+                  <h4>Active Community</h4>
+                  <p>
+                    Join our growing community of creators, share your work, and
+                    get feedback.
+                  </p>
+                </div>
+                <div class="feature-card">
+                  <i class="fas fa-shield-alt"></i>
+                  <h4>Content Safety</h4>
+                  <p>
+                    Our AI is trained to ensure appropriate, culturally
+                    respectful content.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-team">
+              <h3>Our Team</h3>
+              <div class="team-grid">
+                <div class="team-member">
+                  <img
+                    src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                    alt="Team member"
+                  />
+                  <h4>Michael Zhang</h4>
+                  <p>Founder & CEO</p>
+                  <p>AI expert with over 10 years of experience in NLP</p>
+                </div>
+                <div class="team-member">
+                  <img
+                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                    alt="Team member"
+                  />
+                  <h4>Emily Li</h4>
+                  <p>Chief Technology Officer</p>
+                  <p>Former senior development roles at major tech giants</p>
+                </div>
+                <div class="team-member">
+                  <img
+                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                    alt="Team member"
+                  />
+                  <h4>Robert Wang</h4>
+                  <p>Creative Director</p>
+                  <p>Award-winning author with multiple bestselling novels</p>
+                </div>
+                <div class="team-member">
+                  <img
+                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80"
+                    alt="Team member"
+                  />
+                  <h4>Sarah Zhao</h4>
+                  <p>UX Designer</p>
+                  <p>
+                    Focused on creating intuitive, beautiful user interfaces
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-section">
+              <h3>Contact Us</h3>
+              <div class="contact-container">
+                <div class="contact-info">
+                  <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <p>info@novacraft.com</p>
+                  </div>
+                  <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <p>+86 123 4567 8910</p>
+                  </div>
+                  <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <p>88 Technology Park Road, Haidian District, Beijing</p>
+                  </div>
+                  <!-- <div class="social-links">
+                    <a href="#" class="social-link"
+                      ><i class="fab fa-weixin"></i
+                    ></a>
+                    <a href="#" class="social-link"
+                      ><i class="fab fa-weibo"></i
+                    ></a>
+                    <a href="#" class="social-link"
+                      ><i class="fab fa-github"></i
+                    ></a>
+                    <a href="#" class="social-link"
+                      ><i class="fab fa-linkedin"></i
+                    ></a>
+                  </div> -->
+                </div>
+                <div class="contact-form">
+                  <div class="form-group">
+                    <label for="contactName">Name</label>
+                    <input
+                      type="text"
+                      id="contactName"
+                      class="form-control"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="contactEmail">Email</label>
+                    <input
+                      type="email"
+                      id="contactEmail"
+                      class="form-control"
+                      placeholder="Your email address"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="contactMessage">Message</label>
+                    <textarea
+                      id="contactMessage"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Please enter your message"
+                    ></textarea>
+                  </div>
+                  <button class="btn btn-primary" id="sendMessageBtn">
+                    Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Footer -->
@@ -1367,12 +1777,11 @@
         </div>
         <p>The ultimate AI-powered story generator for writers and creatives</p>
         <ul class="footer-links">
-          <li><a href="#">About</a></li>
           <li><a href="#">Privacy Policy</a></li>
           <li><a href="#">Terms of Service</a></li>
-          <li><a href="#">Contact</a></li>
+          <!-- <li><a href="#">Contact</a></li> -->
         </ul>
-        <p class="copyright">&copy; 2023 NovaCraft. All rights reserved.</p>
+        <p class="copyright">&copy; 2025 NovaCraft. All rights reserved.</p>
       </div>
     </footer>
 
@@ -1396,6 +1805,7 @@
         dashboardItem: document.getElementById("dashboardItem"),
         navPricing: document.querySelector(".nav-pricing"),
         navHome: document.querySelector(".nav-home"),
+        navAbout: document.querySelector(".nav-about"),
 
         // User Info
         userInfo: document.getElementById("userInfo"),
@@ -1465,6 +1875,13 @@
 
         // Toast Container
         toastContainer: document.getElementById("toastContainer"),
+
+        // About Section
+        aboutSection: document.getElementById("aboutSection"),
+        sendMessageBtn: document.getElementById("sendMessageBtn"),
+        contactName: document.getElementById("contactName"),
+        contactEmail: document.getElementById("contactEmail"),
+        contactMessage: document.getElementById("contactMessage"),
       };
 
       // Initialize the application
@@ -1489,6 +1906,7 @@
         elements.navDashboard.addEventListener("click", showDashboard);
         elements.navPricing.addEventListener("click", togglePricingModal);
         elements.navHome.addEventListener("click", showGenerator);
+        elements.navAbout.addEventListener("click", showAbout);
 
         // Auth Modal
         elements.authClose.addEventListener("click", toggleAuthModal);
@@ -1558,6 +1976,9 @@
 
         // Hero
         elements.startWritingBtn.addEventListener("click", scrollToGenerator);
+
+        // About Section
+        elements.sendMessageBtn.addEventListener("click", sendMessage);
       }
 
       // Check login status (simulated)
@@ -1762,6 +2183,7 @@
 
         elements.dashboardSection.style.display = "block";
         elements.generatorSection.style.display = "none";
+        elements.aboutSection.style.display = "none";
         renderHistoryCards();
       }
 
@@ -1769,12 +2191,25 @@
       function showGenerator(e) {
         if (e) e.preventDefault();
         elements.dashboardSection.style.display = "none";
+        elements.aboutSection.style.display = "none";
         elements.generatorSection.style.display = "block";
+      }
+
+      // Show about section
+      function showAbout(e) {
+        if (e) e.preventDefault();
+        elements.dashboardSection.style.display = "none";
+        elements.generatorSection.style.display = "none";
+        elements.aboutSection.style.display = "block";
+        // Scroll to top of about section
+        elements.aboutSection.scrollIntoView({ behavior: "smooth" });
       }
 
       // Scroll to generator
       function scrollToGenerator(e) {
         if (e) e.preventDefault();
+        elements.aboutSection.style.display = "none"; // 隐藏about页面
+        elements.generatorSection.style.display = "block"; // 显示generator页面
         elements.generatorSection.scrollIntoView({ behavior: "smooth" });
       }
 
@@ -2197,6 +2632,24 @@ With a deep breath and a silent prayer to forgotten gods, the first step was tak
 
       // Initialize the application when DOM is loaded
       document.addEventListener("DOMContentLoaded", init);
+
+      // Send message
+      function sendMessage() {
+        const name = elements.contactName.value;
+        const email = elements.contactEmail.value;
+        const message = elements.contactMessage.value;
+
+        if (!name || !email || !message) {
+          showToast("Please fill in all fields", "error");
+          return;
+        }
+
+        // Simulate sending the message
+        showToast("Message sent successfully", "success");
+        elements.contactName.value = "";
+        elements.contactEmail.value = "";
+        elements.contactMessage.value = "";
+      }
     </script>
   </body>
 </html>
