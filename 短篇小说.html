@@ -357,7 +357,7 @@
         background-color: var(--card-bg);
         border-radius: 10px;
         width: 90%;
-        max-width: 1000px;
+        max-width: 820px;
         max-height: 90vh;
         overflow-y: auto;
         box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
@@ -387,8 +387,9 @@
       }
 
       /* 为登录/注册弹框设置特定宽度 */
-      #authModal .modal {
-        max-width: 700px;
+      #authModal .modal,
+      #forgotPasswordModal .modal {
+        max-width: 520px;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -454,6 +455,21 @@
         color: var(--accent-color);
         text-decoration: none;
         font-weight: 500;
+      }
+
+      .forgot-password-link {
+        text-align: right;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+      }
+
+      .forgot-password-link a {
+        color: var(--accent-color);
+        text-decoration: none;
+      }
+
+      .forgot-password-link a:hover {
+        text-decoration: underline;
       }
 
       .social-login {
@@ -930,25 +946,18 @@
       }
 
       .contact-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
         background-color: var(--card-bg);
         border-radius: 10px;
         padding: 2rem;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      }
-
-      @media (max-width: 768px) {
-        .contact-container {
-          grid-template-columns: 1fr;
-        }
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
       }
 
       .contact-item {
         display: flex;
         align-items: center;
-        margin-bottom: 1.5rem;
       }
 
       .contact-item i {
@@ -1041,6 +1050,9 @@
                 class="form-control"
                 placeholder="Your password"
               />
+              <div class="forgot-password-link">
+                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+              </div>
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%">
               Login
@@ -1448,6 +1460,50 @@
       </div>
     </div>
 
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Forgot Password</h3>
+          <button class="modal-close" id="forgotPasswordClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="forgot-password-content">
+            <p>
+              Please enter your email address. We will send you a link to reset
+              your password.
+            </p>
+            <form id="forgotPasswordForm">
+              <div class="form-group">
+                <label for="resetEmail">Email</label>
+                <input
+                  type="email"
+                  id="resetEmail"
+                  class="form-control"
+                  placeholder="Your email"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%">
+                Send Reset Link
+              </button>
+            </form>
+            <div
+              class="reset-message"
+              id="resetMessage"
+              style="display: none; margin-top: 1rem; text-align: center"
+            >
+              <i
+                class="fas fa-check-circle"
+                style="color: var(--success-color); font-size: 2rem"
+              ></i>
+              <p>Password reset link has been sent to your email.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Header Section -->
     <header>
       <div class="container header-content">
@@ -1726,53 +1782,17 @@
             <div class="contact-section">
               <h3>Contact Us</h3>
               <div class="contact-container">
-                <div class="contact-info">
-                  <div class="flex">
-                    <div class="contact-item">
-                      <i class="fas fa-envelope"></i>
-                      <p>info@novacraft.com</p>
-                    </div>
-                    <div class="contact-item">
-                      <i class="fas fa-phone"></i>
-                      <p>+86 123 4567 8910</p>
-                    </div>
-                    <div class="contact-item">
-                      <i class="fas fa-map-marker-alt"></i>
-                      <p>88 Technology Park Road, Haidian District, Beijing</p>
-                    </div>
-                  </div>
+                <div class="contact-item">
+                  <i class="fas fa-envelope"></i>
+                  <p>info@novacraft.com</p>
                 </div>
-                <div class="contact-form">
-                  <div class="form-group">
-                    <label for="contactName">Name</label>
-                    <input
-                      type="text"
-                      id="contactName"
-                      class="form-control"
-                      placeholder="Your name"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="contactEmail">Email</label>
-                    <input
-                      type="email"
-                      id="contactEmail"
-                      class="form-control"
-                      placeholder="Your email address"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="contactMessage">Message</label>
-                    <textarea
-                      id="contactMessage"
-                      class="form-control"
-                      rows="4"
-                      placeholder="Please enter your message"
-                    ></textarea>
-                  </div>
-                  <button class="btn btn-primary" id="sendMessageBtn">
-                    Send Message
-                  </button>
+                <div class="contact-item">
+                  <i class="fas fa-phone"></i>
+                  <p>+86 123 4567 8910</p>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <p>88 Technology Park Road, Haidian District, Beijing</p>
                 </div>
               </div>
             </div>
@@ -1891,10 +1911,17 @@
 
         // About Section
         aboutSection: document.getElementById("aboutSection"),
-        sendMessageBtn: document.getElementById("sendMessageBtn"),
         contactName: document.getElementById("contactName"),
         contactEmail: document.getElementById("contactEmail"),
         contactMessage: document.getElementById("contactMessage"),
+
+        // Forgot Password
+        forgotPasswordLink: document.getElementById("forgotPasswordLink"),
+        forgotPasswordModal: document.getElementById("forgotPasswordModal"),
+        forgotPasswordClose: document.getElementById("forgotPasswordClose"),
+        forgotPasswordForm: document.getElementById("forgotPasswordForm"),
+        resetEmail: document.getElementById("resetEmail"),
+        resetMessage: document.getElementById("resetMessage"),
       };
 
       // Initialize the application
@@ -1990,8 +2017,19 @@
         // Hero
         elements.startWritingBtn.addEventListener("click", scrollToGenerator);
 
-        // About Section
-        elements.sendMessageBtn.addEventListener("click", sendMessage);
+        // Forgot Password
+        elements.forgotPasswordLink.addEventListener(
+          "click",
+          toggleForgotPasswordModal
+        );
+        elements.forgotPasswordForm.addEventListener(
+          "submit",
+          handleForgotPassword
+        );
+        elements.forgotPasswordClose.addEventListener(
+          "click",
+          toggleForgotPasswordModal
+        );
       }
 
       // Check login status (simulated)
@@ -2662,6 +2700,29 @@ With a deep breath and a silent prayer to forgotten gods, the first step was tak
         elements.contactName.value = "";
         elements.contactEmail.value = "";
         elements.contactMessage.value = "";
+      }
+
+      // Toggle forgot password modal
+      function toggleForgotPasswordModal(e) {
+        if (e) e.preventDefault();
+        elements.forgotPasswordModal.style.display =
+          elements.forgotPasswordModal.style.display === "block"
+            ? "none"
+            : "block";
+      }
+
+      // Handle forgot password form submission
+      function handleForgotPassword(e) {
+        e.preventDefault();
+        const email = elements.resetEmail.value;
+        if (!email) {
+          showToast("Please enter your email", "error");
+          return;
+        }
+        // Simulate sending reset link
+        showToast("Reset link sent to your email", "success");
+        elements.resetEmail.value = "";
+        toggleForgotPasswordModal();
       }
     </script>
   </body>
