@@ -1212,7 +1212,9 @@
         <ul class="nav-links">
           <li><a href="#" class="nav-home">Home</a></li>
           <li><a href="#" class="nav-pricing">Pricing</a></li>
-          <li><a href="#" class="nav-dashboard">Dashboard</a></li>
+          <li id="dashboardItem">
+            <a href="#" class="nav-dashboard">Dashboard</a>
+          </li>
           <li><a href="#" class="nav-login" id="loginBtn">Login</a></li>
         </ul>
         <div class="user-profile">
@@ -1391,6 +1393,7 @@
         // Navigation
         navLogin: document.querySelector(".nav-login"),
         navDashboard: document.querySelector(".nav-dashboard"),
+        dashboardItem: document.getElementById("dashboardItem"),
         navPricing: document.querySelector(".nav-pricing"),
         navHome: document.querySelector(".nav-home"),
 
@@ -1573,6 +1576,7 @@
       // Update UI for logged-in user
       function updateUIForLoggedInUser() {
         elements.navLogin.textContent = "Logout";
+        elements.dashboardItem.style.display = "block";
         elements.navDashboard.style.display = "block";
         elements.userInfo.style.display = "flex";
         elements.userName.textContent = state.user.name;
@@ -1585,6 +1589,7 @@
       function updateUIForLoggedOutUser() {
         elements.navLogin.textContent = "Login";
         elements.navDashboard.style.display = "none";
+        elements.dashboardItem.style.display = "none";
         elements.userInfo.style.display = "none";
         elements.dashboardSection.style.display = "none";
         elements.generatorSection.style.display = "block";
