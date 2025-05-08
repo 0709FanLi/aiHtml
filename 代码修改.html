@@ -687,1463 +687,1864 @@
         color: var(--text-color);
       }
     </style>
+    <style>
+        /* Navigation Styles */
+        .main-nav {
+            margin: 0 auto;
+        }
+        
+        .main-nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .main-nav li {
+            margin: 0 15px;
+        }
+        
+        .main-nav .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+        
+        .main-nav .nav-link:hover {
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-nav .nav-link.active {
+            color: var(--primary-light);
+            background-color: rgba(109, 93, 252, 0.1);
+            border: 1px solid var(--primary-color);
+        }
+        
+        /* Home Page Styles */
+        .features-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-light);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .home-image-container {
+            width: 100%;
+            margin: 50px 0;
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .home-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .home-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .testimonials-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+        
+        .testimonials-section h2 {
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        .testimonials-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            text-align: left;
+        }
+        
+        .testimonial-text {
+            margin-bottom: 20px;
+            font-style: italic;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-avatar {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-right: 15px;
+        }
+        
+        .testimonial-name {
+            font-weight: bold;
+            color: var(--primary-light);
+        }
+        
+        .testimonial-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .cta-section {
+            text-align: center;
+            background-color: var(--background-light);
+            padding: 50px 30px;
+            border-radius: var(--border-radius);
+            margin: 50px 0;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .cta-section h2 {
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+        
+        .cta-section p {
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .try-features-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .try-features-btn i {
+            margin-right: 10px;
+        }
+        
+        /* Responsive Adjustments for Navigation */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                padding: 15px 0;
+            }
+            
+            .main-nav {
+                margin: 15px 0;
+            }
+            
+            .logo {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
   </head>
   <body>
     <header>
-      <div class="container header-content">
-        <div class="logo">
-          <i class="fas fa-code"></i>
-          <span>CodeEnhance AI</span>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <span>CodeEnhance AI</span>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" class="nav-link" data-page="home">Home</a></li>
+                    <li><a href="#" class="nav-link active" data-page="features">Features</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <div class="credits-display" id="credits-display" style="display: none;">
+                    <i class="fas fa-bolt"></i>
+                    <span id="credits-count">0</span> credits
+                </div>
+                <button class="btn btn-secondary" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button class="btn" id="signup-btn" style="display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Sign Up
+                </button>
+                <button class="btn btn-secondary" id="account-btn" style="display: none;">
+                    <i class="fas fa-user"></i> My Account
+                </button>
+                <button class="btn" id="buy-credits-btn" style="display: none;">
+                    <i class="fas fa-shopping-cart"></i> Buy Credits
+                </button>
+                <button class="btn btn-secondary" id="logout-btn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
-        <div class="user-actions">
-          <div
-            class="credits-display"
-            id="credits-display"
-            style="display: none"
-          >
-            <i class="fas fa-bolt"></i>
-            <span id="credits-count">0</span> credits
-          </div>
-          <button class="btn btn-secondary" id="login-btn">
-            <i class="fas fa-sign-in-alt"></i> Login
-          </button>
-          <button class="btn" id="signup-btn">
-            <i class="fas fa-user-plus"></i> Sign Up
-          </button>
-          <button
-            class="btn btn-secondary"
-            id="account-btn"
-            style="display: none"
-          >
-            <i class="fas fa-user"></i> My Account
-          </button>
-          <button class="btn" id="buy-credits-btn" style="display: none">
-            <i class="fas fa-shopping-cart"></i> Buy Credits
-          </button>
-          <button
-            class="btn btn-secondary"
-            id="logout-btn"
-            style="display: none"
-          >
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </button>
-        </div>
-      </div>
     </header>
 
     <main>
-      <div class="container">
-        <section class="hero-section">
-          <h1>Enhance Your Code with AI</h1>
-          <p>
-            Upload or paste your code below and let our AI analyze, improve, and
-            add helpful comments to make your code more efficient, readable, and
-            maintainable.
-          </p>
-        </section>
-
-        <section class="code-enhancement">
-          <div class="code-input-section">
-            <div class="section-header">
-              <h2 class="section-title">
-                <i class="fas fa-keyboard"></i> Input Your Code
-              </h2>
-              <div class="input-methods">
-                <button class="btn btn-secondary" id="paste-code-btn">
-                  <i class="fas fa-paste"></i> Paste Code
-                </button>
-                <div class="file-upload">
-                  <button class="btn btn-secondary">
-                    <i class="fas fa-file-upload"></i> Upload File
-                  </button>
-                  <input
-                    type="file"
-                    id="file-upload"
-                    accept=".js,.py,.java,.html,.css,.php,.c,.cpp,.go,.rb,.ts"
-                  />
+        <div class="container">
+            <!-- Home Page Content -->
+            <section id="home-page" style="display: none;">
+                <div class="hero-section">
+                    <h1>Transform Your Code with AI</h1>
+                    <p>CodeEnhance AI uses advanced artificial intelligence to analyze, improve, and optimize your code for better performance and readability.</p>
                 </div>
-              </div>
-            </div>
-
-            <textarea
-              class="code-textarea"
-              id="code-input"
-              placeholder="// Paste your code here or upload a file..."
-            ></textarea>
-
-            <div class="file-drop-area" id="file-drop-area">
-              <p>Drag & drop your code file here</p>
-              <span
-                >Supported file types: .js, .py, .java, .html, .css, .php, .c,
-                .cpp, .go, .rb, .ts</span
-              >
-            </div>
-
-            <div class="action-btns">
-              <button class="btn" id="enhance-btn">
-                <i class="fas fa-magic"></i> Enhance Code
-              </button>
-            </div>
-          </div>
-
-          <div class="code-comparison">
-            <div class="code-panel">
-              <div class="panel-header">
-                <h3 class="panel-title">
-                  <i class="fas fa-code"></i> Original Code
-                </h3>
-                <div class="panel-actions">
-                  <button
-                    class="panel-btn"
-                    id="copy-original-btn"
-                    title="Copy to clipboard"
-                  >
-                    <i class="fas fa-copy"></i> Copy
-                  </button>
+                
+                <div class="features-overview">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Smart Code Analysis</h3>
+                        <p>Our AI detects inefficient patterns, potential bugs, and style inconsistencies in your code.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Performance Optimization</h3>
+                        <p>Get suggestions to improve execution speed and reduce resource consumption.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>Automatic Documentation</h3>
+                        <p>Generate meaningful comments and documentation for your code automatically.</p>
+                    </div>
                 </div>
-              </div>
-              <div class="code-content">
-                <div class="code-display" id="original-code-display">
-                  <pre><code class="language-javascript">// Your code will appear here</code></pre>
+                
+                <div class="home-image-container">
+                    <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=1470&auto=format&fit=crop" alt="Programming code on a screen" class="home-image">
                 </div>
-              </div>
-            </div>
+                
+                <div class="testimonials-section">
+                    <h2>What Our Users Say</h2>
+                    <div class="testimonials-container">
+                        <div class="testimonial-card">
+                            <div class="testimonial-text">
+                                "CodeEnhance AI helped me identify and fix performance bottlenecks that I had missed. My application now runs 40% faster!"
+                            </div>
+                            <div class="testimonial-author">
+                                <div class="testimonial-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="testimonial-info">
+                                    <div class="testimonial-name">Sarah Johnson</div>
+                                    <div class="testimonial-title">Senior Developer</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="testimonial-card">
+                            <div class="testimonial-text">
+                                "As a coding instructor, I use CodeEnhance AI to help my students understand best practices and improve their code quality."
+                            </div>
+                            <div class="testimonial-author">
+                                <div class="testimonial-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="testimonial-info">
+                                    <div class="testimonial-name">Michael Chen</div>
+                                    <div class="testimonial-title">CS Professor</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="testimonial-card">
+                            <div class="testimonial-text">
+                                "The automatic documentation feature has saved me countless hours and improved our team's collaboration significantly."
+                            </div>
+                            <div class="testimonial-author">
+                                <div class="testimonial-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="testimonial-info">
+                                    <div class="testimonial-name">Alex Rodriguez</div>
+                                    <div class="testimonial-title">Tech Lead</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cta-section">
+                    <h2>Ready to enhance your code?</h2>
+                    <p>Try our tools today and experience the difference AI can make in your development workflow.</p>
+                    <button class="btn try-features-btn">
+                        <i class="fas fa-magic"></i> Try it Now
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Features Page Content (Original Content) -->
+            <section id="features-page">
+                <section class="hero-section">
+                    <h1>Enhance Your Code with AI</h1>
+                    <p>Upload or paste your code below and let our AI analyze, improve, and add helpful comments to make your code more efficient, readable, and maintainable.</p>
+                </section>
 
-            <div class="code-panel">
-              <div class="panel-header">
-                <h3 class="panel-title">
-                  <i class="fas fa-wand-magic-sparkles"></i> Enhanced Code
-                </h3>
-                <div class="panel-actions">
-                  <button
-                    class="panel-btn"
-                    id="copy-enhanced-btn"
-                    title="Copy to clipboard"
-                  >
-                    <i class="fas fa-copy"></i> Copy
-                  </button>
-                  <button
-                    class="panel-btn"
-                    id="download-btn"
-                    title="Download as file"
-                  >
-                    <i class="fas fa-download"></i> Download
-                  </button>
-                </div>
-              </div>
-              <div class="code-content">
-                <div class="loading-spinner" id="loading-spinner">
-                  <div class="spinner"></div>
-                  <p class="loading-text">Enhancing your code with AI...</p>
-                </div>
-                <div class="code-display" id="enhanced-code-display">
-                  <pre><code class="language-javascript">// Enhanced code will appear here</code></pre>
-                </div>
-              </div>
-            </div>
-          </div>
+                <section class="code-enhancement">
+                    <div class="code-input-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-keyboard"></i> Input Your Code
+                            </h2>
+                            <div class="input-methods">
+                                <button class="btn btn-secondary" id="paste-code-btn">
+                                    <i class="fas fa-paste"></i> Paste Code
+                                </button>
+                                <div class="file-upload">
+                                    <button class="btn btn-secondary">
+                                        <i class="fas fa-file-upload"></i> Upload File
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="file-upload"
+                                        accept=".js,.py,.java,.html,.css,.php,.c,.cpp,.go,.rb,.ts"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-          <div class="history-section" id="history-section">
-            <div class="section-header">
-              <h2 class="section-title">
-                <i class="fas fa-history"></i> Your Enhancement History
-              </h2>
-            </div>
-            <div class="history-items" id="history-items">
-              <!-- History items will be dynamically added here -->
-            </div>
-          </div>
-        </section>
-      </div>
+                        <textarea
+                            class="code-textarea"
+                            id="code-input"
+                            placeholder="// Paste your code here or upload a file..."
+                        ></textarea>
+
+                        <div class="file-drop-area" id="file-drop-area">
+                            <p>Drag & drop your code file here</p>
+                            <span
+                                >Supported file types: .js, .py, .java, .html, .css, .php, .c,
+                                .cpp, .go, .rb, .ts</span
+                            >
+                        </div>
+
+                        <div class="action-btns">
+                            <button class="btn" id="enhance-btn">
+                                <i class="fas fa-magic"></i> Enhance Code
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="code-comparison">
+                        <div class="code-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">
+                                    <i class="fas fa-code"></i> Original Code
+                                </h3>
+                                <div class="panel-actions">
+                                    <button
+                                        class="panel-btn"
+                                        id="copy-original-btn"
+                                        title="Copy to clipboard"
+                                    >
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="code-content">
+                                <div class="code-display" id="original-code-display">
+                                    <pre><code class="language-javascript">// Your code will appear here</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="code-panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Enhanced Code
+                                </h3>
+                                <div class="panel-actions">
+                                    <button
+                                        class="panel-btn"
+                                        id="copy-enhanced-btn"
+                                        title="Copy to clipboard"
+                                    >
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                    <button
+                                        class="panel-btn"
+                                        id="download-btn"
+                                        title="Download as file"
+                                    >
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="code-content">
+                                <div class="loading-spinner" id="loading-spinner">
+                                    <div class="spinner"></div>
+                                    <p class="loading-text">Enhancing your code with AI...</p>
+                                </div>
+                                <div class="code-display" id="enhanced-code-display">
+                                    <pre><code class="language-javascript">// Enhanced code will appear here</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-section" id="history-section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-history"></i> Your Enhancement History
+                            </h2>
+                        </div>
+                        <div class="history-items" id="history-items">
+                            <!-- History items will be dynamically added here -->
+                        </div>
+                    </div>
+                </section>
+            </section>
+        </div>
     </main>
 
     <footer>
-      <div class="container footer-content">
-        <p class="copyright">© 2023 CodeEnhance AI. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+        <div class="container footer-content">
+            <p class="copyright">© 2023 CodeEnhance AI. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
         </div>
-      </div>
     </footer>
 
     <!-- Login Modal -->
     <div class="modal-overlay" id="login-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Login to Your Account</h2>
-          <button class="close-modal" id="close-login-modal">&times;</button>
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Login to Your Account</h2>
+                <button class="close-modal" id="close-login-modal">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="login-email"
+                            placeholder="Enter your email"
+                            required
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="login-password"
+                            placeholder="Enter your password"
+                            required
+                            oninvalid="this.setCustomValidity('Please fill out this field')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                        <div style="text-align: right; margin-top: 5px;">
+                            <a href="#" id="forgot-password-link" style="font-size: 0.85rem; color: var(--primary-light); text-decoration: none;">Forgot password?</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
+                            <input type="checkbox" id="login-agreement" style="margin-top: 3px; margin-right: 10px;" required 
+                                  oninvalid="this.setCustomValidity('Please check this box to continue')"
+                                  oninput="this.setCustomValidity('')" />
+                            <label for="login-agreement" style="font-size: 0.9rem; color: var(--text-muted);">
+                              I agree to the <a href="#" class="modal-link" data-modal="privacy-policy-modal">Privacy Policy</a> and 
+                              <a href="#" class="modal-link" data-modal="terms-of-service-modal">Terms of Service</a>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="login-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
+                    <button type="submit" class="btn" style="width: 100%">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+            </div>
         </div>
-        <div class="modal-content">
-          <form id="login-form">
-            <div class="form-group">
-              <label for="login-email">Email</label>
-              <input
-                type="email"
-                class="form-control"
-                id="login-email"
-                placeholder="Enter your email"
-                required
-                oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
-                oninput="this.setCustomValidity('')"
-              />
-            </div>
-            <div class="form-group">
-              <label for="login-password">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="login-password"
-                placeholder="Enter your password"
-                required
-                oninvalid="this.setCustomValidity('Please fill out this field')"
-                oninput="this.setCustomValidity('')"
-              />
-            </div>
-            <div class="form-group">
-              <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-                <input type="checkbox" id="login-agreement" style="margin-top: 3px; margin-right: 10px;" required 
-                      oninvalid="this.setCustomValidity('Please check this box to continue')"
-                      oninput="this.setCustomValidity('')" />
-                <label for="login-agreement" style="font-size: 0.9rem; color: var(--text-muted);">
-                  I agree to the <a href="#" class="modal-link" data-modal="privacy-policy-modal">Privacy Policy</a> and 
-                  <a href="#" class="modal-link" data-modal="terms-of-service-modal">Terms of Service</a>
-                </label>
-              </div>
-            </div>
-            <div id="login-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
-            <button type="submit" class="btn" style="width: 100%">
-              <i class="fas fa-sign-in-alt"></i> Login
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
 
     <!-- Privacy Policy Modal -->
     <div class="modal-overlay" id="privacy-policy-modal">
-      <div class="modal" style="max-width: 800px; max-height: 80vh;">
-        <div class="modal-header">
-          <h2 class="modal-title">Privacy Policy</h2>
-          <button class="close-modal" id="close-privacy-policy-modal">&times;</button>
+        <div class="modal" style="max-width: 800px; max-height: 80vh;">
+            <div class="modal-header">
+                <h2 class="modal-title">Privacy Policy</h2>
+                <button class="close-modal" id="close-privacy-policy-modal">&times;</button>
+            </div>
+            <div class="modal-content" style="overflow-y: auto; max-height: 60vh;">
+                <div class="privacy-policy-content">
+                    <h3>CodeEnhance AI Privacy Policy</h3>
+                    <p>Last Updated: December 1, 2023</p>
+                    
+                    <h4>1. Introduction</h4>
+                    <p>Welcome to CodeEnhance AI ("we," "our," or "the Service"). We are committed to protecting your privacy and safeguarding your personal information. This Privacy Policy explains how we collect, use, disclose, and protect the information you provide through our website and services.</p>
+                    
+                    <h4>2. Information We Collect</h4>
+                    <p>We may collect the following types of information:</p>
+                    <ul>
+                        <li><strong>Personal Information</strong>: When you register for an account, we collect your name and email address.</li>
+                        <li><strong>Code Data</strong>: The code content you upload or paste into our platform.</li>
+                        <li><strong>Usage Data</strong>: Information about how you use our services, including IP address, browser type, access times, pages viewed, and your interactions with our website.</li>
+                        <li><strong>Cookie Information</strong>: We use cookies to enhance your user experience and collect usage statistics.</li>
+                    </ul>
+                    
+                    <h4>3. How We Use Your Information</h4>
+                    <p>The information we collect is used to:</p>
+                    <ul>
+                        <li>Provide, maintain, and improve our services</li>
+                        <li>Process your transactions and manage your account</li>
+                        <li>Send technical notices, updates, security alerts, and support messages</li>
+                        <li>Respond to your comments, questions, and requests</li>
+                        <li>Analyze usage patterns to improve user experience</li>
+                        <li>Protect the security and integrity of our services</li>
+                    </ul>
+                    
+                    <h4>4. Code Data Processing</h4>
+                    <p>When you upload or paste code to our platform:</p>
+                    <ul>
+                        <li>Our AI systems process your code to provide enhancement and improvement services</li>
+                        <li>Your uploaded code is accessible only to you, unless you choose to share it</li>
+                        <li>We may use anonymized, aggregated code data to improve our AI models</li>
+                        <li>We do not sell your code to third parties</li>
+                    </ul>
+                    
+                    <h4>5. Information Sharing and Disclosure</h4>
+                    <p>We do not sell your personal information. We may share your information in the following circumstances:</p>
+                    <ul>
+                        <li>With your consent</li>
+                        <li>With third-party service providers who provide services and support (such as payment processors, hosting providers)</li>
+                        <li>To comply with laws, regulations, legal processes, or government requests</li>
+                        <li>To protect our or others' rights, property, or safety</li>
+                        <li>In connection with a business transfer (such as a merger or acquisition)</li>
+                    </ul>
+                    
+                    <h4>6. Data Security</h4>
+                    <p>We implement appropriate technical and organizational measures to protect your personal information from accidental or unlawful destruction, loss, alteration, unauthorized disclosure, or access. However, no data transmission or storage system is 100% secure, and we cannot guarantee the absolute security of your information.</p>
+                    
+                    <h4>7. Data Retention</h4>
+                    <p>We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.</p>
+                    
+                    <h4>8. Your Rights and Choices</h4>
+                    <p>You have the right to:</p>
+                    <ul>
+                        <li>Access, correct, or delete your personal information</li>
+                        <li>Restrict or object to our processing of your personal information</li>
+                        <li>Receive your personal information in a portable format, where applicable</li>
+                        <li>Withdraw consent you previously provided</li>
+                        <li>Lodge a complaint with a relevant data protection supervisory authority</li>
+                    </ul>
+                    
+                    <h4>9. Cookie Policy</h4>
+                    <p>We use cookies and similar technologies to collect information and improve your experience. You can control cookies through your browser settings, but please note that disabling cookies may affect certain features of our services.</p>
+                    
+                    <h4>10. Children's Privacy</h4>
+                    <p>Our services are not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If you discover that we may have collected information from a child, please contact us, and we will promptly take steps to delete such information.</p>
+                    
+                    <h4>11. Changes to this Privacy Policy</h4>
+                    <p>We may update this Privacy Policy from time to time. If we make significant changes, we will notify you by posting the updated policy on our website or by other means. We encourage you to review this policy periodically to understand how we protect your information.</p>
+                    
+                    <h4>12. Contact Us</h4>
+                    <p>If you have any questions, comments, or requests regarding this Privacy Policy, please contact us at:</p>
+                    <p>Email: privacy@codeenhance.ai</p>
+                    <p>Address: 123 Tech Street, Suite 456, San Francisco, CA 94105, USA</p>
+                </div>
+            </div>
         </div>
-        <div class="modal-content" style="overflow-y: auto; max-height: 60vh;">
-          <div class="privacy-policy-content">
-            <h3>CodeEnhance AI Privacy Policy</h3>
-            <p>Last Updated: December 1, 2023</p>
-            
-            <h4>1. Introduction</h4>
-            <p>Welcome to CodeEnhance AI ("we," "our," or "the Service"). We are committed to protecting your privacy and safeguarding your personal information. This Privacy Policy explains how we collect, use, disclose, and protect the information you provide through our website and services.</p>
-            
-            <h4>2. Information We Collect</h4>
-            <p>We may collect the following types of information:</p>
-            <ul>
-                <li><strong>Personal Information</strong>: When you register for an account, we collect your name and email address.</li>
-                <li><strong>Code Data</strong>: The code content you upload or paste into our platform.</li>
-                <li><strong>Usage Data</strong>: Information about how you use our services, including IP address, browser type, access times, pages viewed, and your interactions with our website.</li>
-                <li><strong>Cookie Information</strong>: We use cookies to enhance your user experience and collect usage statistics.</li>
-            </ul>
-            
-            <h4>3. How We Use Your Information</h4>
-            <p>The information we collect is used to:</p>
-            <ul>
-                <li>Provide, maintain, and improve our services</li>
-                <li>Process your transactions and manage your account</li>
-                <li>Send technical notices, updates, security alerts, and support messages</li>
-                <li>Respond to your comments, questions, and requests</li>
-                <li>Analyze usage patterns to improve user experience</li>
-                <li>Protect the security and integrity of our services</li>
-            </ul>
-            
-            <h4>4. Code Data Processing</h4>
-            <p>When you upload or paste code to our platform:</p>
-            <ul>
-                <li>Our AI systems process your code to provide enhancement and improvement services</li>
-                <li>Your uploaded code is accessible only to you, unless you choose to share it</li>
-                <li>We may use anonymized, aggregated code data to improve our AI models</li>
-                <li>We do not sell your code to third parties</li>
-            </ul>
-            
-            <h4>5. Information Sharing and Disclosure</h4>
-            <p>We do not sell your personal information. We may share your information in the following circumstances:</p>
-            <ul>
-                <li>With your consent</li>
-                <li>With third-party service providers who provide services and support (such as payment processors, hosting providers)</li>
-                <li>To comply with laws, regulations, legal processes, or government requests</li>
-                <li>To protect our or others' rights, property, or safety</li>
-                <li>In connection with a business transfer (such as a merger or acquisition)</li>
-            </ul>
-            
-            <h4>6. Data Security</h4>
-            <p>We implement appropriate technical and organizational measures to protect your personal information from accidental or unlawful destruction, loss, alteration, unauthorized disclosure, or access. However, no data transmission or storage system is 100% secure, and we cannot guarantee the absolute security of your information.</p>
-            
-            <h4>7. Data Retention</h4>
-            <p>We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.</p>
-            
-            <h4>8. Your Rights and Choices</h4>
-            <p>You have the right to:</p>
-            <ul>
-                <li>Access, correct, or delete your personal information</li>
-                <li>Restrict or object to our processing of your personal information</li>
-                <li>Receive your personal information in a portable format, where applicable</li>
-                <li>Withdraw consent you previously provided</li>
-                <li>Lodge a complaint with a relevant data protection supervisory authority</li>
-            </ul>
-            
-            <h4>9. Cookie Policy</h4>
-            <p>We use cookies and similar technologies to collect information and improve your experience. You can control cookies through your browser settings, but please note that disabling cookies may affect certain features of our services.</p>
-            
-            <h4>10. Children's Privacy</h4>
-            <p>Our services are not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If you discover that we may have collected information from a child, please contact us, and we will promptly take steps to delete such information.</p>
-            
-            <h4>11. Changes to this Privacy Policy</h4>
-            <p>We may update this Privacy Policy from time to time. If we make significant changes, we will notify you by posting the updated policy on our website or by other means. We encourage you to review this policy periodically to understand how we protect your information.</p>
-            
-            <h4>12. Contact Us</h4>
-            <p>If you have any questions, comments, or requests regarding this Privacy Policy, please contact us at:</p>
-            <p>Email: privacy@codeenhance.ai</p>
-            <p>Address: 123 Tech Street, Suite 456, San Francisco, CA 94105, USA</p>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Terms of Service Modal -->
     <div class="modal-overlay" id="terms-of-service-modal">
-      <div class="modal" style="max-width: 800px; max-height: 80vh;">
-        <div class="modal-header">
-          <h2 class="modal-title">Terms of Service</h2>
-          <button class="close-modal" id="close-terms-of-service-modal">&times;</button>
+        <div class="modal" style="max-width: 800px; max-height: 80vh;">
+            <div class="modal-header">
+                <h2 class="modal-title">Terms of Service</h2>
+                <button class="close-modal" id="close-terms-of-service-modal">&times;</button>
+            </div>
+            <div class="modal-content" style="overflow-y: auto; max-height: 60vh;">
+                <div class="terms-of-service-content">
+                    <h3>CodeEnhance AI Terms of Service</h3>
+                    <p>Last Updated: December 1, 2023</p>
+                    
+                    <h4>1. Acceptance of Terms</h4>
+                    <p>By accessing or using CodeEnhance AI ("we," "our," or "the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Service.</p>
+                    
+                    <h4>2. Description of Service</h4>
+                    <p>CodeEnhance AI is a platform that uses artificial intelligence to analyze, enhance, and improve code. Our Service may include features such as code enhancement, readability improvements, and performance optimization suggestions.</p>
+                    
+                    <h4>3. User Accounts</h4>
+                    <p><strong>Account Creation:</strong> To access certain features of our Service, you may need to create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
+                    <p><strong>Account Information:</strong> You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.</p>
+                    <p><strong>Account Termination:</strong> We reserve the right to suspend or terminate your account at our discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.</p>
+                    
+                    <h4>4. Credits and Payment</h4>
+                    <p><strong>Credit System:</strong> Our Service operates on a credit-based system. Each code enhancement may require one or more credits, depending on the complexity and size of the code.</p>
+                    <p><strong>Purchasing Credits:</strong> Credits can be purchased through our platform. All payments are processed securely through our payment processors.</p>
+                    <p><strong>Refunds:</strong> Credit purchases are generally non-refundable. However, if you encounter significant issues with our Service, please contact us, and we will address your concerns on a case-by-case basis.</p>
+                    <p><strong>Pricing Changes:</strong> We reserve the right to change our pricing at any time. Any pricing changes will be communicated to users in advance.</p>
+                    
+                    <h4>5. User Content</h4>
+                    <p><strong>Ownership:</strong> You retain ownership of any code or other content you submit to our Service ("User Content").</p>
+                    <p><strong>License Grant:</strong> By submitting User Content to our Service, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and process your User Content for the purpose of providing and improving our Service.</p>
+                    <p><strong>Responsibility for Content:</strong> You are solely responsible for your User Content and the consequences of submitting and publishing it through our Service.</p>
+                    <p><strong>Prohibited Content:</strong> You agree not to submit content that:
+                        <ul>
+                            <li>Infringes on the intellectual property rights of others</li>
+                            <li>Contains malicious code, viruses, or harmful components</li>
+                            <li>Violates any applicable laws or regulations</li>
+                            <li>Contains content that is defamatory, obscene, or offensive</li>
+                        </ul>
+                    </p>
+                    
+                    <h4>6. Intellectual Property Rights</h4>
+                    <p><strong>Our Content:</strong> All content, features, and functionality of our Service, including but not limited to text, graphics, logos, and code, are owned by CodeEnhance AI and are protected by copyright, trademark, and other intellectual property laws.</p>
+                    <p><strong>Use Restrictions:</strong> You may not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on our Service without our express written consent.</p>
+                    
+                    <h4>7. Limitation of Liability</h4>
+                    <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL CODEENHANCE AI, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT, SPECIAL, INCIDENTAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OUR SERVICE.</p>
+                    
+                    <h4>8. Disclaimer of Warranties</h4>
+                    <p>YOUR USE OF OUR SERVICE IS AT YOUR SOLE RISK. THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</p>
+                    <p>WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS, THAT THE SERVICE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE, OR THAT THE RESULTS OBTAINED FROM THE USE OF THE SERVICE WILL BE ACCURATE OR RELIABLE.</p>
+                    
+                    <h4>9. Indemnification</h4>
+                    <p>You agree to defend, indemnify, and hold harmless CodeEnhance AI and its affiliates from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the Service.</p>
+                    
+                    <h4>10. Modifications to the Service and Terms</h4>
+                    <p>We reserve the right to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We also reserve the right to update these Terms at any time. Your continued use of the Service after any such changes constitutes your acceptance of the new Terms.</p>
+                    
+                    <h4>11. Governing Law</h4>
+                    <p>These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
+                    
+                    <h4>12. Dispute Resolution</h4>
+                    <p>Any dispute arising from or relating to these Terms or our Service shall first be resolved through good-faith negotiations. If such negotiations fail, the dispute shall be submitted to binding arbitration in accordance with the rules of the American Arbitration Association.</p>
+                    
+                    <h4>13. Severability</h4>
+                    <p>If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall be enforced to the fullest extent under law.</p>
+                    
+                    <h4>14. Contact Information</h4>
+                    <p>If you have any questions about these Terms, please contact us at:</p>
+                    <p>Email: legal@codeenhance.ai</p>
+                    <p>Address: 123 Tech Street, Suite 456, San Francisco, CA 94105, USA</p>
+                </div>
+            </div>
         </div>
-        <div class="modal-content" style="overflow-y: auto; max-height: 60vh;">
-          <div class="terms-of-service-content">
-            <h3>CodeEnhance AI Terms of Service</h3>
-            <p>Last Updated: December 1, 2023</p>
-            
-            <h4>1. Acceptance of Terms</h4>
-            <p>By accessing or using CodeEnhance AI ("we," "our," or "the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Service.</p>
-            
-            <h4>2. Description of Service</h4>
-            <p>CodeEnhance AI is a platform that uses artificial intelligence to analyze, enhance, and improve code. Our Service may include features such as code enhancement, readability improvements, and performance optimization suggestions.</p>
-            
-            <h4>3. User Accounts</h4>
-            <p><strong>Account Creation:</strong> To access certain features of our Service, you may need to create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</p>
-            <p><strong>Account Information:</strong> You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.</p>
-            <p><strong>Account Termination:</strong> We reserve the right to suspend or terminate your account at our discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.</p>
-            
-            <h4>4. Credits and Payment</h4>
-            <p><strong>Credit System:</strong> Our Service operates on a credit-based system. Each code enhancement may require one or more credits, depending on the complexity and size of the code.</p>
-            <p><strong>Purchasing Credits:</strong> Credits can be purchased through our platform. All payments are processed securely through our payment processors.</p>
-            <p><strong>Refunds:</strong> Credit purchases are generally non-refundable. However, if you encounter significant issues with our Service, please contact us, and we will address your concerns on a case-by-case basis.</p>
-            <p><strong>Pricing Changes:</strong> We reserve the right to change our pricing at any time. Any pricing changes will be communicated to users in advance.</p>
-            
-            <h4>5. User Content</h4>
-            <p><strong>Ownership:</strong> You retain ownership of any code or other content you submit to our Service ("User Content").</p>
-            <p><strong>License Grant:</strong> By submitting User Content to our Service, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and process your User Content for the purpose of providing and improving our Service.</p>
-            <p><strong>Responsibility for Content:</strong> You are solely responsible for your User Content and the consequences of submitting and publishing it through our Service.</p>
-            <p><strong>Prohibited Content:</strong> You agree not to submit content that:
-                <ul>
-                    <li>Infringes on the intellectual property rights of others</li>
-                    <li>Contains malicious code, viruses, or harmful components</li>
-                    <li>Violates any applicable laws or regulations</li>
-                    <li>Contains content that is defamatory, obscene, or offensive</li>
-                </ul>
-            </p>
-            
-            <h4>6. Intellectual Property Rights</h4>
-            <p><strong>Our Content:</strong> All content, features, and functionality of our Service, including but not limited to text, graphics, logos, and code, are owned by CodeEnhance AI and are protected by copyright, trademark, and other intellectual property laws.</p>
-            <p><strong>Use Restrictions:</strong> You may not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on our Service without our express written consent.</p>
-            
-            <h4>7. Limitation of Liability</h4>
-            <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL CODEENHANCE AI, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT, SPECIAL, INCIDENTAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OUR SERVICE.</p>
-            
-            <h4>8. Disclaimer of Warranties</h4>
-            <p>YOUR USE OF OUR SERVICE IS AT YOUR SOLE RISK. THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.</p>
-            <p>WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS, THAT THE SERVICE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE, OR THAT THE RESULTS OBTAINED FROM THE USE OF THE SERVICE WILL BE ACCURATE OR RELIABLE.</p>
-            
-            <h4>9. Indemnification</h4>
-            <p>You agree to defend, indemnify, and hold harmless CodeEnhance AI and its affiliates from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the Service.</p>
-            
-            <h4>10. Modifications to the Service and Terms</h4>
-            <p>We reserve the right to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We also reserve the right to update these Terms at any time. Your continued use of the Service after any such changes constitutes your acceptance of the new Terms.</p>
-            
-            <h4>11. Governing Law</h4>
-            <p>These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
-            
-            <h4>12. Dispute Resolution</h4>
-            <p>Any dispute arising from or relating to these Terms or our Service shall first be resolved through good-faith negotiations. If such negotiations fail, the dispute shall be submitted to binding arbitration in accordance with the rules of the American Arbitration Association.</p>
-            
-            <h4>13. Severability</h4>
-            <p>If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall be enforced to the fullest extent under law.</p>
-            
-            <h4>14. Contact Information</h4>
-            <p>If you have any questions about these Terms, please contact us at:</p>
-            <p>Email: legal@codeenhance.ai</p>
-            <p>Address: 123 Tech Street, Suite 456, San Francisco, CA 94105, USA</p>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Signup Modal -->
     <div class="modal-overlay" id="signup-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Create an Account</h2>
-          <button class="close-modal" id="close-signup-modal">&times;</button>
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create an Account</h2>
+                <button class="close-modal" id="close-signup-modal">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="signup-name"
+                            placeholder="Enter your name"
+                            required
+                            oninvalid="this.setCustomValidity('Please fill out this field')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="signup-email"
+                            placeholder="Enter your email"
+                            required
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="signup-password"
+                            placeholder="Create a password"
+                            required
+                            oninvalid="this.setCustomValidity('Please fill out this field')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
+                            <input type="checkbox" id="signup-agreement" style="margin-top: 3px; margin-right: 10px;" required 
+                                  oninvalid="this.setCustomValidity('Please check this box to continue')"
+                                  oninput="this.setCustomValidity('')" />
+                            <label for="signup-agreement" style="font-size: 0.9rem; color: var(--text-muted);">
+                              I agree to the <a href="#" class="modal-link" data-modal="privacy-policy-modal">Privacy Policy</a> and 
+                              <a href="#" class="modal-link" data-modal="terms-of-service-modal">Terms of Service</a>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="signup-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
+                    <button type="submit" class="btn" style="width: 100%">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </button>
+                </form>
+            </div>
         </div>
-        <div class="modal-content">
-          <form id="signup-form">
-            <div class="form-group">
-              <label for="signup-name">Full Name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="signup-name"
-                placeholder="Enter your name"
-                required
-                oninvalid="this.setCustomValidity('Please fill out this field')"
-                oninput="this.setCustomValidity('')"
-              />
-            </div>
-            <div class="form-group">
-              <label for="signup-email">Email</label>
-              <input
-                type="email"
-                class="form-control"
-                id="signup-email"
-                placeholder="Enter your email"
-                required
-                oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
-                oninput="this.setCustomValidity('')"
-              />
-            </div>
-            <div class="form-group">
-              <label for="signup-password">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="signup-password"
-                placeholder="Create a password"
-                required
-                oninvalid="this.setCustomValidity('Please fill out this field')"
-                oninput="this.setCustomValidity('')"
-              />
-            </div>
-            <div class="form-group">
-              <div style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-                <input type="checkbox" id="signup-agreement" style="margin-top: 3px; margin-right: 10px;" required 
-                      oninvalid="this.setCustomValidity('Please check this box to continue')"
-                      oninput="this.setCustomValidity('')" />
-                <label for="signup-agreement" style="font-size: 0.9rem; color: var(--text-muted);">
-                  I agree to the <a href="#" class="modal-link" data-modal="privacy-policy-modal">Privacy Policy</a> and 
-                  <a href="#" class="modal-link" data-modal="terms-of-service-modal">Terms of Service</a>
-                </label>
-              </div>
-            </div>
-            <div id="signup-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
-            <button type="submit" class="btn" style="width: 100%">
-              <i class="fas fa-user-plus"></i> Sign Up
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
 
     <!-- Buy Credits Modal -->
     <div class="modal-overlay" id="buy-credits-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Buy Enhancement Credits</h2>
-          <button class="close-modal" id="close-buy-credits-modal">
-            &times;
-          </button>
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Buy Enhancement Credits</h2>
+                <button class="close-modal" id="close-buy-credits-modal">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-content">
+                <p>Select a plan that fits your needs:</p>
+
+                <div class="pricing-plans">
+                    <div class="pricing-card" data-plan="basic">
+                        <h3>Basic</h3>
+                        <div class="price">$0.99</div>
+                        <div class="credits">2 Credits</div>
+                    </div>
+
+                    <div class="pricing-card" data-plan="standard">
+                        <h3>Standard</h3>
+                        <div class="price">$4.99</div>
+                        <div class="credits">10 Credits</div>
+                    </div>
+
+                    <div class="pricing-card" data-plan="premium">
+                        <h3>Premium</h3>
+                        <div class="price">$9.99</div>
+                        <div class="credits">30 Credits</div>
+                    </div>
+
+                    <div class="pricing-card" data-plan="monthly">
+                        <h3>Monthly</h3>
+                        <div class="price">$10.99</div>
+                        <div class="credits">50 Credits/Month</div>
+                    </div>
+
+                    <div class="pricing-card" data-plan="yearly">
+                        <h3>Yearly</h3>
+                        <div class="price">$99.90</div>
+                        <div class="credits">1000 Credits/Year</div>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn"
+                    id="purchase-btn"
+                    style="width: 100%; margin-top: 20px; display: flex; justify-content: center; align-items: center;"
+                >
+                    <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i> Purchase Selected Plan
+                </button>
+            </div>
         </div>
-        <div class="modal-content">
-          <p>Select a plan that fits your needs:</p>
-
-          <div class="pricing-plans">
-            <div class="pricing-card" data-plan="basic">
-              <h3>Basic</h3>
-              <div class="price">$0.99</div>
-              <div class="credits">2 Credits</div>
-            </div>
-
-            <div class="pricing-card" data-plan="standard">
-              <h3>Standard</h3>
-              <div class="price">$4.99</div>
-              <div class="credits">10 Credits</div>
-            </div>
-
-            <div class="pricing-card" data-plan="premium">
-              <h3>Premium</h3>
-              <div class="price">$9.99</div>
-              <div class="credits">30 Credits</div>
-            </div>
-
-            <div class="pricing-card" data-plan="monthly">
-              <h3>Monthly</h3>
-              <div class="price">$10.99</div>
-              <div class="credits">50 Credits/Month</div>
-            </div>
-
-            <div class="pricing-card" data-plan="yearly">
-              <h3>Yearly</h3>
-              <div class="price">$99.90</div>
-              <div class="credits">1000 Credits/Year</div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            class="btn"
-            id="purchase-btn"
-            style="width: 100%; margin-top: 20px"
-          >
-            <i class="fas fa-shopping-cart"></i> Purchase Selected Plan
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Toast Notification -->
     <div class="toast" id="toast">
-      <div class="toast-icon">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <div class="toast-content">
-        <div class="toast-message">This is a notification message</div>
-      </div>
-      <button class="toast-close" id="close-toast">&times;</button>
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-message">This is a notification message</div>
+        </div>
+        <button class="toast-close" id="close-toast">&times;</button>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgot-password-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Reset Your Password</h2>
+                <button class="close-modal" id="close-forgot-password-modal">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Enter your email address and we'll send you a link to reset your password.</p>
+                <form id="forgot-password-form">
+                    <div class="form-group">
+                        <label for="reset-email">Email</label>
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="reset-email"
+                            placeholder="Enter your email"
+                            required
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            oninput="this.setCustomValidity('')"
+                        />
+                    </div>
+                    <div id="reset-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
+                    <button type="submit" class="btn" style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Send Reset Link
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
-      // DOM Elements
-      const codeInput = document.getElementById("code-input");
-      const fileUpload = document.getElementById("file-upload");
-      const fileDropArea = document.getElementById("file-drop-area");
-      const enhanceBtn = document.getElementById("enhance-btn");
-      const originalCodeDisplay = document.getElementById(
-        "original-code-display"
-      );
-      const enhancedCodeDisplay = document.getElementById(
-        "enhanced-code-display"
-      );
-      const loadingSpinner = document.getElementById("loading-spinner");
-      const copyOriginalBtn = document.getElementById("copy-original-btn");
-      const copyEnhancedBtn = document.getElementById("copy-enhanced-btn");
-      const downloadBtn = document.getElementById("download-btn");
-      const loginBtn = document.getElementById("login-btn");
-      const signupBtn = document.getElementById("signup-btn");
-      const accountBtn = document.getElementById("account-btn");
-      const buyCreditsBtn = document.getElementById("buy-credits-btn");
-      const logoutBtn = document.getElementById("logout-btn");
-      const creditsDisplay = document.getElementById("credits-display");
-      const creditsCount = document.getElementById("credits-count");
-      const historySection = document.getElementById("history-section");
-      const historyItems = document.getElementById("history-items");
-      const loginModal = document.getElementById("login-modal");
-      const signupModal = document.getElementById("signup-modal");
-      const buyCreditsModal = document.getElementById("buy-credits-modal");
-      const privacyPolicyModal = document.getElementById(
-        "privacy-policy-modal"
-      );
-      const termsOfServiceModal = document.getElementById(
-        "terms-of-service-modal"
-      );
-      const closeLoginModal = document.getElementById("close-login-modal");
-      const closeSignupModal = document.getElementById("close-signup-modal");
-      const closeBuyCreditsModal = document.getElementById(
-        "close-buy-credits-modal"
-      );
-      const closePrivacyPolicyModal = document.getElementById(
-        "close-privacy-policy-modal"
-      );
-      const closeTermsOfServiceModal = document.getElementById(
-        "close-terms-of-service-modal"
-      );
-      const loginForm = document.getElementById("login-form");
-      const signupForm = document.getElementById("signup-form");
-      const purchaseBtn = document.getElementById("purchase-btn");
-      const pricingCards = document.querySelectorAll(".pricing-card");
-      const pasteCodeBtn = document.getElementById("paste-code-btn");
-      const toast = document.getElementById("toast");
-      const closeToast = document.getElementById("close-toast");
-      const privacyPolicyLink = document.querySelector(
-        '.footer-links a:nth-child(1)'
-      );
-      const termsOfServiceLink = document.querySelector(
-        '.footer-links a:nth-child(2)'
-      );
+        // DOM Elements
+        const codeInput = document.getElementById("code-input");
+        const fileUpload = document.getElementById("file-upload");
+        const fileDropArea = document.getElementById("file-drop-area");
+        const enhanceBtn = document.getElementById("enhance-btn");
+        const originalCodeDisplay = document.getElementById(
+            "original-code-display"
+        );
+        const enhancedCodeDisplay = document.getElementById(
+            "enhanced-code-display"
+        );
+        const loadingSpinner = document.getElementById("loading-spinner");
+        const copyOriginalBtn = document.getElementById("copy-original-btn");
+        const copyEnhancedBtn = document.getElementById("copy-enhanced-btn");
+        const downloadBtn = document.getElementById("download-btn");
+        const loginBtn = document.getElementById("login-btn");
+        const signupBtn = document.getElementById("signup-btn");
+        const accountBtn = document.getElementById("account-btn");
+        const buyCreditsBtn = document.getElementById("buy-credits-btn");
+        const logoutBtn = document.getElementById("logout-btn");
+        const creditsDisplay = document.getElementById("credits-display");
+        const creditsCount = document.getElementById("credits-count");
+        const historySection = document.getElementById("history-section");
+        const historyItems = document.getElementById("history-items");
+        const loginModal = document.getElementById("login-modal");
+        const signupModal = document.getElementById("signup-modal");
+        const buyCreditsModal = document.getElementById("buy-credits-modal");
+        const privacyPolicyModal = document.getElementById(
+            "privacy-policy-modal"
+        );
+        const termsOfServiceModal = document.getElementById(
+            "terms-of-service-modal"
+        );
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const closeLoginModal = document.getElementById("close-login-modal");
+        const closeSignupModal = document.getElementById("close-signup-modal");
+        const closeBuyCreditsModal = document.getElementById(
+            "close-buy-credits-modal"
+        );
+        const closePrivacyPolicyModal = document.getElementById(
+            "close-privacy-policy-modal"
+        );
+        const closeTermsOfServiceModal = document.getElementById(
+            "close-terms-of-service-modal"
+        );
+        const closeForgotPasswordModal = document.getElementById('close-forgot-password-modal');
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
+        const purchaseBtn = document.getElementById("purchase-btn");
+        const pricingCards = document.querySelectorAll(".pricing-card");
+        const pasteCodeBtn = document.getElementById("paste-code-btn");
+        const toast = document.getElementById("toast");
+        const closeToast = document.getElementById("close-toast");
+        const privacyPolicyLink = document.querySelector(
+            '.footer-links a:nth-child(1)'
+        );
+        const termsOfServiceLink = document.querySelector(
+            '.footer-links a:nth-child(2)'
+        );
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
 
-      // App State
-      let isLoggedIn = false;
-      let credits = 0;
-      let selectedPlan = null;
-      let codeHistory = [];
-      let freeUsageAvailable = true;
+        // App State
+        let isLoggedIn = false;
+        let credits = 0;
+        let selectedPlan = null;
+        let codeHistory = [];
+        let freeUsageAvailable = true;
 
-      // Initialize the application
-      document.addEventListener("DOMContentLoaded", function () {
-        initializeApp();
-        hljs.highlightAll();
-      });
-
-      function initializeApp() {
-        setupEventListeners();
-        checkStoredSession();
-      }
-
-      function setupEventListeners() {
-        // Code input events
-        codeInput.addEventListener("input", updateOriginalCodeDisplay);
-        fileUpload.addEventListener("change", handleFileUpload);
-        pasteCodeBtn.addEventListener("click", focusCodeInput);
-
-        // File drop area events
-        fileDropArea.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          fileDropArea.classList.add("active");
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            hljs.highlightAll();
+            
+            // Set up navigation
+            setupNavigation();
         });
 
-        fileDropArea.addEventListener("dragleave", (e) => {
-          e.preventDefault();
-          fileDropArea.classList.remove("active");
-        });
-
-        fileDropArea.addEventListener("drop", (e) => {
-          e.preventDefault();
-          fileDropArea.classList.remove("active");
-
-          if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]);
-          }
-        });
-
-        // Button events
-        enhanceBtn.addEventListener("click", enhanceCode);
-        copyOriginalBtn.addEventListener("click", () =>
-          copyToClipboard(originalCodeDisplay.querySelector("code").textContent)
-        );
-        copyEnhancedBtn.addEventListener("click", () =>
-          copyToClipboard(enhancedCodeDisplay.querySelector("code").textContent)
-        );
-        downloadBtn.addEventListener("click", downloadEnhancedCode);
-
-        // Account events
-        loginBtn.addEventListener("click", () => openModal(loginModal));
-        signupBtn.addEventListener("click", () => openModal(signupModal));
-        accountBtn.addEventListener("click", showAccountDetails);
-        buyCreditsBtn.addEventListener("click", () =>
-          openModal(buyCreditsModal)
-        );
-        logoutBtn.addEventListener("click", logout);
-
-        // Modal events
-        closeLoginModal.addEventListener("click", () => closeModal(loginModal));
-        closeSignupModal.addEventListener("click", () =>
-          closeModal(signupModal)
-        );
-        closeBuyCreditsModal.addEventListener("click", () =>
-          closeModal(buyCreditsModal)
-        );
-        closePrivacyPolicyModal.addEventListener("click", () =>
-          closeModal(privacyPolicyModal)
-        );
-        closeTermsOfServiceModal.addEventListener("click", () =>
-          closeModal(termsOfServiceModal)
-        );
-
-        // Footer links
-        privacyPolicyLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          openModal(privacyPolicyModal);
-        });
-        termsOfServiceLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          openModal(termsOfServiceModal);
-        });
-
-        // Form submissions
-        loginForm.addEventListener("submit", handleLogin);
-        signupForm.addEventListener("submit", handleSignup);
-
-        // Pricing plan selection
-        pricingCards.forEach((card) => {
-          card.addEventListener("click", () => selectPricingPlan(card));
-        });
-
-        // Purchase button
-        purchaseBtn.addEventListener("click", purchasePlan);
-
-        // Toast events
-        closeToast.addEventListener("click", hideToast);
-
-        // Modal link events - for Privacy Policy and Terms of Service links inside modals
-        document.querySelectorAll('.modal-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const modalId = link.getAttribute('data-modal');
-                const modal = document.getElementById(modalId);
-                const currentModal = link.closest('.modal-overlay');
-                
-                // Remember which modal we came from
-                modal.dataset.returnModal = currentModal.id;
-                
-                // Hide current modal and show the new one
-                currentModal.classList.remove('active');
-                modal.classList.add('active');
-            });
-        });
+        function initializeApp() {
+            setupEventListeners();
+            checkStoredSession();
+        }
         
-        // Add back button event listeners to modals that might be opened from other modals
-        [closePrivacyPolicyModal, closeTermsOfServiceModal].forEach(closeBtn => {
-            closeBtn.addEventListener('click', (e) => {
-                const modal = closeBtn.closest('.modal-overlay');
-                const returnModalId = modal.dataset.returnModal;
-                
-                if (returnModalId) {
-                    // Close current modal
-                    modal.classList.remove('active');
-                    // Open the return modal
-                    document.getElementById(returnModalId).classList.add('active');
-                    // Clear the return modal data
-                    delete modal.dataset.returnModal;
-                } else {
-                    // Just close the modal normally
-                    closeModal(modal);
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = {
+                'home': document.getElementById('home-page'),
+                'features': document.getElementById('features-page')
+            };
+            
+            // Add click event listeners to navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get the page to show
+                    const pageToShow = this.getAttribute('data-page');
+                    
+                    // Hide all pages
+                    Object.values(pages).forEach(page => {
+                        page.style.display = 'none';
+                    });
+                    
+                    // Show the selected page
+                    pages[pageToShow].style.display = 'block';
+                    
+                    // Update active nav link
+                    navLinks.forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // Handle "Try it Now" button on home page
+            const tryFeaturesBtn = document.querySelector('.try-features-btn');
+            if (tryFeaturesBtn) {
+                tryFeaturesBtn.addEventListener('click', function() {
+                    // Find and click the Features nav link
+                    const featuresLink = document.querySelector('.nav-link[data-page="features"]');
+                    if (featuresLink) {
+                        featuresLink.click();
+                    }
+                });
+            }
+        }
+
+        function setupEventListeners() {
+            // Code input events
+            codeInput.addEventListener("input", updateOriginalCodeDisplay);
+            fileUpload.addEventListener("change", handleFileUpload);
+            pasteCodeBtn.addEventListener("click", focusCodeInput);
+
+            // File drop area events
+            fileDropArea.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                fileDropArea.classList.add("active");
+            });
+
+            fileDropArea.addEventListener("dragleave", (e) => {
+                e.preventDefault();
+                fileDropArea.classList.remove("active");
+            });
+
+            fileDropArea.addEventListener("drop", (e) => {
+                e.preventDefault();
+                fileDropArea.classList.remove("active");
+
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
                 }
             });
-        });
-      }
 
-      function checkStoredSession() {
-        // Check if user was previously logged in (simulated)
-        const storedUser = localStorage.getItem("codeEnhanceUser");
+            // Button events
+            enhanceBtn.addEventListener("click", enhanceCode);
+            copyOriginalBtn.addEventListener("click", () =>
+                copyToClipboard(originalCodeDisplay.querySelector("code").textContent)
+            );
+            copyEnhancedBtn.addEventListener("click", () =>
+                copyToClipboard(enhancedCodeDisplay.querySelector("code").textContent)
+            );
+            downloadBtn.addEventListener("click", downloadEnhancedCode);
 
-        if (storedUser) {
-          const user = JSON.parse(storedUser);
-          setLoggedInState(user.name, user.credits);
-          loadUserHistory();
+            // Account events
+            loginBtn.addEventListener("click", () => openModal(loginModal));
+            signupBtn.addEventListener("click", () => openModal(signupModal));
+            accountBtn.addEventListener("click", showAccountDetails);
+            buyCreditsBtn.addEventListener("click", () =>
+                openModal(buyCreditsModal)
+            );
+            logoutBtn.addEventListener("click", logout);
+
+            // Modal events
+            closeLoginModal.addEventListener("click", () => closeModal(loginModal));
+            closeSignupModal.addEventListener("click", () =>
+                closeModal(signupModal)
+            );
+            closeBuyCreditsModal.addEventListener("click", () =>
+                closeModal(buyCreditsModal)
+            );
+            closePrivacyPolicyModal.addEventListener("click", () =>
+                closeModal(privacyPolicyModal)
+            );
+            closeTermsOfServiceModal.addEventListener("click", () =>
+                closeModal(termsOfServiceModal)
+            );
+            closeForgotPasswordModal.addEventListener('click', () => closeModal(forgotPasswordModal));
+
+            // Footer links
+            privacyPolicyLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                openModal(privacyPolicyModal);
+            });
+            termsOfServiceLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                openModal(termsOfServiceModal);
+            });
+
+            // Form submissions
+            loginForm.addEventListener("submit", handleLogin);
+            signupForm.addEventListener("submit", handleSignup);
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                closeModal(loginModal);
+                openModal(forgotPasswordModal);
+            });
+
+            // Pricing plan selection
+            pricingCards.forEach((card) => {
+                card.addEventListener("click", () => selectPricingPlan(card));
+            });
+
+            // Purchase button
+            purchaseBtn.addEventListener("click", purchasePlan);
+
+            // Toast events
+            closeToast.addEventListener("click", hideToast);
+
+            // Modal link events - for Privacy Policy and Terms of Service links inside modals
+            document.querySelectorAll('.modal-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const modalId = link.getAttribute('data-modal');
+                    const modal = document.getElementById(modalId);
+                    const currentModal = link.closest('.modal-overlay');
+                    
+                    // Remember which modal we came from
+                    modal.dataset.returnModal = currentModal.id;
+                    
+                    // Hide current modal and show the new one
+                    currentModal.classList.remove('active');
+                    modal.classList.add('active');
+                });
+            });
+            
+            // Add back button event listeners to modals that might be opened from other modals
+            [closePrivacyPolicyModal, closeTermsOfServiceModal, closeForgotPasswordModal].forEach(closeBtn => {
+                closeBtn.addEventListener('click', (e) => {
+                    const modal = closeBtn.closest('.modal-overlay');
+                    const returnModalId = modal.dataset.returnModal;
+                    
+                    if (returnModalId) {
+                        // Close current modal
+                        modal.classList.remove('active');
+                        // Open the return modal
+                        document.getElementById(returnModalId).classList.add('active');
+                        // Clear the return modal data
+                        delete modal.dataset.returnModal;
+                    } else {
+                        // Just close the modal normally
+                        closeModal(modal);
+                    }
+                });
+            });
         }
-      }
 
-      function focusCodeInput() {
-        codeInput.focus();
-      }
+        function checkStoredSession() {
+            // Check if user was previously logged in (simulated)
+            const storedUser = localStorage.getItem("codeEnhanceUser");
 
-      function updateOriginalCodeDisplay() {
-        const code = codeInput.value.trim();
-        originalCodeDisplay.innerHTML = code
-          ? `<pre><code>${escapeHtml(code)}</code></pre>`
-          : `<pre><code class="language-javascript">// Your code will appear here</code></pre>`;
-        hljs.highlightAll();
-      }
-
-      function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-          handleFile(file);
-        }
-      }
-
-      function handleFile(file) {
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-          codeInput.value = e.target.result;
-          updateOriginalCodeDisplay();
-        };
-
-        reader.readAsText(file);
-      }
-
-      function enhanceCode() {
-        const code = codeInput.value.trim();
-
-        if (!code) {
-          showToast("Please enter or upload some code first.", "error");
-          return;
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                setLoggedInState(user.name, user.credits);
+                loadUserHistory();
+            }
         }
 
-        if (!isLoggedIn && !freeUsageAvailable) {
-          showToast(
-            "You've used your free enhancement. Please sign up or log in to continue.",
-            "info"
-          );
-          openModal(signupModal);
-          return;
+        function focusCodeInput() {
+            codeInput.focus();
         }
 
-        if (isLoggedIn && credits <= 0) {
-          showToast(
-            "You're out of credits. Purchase more to continue.",
-            "info"
-          );
-          openModal(buyCreditsModal);
-          return;
+        function updateOriginalCodeDisplay() {
+            const code = codeInput.value.trim();
+            originalCodeDisplay.innerHTML = code
+                ? `<pre><code>${escapeHtml(code)}</code></pre>`
+                : `<pre><code class="language-javascript">// Your code will appear here</code></pre>`;
+            hljs.highlightAll();
         }
 
-        loadingSpinner.style.display = "flex";
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
 
-        // Simulate API call delay
-        setTimeout(() => {
-          generateEnhancedCode(code);
-          loadingSpinner.style.display = "none";
+        function handleFile(file) {
+            const reader = new FileReader();
 
-          // Update credits if logged in
-          if (isLoggedIn) {
-            credits--;
+            reader.onload = function (e) {
+                codeInput.value = e.target.result;
+                updateOriginalCodeDisplay();
+            };
+
+            reader.readAsText(file);
+        }
+
+        function enhanceCode() {
+            const code = codeInput.value.trim();
+
+            if (!code) {
+                showToast("Please enter or upload some code first.", "error");
+                return;
+            }
+
+            if (!isLoggedIn && !freeUsageAvailable) {
+                showToast(
+                    "You've used your free enhancement. Please sign up or log in to continue.",
+                    "info"
+                );
+                openModal(signupModal);
+                return;
+            }
+
+            if (isLoggedIn && credits <= 0) {
+                showToast(
+                    "You're out of credits. Purchase more to continue.",
+                    "info"
+                );
+                openModal(buyCreditsModal);
+                return;
+            }
+
+            loadingSpinner.style.display = "flex";
+
+            // Simulate API call delay
+            setTimeout(() => {
+                generateEnhancedCode(code);
+                loadingSpinner.style.display = "none";
+
+                // Update credits if logged in
+                if (isLoggedIn) {
+                    credits--;
+                    updateCreditsDisplay();
+                    saveUserData();
+                } else {
+                    freeUsageAvailable = false;
+                }
+
+                // Add to history if logged in
+                if (isLoggedIn) {
+                    addToHistory(code);
+                }
+
+                showToast("Code enhanced successfully!", "success");
+            }, 2000);
+        }
+
+        function generateEnhancedCode(code) {
+            // This is a mock AI enhancement. In a real application, this would be an API call.
+            const language = detectLanguage(code);
+            let enhancedCode = "";
+
+            // Simple example transformations for JavaScript
+            if (language === "javascript") {
+                // Replace var with const/let
+                enhancedCode = code.replace(
+                    /var\s+([a-zA-Z_$][0-9a-zA-Z_$]*)/g,
+                    "const $1"
+                );
+
+                // Add some comments
+                if (enhancedCode.includes("function")) {
+                    enhancedCode = enhancedCode.replace(
+                        /function\s+([a-zA-Z_$][0-9a-zA-Z_$]*)/g,
+                        "// Function $1 handles specific logic\nfunction $1"
+                    );
+                }
+
+                // Improve console.log statements
+                enhancedCode = enhancedCode.replace(
+                    /console\.log\((.*?)\);/g,
+                    "// DEBUG: Output for debugging\nconsole.log($1);"
+                );
+
+                // Add error handling for fetch
+                if (
+                    enhancedCode.includes("fetch(") &&
+                    !enhancedCode.includes("catch")
+                ) {
+                    enhancedCode = enhancedCode
+                        .replace(/fetch\((.*?)\)\.then/g, "fetch($1)\n  .then")
+                        .replace(
+                            /\.then\((.*?)\)\s*;/g,
+                            '.then($1)\n  .catch(error => {\n    // Added error handling\n    console.error("Error:", error);\n  });'
+                        );
+                }
+
+                // Simulate adding a new utility function
+                if (Math.random() > 0.5 && !enhancedCode.includes("debounce")) {
+                    enhancedCode +=
+                        "\n\n// Added utility function for performance optimization\n/**\n * Debounces function calls to improve performance\n * @param {Function} func - The function to debounce\n * @param {number} wait - Wait time in milliseconds\n * @return {Function} - Debounced function\n */\nfunction debounce(func, wait) {\n  let timeout;\n  return function(...args) {\n    clearTimeout(timeout);\n    timeout = setTimeout(() => func.apply(this, args), wait);\n  };\n}";
+                }
+            } else if (language === "python") {
+                // Add docstrings
+                enhancedCode = code.replace(
+                    /def\s+([a-zA-Z_][0-9a-zA-Z_]*)\((.*?)\):/g,
+                    'def $1($2):\n    """\n    Function $1 handles specific logic.\n    \n    Parameters:\n        $2\n    Returns:\n        Result of the operation\n    """\n'
+                );
+
+                // Convert prints to f-strings
+                enhancedCode = enhancedCode.replace(
+                    /print\("(.*?)"\s*\+\s*str\((.*?)\)(.*?)\)/g,
+                    'print(f"$1{$2}$3")'
+                );
+
+                // Add exception handling
+                if (
+                    enhancedCode.includes("open(") &&
+                    !enhancedCode.includes("try:")
+                ) {
+                    enhancedCode = enhancedCode.replace(
+                        /([^\n]*open\(.*?\).*?\n)/g,
+                        'try:\n    $1except FileNotFoundError as e:\n    # Added error handling for file operations\n    print(f"Error: {e}")\n'
+                    );
+                }
+            } else {
+                // Generic enhancements for other languages
+                enhancedCode = "// Enhanced version of your code\n\n" + code;
+
+                // Add some generic comments
+                enhancedCode = enhancedCode.replace(/\/\/.*?\n/g, ""); // Remove existing single-line comments
+                const lines = enhancedCode.split("\n");
+                let newLines = [];
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (Math.random() > 0.8 && lines[i].trim().length > 0) {
+                        newLines.push(
+                            `// Improved this line for better ${
+                                Math.random() > 0.5 ? "performance" : "readability"
+                            }`
+                        );
+                    }
+                    newLines.push(lines[i]);
+                }
+
+                enhancedCode = newLines.join("\n");
+            }
+
+            // Display the enhanced code with highlighting
+            displayEnhancedCode(code, enhancedCode);
+        }
+
+        function detectLanguage(code) {
+            // Simple language detection based on keywords/syntax
+            if (
+                code.includes("function") ||
+                code.includes("const") ||
+                code.includes("let") ||
+                code.includes("var") ||
+                code.includes("=>")
+            ) {
+                return "javascript";
+            } else if (
+                code.includes("def") ||
+                code.includes("import") ||
+                (code.includes("class") && code.includes(":"))
+            ) {
+                return "python";
+            } else {
+                return "generic";
+            }
+        }
+
+        function displayEnhancedCode(originalCode, enhancedCode) {
+            // Parse and highlight differences between original and enhanced code
+            const diff = calculateDiff(originalCode, enhancedCode);
+            enhancedCodeDisplay.innerHTML = `<pre><code>${diff}</code></pre>`;
+            hljs.highlightAll();
+        }
+
+        function calculateDiff(originalCode, enhancedCode) {
+            // This is a simplified diff algorithm
+            const originalLines = originalCode.split("\n");
+            const enhancedLines = enhancedCode.split("\n");
+            let result = "";
+
+            // Keep track of where we are in both arrays
+            let i = 0,
+                j = 0;
+
+            while (i < enhancedLines.length) {
+                const enhancedLine = enhancedLines[i];
+
+                // Check if this is a comment line that was added
+                if (
+                    enhancedLine.trim().startsWith("//") ||
+                    enhancedLine.trim().startsWith("/*") ||
+                    enhancedLine.trim().startsWith("*") ||
+                    enhancedLine.trim().startsWith('"""')
+                ) {
+                    result += `<span class="added comment">${escapeHtml(
+                        enhancedLine
+                    )}</span>\n`;
+                    i++;
+                    continue;
+                }
+
+                // If we still have original lines to compare
+                if (j < originalLines.length) {
+                    const originalLine = originalLines[j];
+
+                    // If lines are identical
+                    if (enhancedLine === originalLine) {
+                        result += escapeHtml(enhancedLine) + "\n";
+                        i++;
+                        j++;
+                    }
+                    // If lines are similar (modification)
+                    else if (
+                        enhancedLine.includes(originalLine) ||
+                        originalLine.includes(enhancedLine) ||
+                        levenshteinDistance(enhancedLine, originalLine) <
+                            Math.max(enhancedLine.length, originalLine.length) * 0.3
+                    ) {
+                        result += `<span class="modified">${escapeHtml(
+                            enhancedLine
+                        )}</span>\n`;
+                        i++;
+                        j++;
+                    }
+                    // Line was deleted from original
+                    else if (
+                        i + 1 < enhancedLines.length &&
+                        enhancedLines[i + 1] === originalLine
+                    ) {
+                        result += `<span class="deleted">${escapeHtml(
+                            originalLine
+                        )}</span>\n`;
+                        j++;
+                    }
+                    // Line was added in enhanced
+                    else {
+                        result += `<span class="added">${escapeHtml(
+                            enhancedLine
+                        )}</span>\n`;
+                        i++;
+                    }
+                } else {
+                    // All original lines are processed, these are additions
+                    result += `<span class="added">${escapeHtml(
+                        enhancedLine
+                    )}</span>\n`;
+                    i++;
+                }
+            }
+
+            // Handle any remaining original lines as deletions
+            while (j < originalLines.length) {
+                result += `<span class="deleted">${escapeHtml(
+                    originalLines[j]
+                )}</span>\n`;
+                j++;
+            }
+
+            return result.trim();
+        }
+
+        function levenshteinDistance(a, b) {
+            // Simple implementation of Levenshtein distance algorithm
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+
+            const matrix = [];
+
+            // Initialize matrix
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            // Fill in the rest of the matrix
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // substitution
+                            matrix[i][j - 1] + 1, // insertion
+                            matrix[i - 1][j] + 1 // deletion
+                        );
+                    }
+                }
+            }
+
+            return matrix[b.length][a.length];
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard
+                .writeText(text)
+                .then(() => {
+                    showToast("Code copied to clipboard", "success");
+                })
+                .catch((err) => {
+                    showToast("Failed to copy text: " + err, "error");
+                });
+        }
+
+        function downloadEnhancedCode() {
+            const code = enhancedCodeDisplay.querySelector("code").textContent;
+            const language = detectLanguage(code);
+            let extension = ".txt";
+
+            switch (language) {
+                case "javascript":
+                    extension = ".js";
+                    break;
+                case "python":
+                    extension = ".py";
+                    break;
+                // Add more languages as needed
+            }
+
+            const blob = new Blob([code], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "enhanced-code" + extension;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast("Code downloaded successfully", "success");
+        }
+
+        // Authentication functions
+        function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const agreement = document.getElementById("login-agreement").checked;
+            const errorDiv = document.getElementById("login-error");
+            
+            // Reset error messages
+            errorDiv.style.display = "none";
+            errorDiv.textContent = "";
+            
+            // Email validation regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            // Validate email format
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = "Please enter a valid email address";
+                errorDiv.style.display = "block";
+                return;
+            }
+            
+            // Check agreement
+            if (!agreement) {
+                errorDiv.textContent = "You must agree to the Privacy Policy and Terms of Service";
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            // Simulate API login (would be a real API call in production)
+            setTimeout(() => {
+                // For demo purposes, any valid-looking email will "work"
+                if (email.includes("@") && password.length > 3) {
+                    const userName = email.split("@")[0];
+                    setLoggedInState(userName, 5); // Start with 5 credits
+                    closeModal(loginModal);
+                    loadUserHistory();
+                    showToast("Successfully logged in", "success");
+                } else {
+                    errorDiv.textContent = "Invalid email or password";
+                    errorDiv.style.display = "block";
+                }
+            }, 1000);
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+
+            const name = document.getElementById("signup-name").value;
+            const email = document.getElementById("signup-email").value;
+            const password = document.getElementById("signup-password").value;
+            const agreement = document.getElementById("signup-agreement").checked;
+            const errorDiv = document.getElementById("signup-error");
+            
+            // Reset error messages
+            errorDiv.style.display = "none";
+            errorDiv.textContent = "";
+            
+            // Email validation regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            // Validate email format
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = "Please enter a valid email address";
+                errorDiv.style.display = "block";
+                return;
+            }
+            
+            // Check agreement
+            if (!agreement) {
+                errorDiv.textContent = "You must agree to the Privacy Policy and Terms of Service";
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            // Simulate API signup (would be a real API call in production)
+            setTimeout(() => {
+                if (name && email.includes("@") && password.length > 5) {
+                    setLoggedInState(name, 3); // New users get 3 free credits
+                    closeModal(signupModal);
+                    showToast("Account created successfully", "success");
+                } else {
+                    if (password.length <= 5) {
+                        errorDiv.textContent = "Password must be at least 6 characters long";
+                    } else {
+                        errorDiv.textContent = "Please fill out all fields correctly";
+                    }
+                    errorDiv.style.display = "block";
+                }
+            }, 1000);
+        }
+
+        function setLoggedInState(userName, userCredits) {
+            isLoggedIn = true;
+            credits = userCredits;
+
+            // Update UI for logged in state
+            loginBtn.style.display = "none";
+            signupBtn.style.display = "none";
+            accountBtn.style.display = "inline-flex";
+            buyCreditsBtn.style.display = "inline-flex";
+            logoutBtn.style.display = "inline-flex";
+            creditsDisplay.style.display = "flex";
+            historySection.style.display = "block";
+
+            // Update credits display
             updateCreditsDisplay();
+
+            // Save to localStorage (in a real app, this would be managed by backend sessions)
+            saveUserData(userName);
+        }
+
+        function saveUserData(userName) {
+            const userData = {
+                name:
+                    userName ||
+                    JSON.parse(localStorage.getItem("codeEnhanceUser")).name,
+                credits: credits,
+                history: codeHistory,
+            };
+
+            localStorage.setItem("codeEnhanceUser", JSON.stringify(userData));
+        }
+
+        function updateCreditsDisplay() {
+            creditsCount.textContent = credits;
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            credits = 0;
+            codeHistory = [];
+
+            // Update UI for logged out state
+            loginBtn.style.display = "inline-flex";
+            signupBtn.style.display = "inline-flex";
+            accountBtn.style.display = "none";
+            buyCreditsBtn.style.display = "none";
+            logoutBtn.style.display = "none";
+            creditsDisplay.style.display = "none";
+            historySection.style.display = "none";
+            historyItems.innerHTML = "";
+
+            // Clear localStorage
+            localStorage.removeItem("codeEnhanceUser");
+
+            showToast("You have been logged out", "info");
+        }
+
+        function showAccountDetails() {
+            // This would typically open an account details page or modal
+            // For this demo, we'll just show a toast with the information
+            showToast(
+                `Account Info: ${
+                    JSON.parse(localStorage.getItem("codeEnhanceUser")).name
+                } | ${credits} credits remaining`,
+                "info"
+            );
+        }
+
+        function selectPricingPlan(card) {
+            // Remove selected class from all cards
+            pricingCards.forEach((c) => c.classList.remove("selected"));
+
+            // Add selected class to clicked card
+            card.classList.add("selected");
+
+            // Store selected plan
+            selectedPlan = card.dataset.plan;
+        }
+
+        function purchasePlan() {
+            if (!selectedPlan) {
+                showToast("Please select a plan first", "error");
+                return;
+            }
+
+            // Simulate payment processing
+            showToast("Processing payment...", "info");
+
+            setTimeout(() => {
+                let creditsToAdd = 0;
+
+                switch (selectedPlan) {
+                    case "basic":
+                        creditsToAdd = 2;
+                        break;
+                    case "standard":
+                        creditsToAdd = 10;
+                        break;
+                    case "premium":
+                        creditsToAdd = 30;
+                        break;
+                    case "monthly":
+                        creditsToAdd = 50;
+                        break;
+                    case "yearly":
+                        creditsToAdd = 1000;
+                        break;
+                }
+
+                credits += creditsToAdd;
+                updateCreditsDisplay();
+                saveUserData();
+                closeModal(buyCreditsModal);
+                showToast(
+                    `Successfully purchased ${creditsToAdd} credits!`,
+                    "success"
+                );
+            }, 2000);
+        }
+
+        // History functions
+        function addToHistory(code) {
+            const historyItem = {
+                id: Date.now(),
+                timestamp: new Date(),
+                codePreview:
+                    code.substring(0, 100) + (code.length > 100 ? "..." : ""),
+                code: code,
+            };
+
+            codeHistory.unshift(historyItem); // Add to beginning of array
+
+            // Limit history to 10 items
+            if (codeHistory.length > 10) {
+                codeHistory.pop();
+            }
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Save to localStorage
             saveUserData();
-          } else {
-            freeUsageAvailable = false;
-          }
+        }
 
-          // Add to history if logged in
-          if (isLoggedIn) {
-            addToHistory(code);
-          }
+        function loadUserHistory() {
+            const userData = JSON.parse(localStorage.getItem("codeEnhanceUser"));
 
-          showToast("Code enhanced successfully!", "success");
-        }, 2000);
-      }
-
-      function generateEnhancedCode(code) {
-        // This is a mock AI enhancement. In a real application, this would be an API call.
-        const language = detectLanguage(code);
-        let enhancedCode = "";
-
-        // Simple example transformations for JavaScript
-        if (language === "javascript") {
-          // Replace var with const/let
-          enhancedCode = code.replace(
-            /var\s+([a-zA-Z_$][0-9a-zA-Z_$]*)/g,
-            "const $1"
-          );
-
-          // Add some comments
-          if (enhancedCode.includes("function")) {
-            enhancedCode = enhancedCode.replace(
-              /function\s+([a-zA-Z_$][0-9a-zA-Z_$]*)/g,
-              "// Function $1 handles specific logic\nfunction $1"
-            );
-          }
-
-          // Improve console.log statements
-          enhancedCode = enhancedCode.replace(
-            /console\.log\((.*?)\);/g,
-            "// DEBUG: Output for debugging\nconsole.log($1);"
-          );
-
-          // Add error handling for fetch
-          if (
-            enhancedCode.includes("fetch(") &&
-            !enhancedCode.includes("catch")
-          ) {
-            enhancedCode = enhancedCode
-              .replace(/fetch\((.*?)\)\.then/g, "fetch($1)\n  .then")
-              .replace(
-                /\.then\((.*?)\)\s*;/g,
-                '.then($1)\n  .catch(error => {\n    // Added error handling\n    console.error("Error:", error);\n  });'
-              );
-          }
-
-          // Simulate adding a new utility function
-          if (Math.random() > 0.5 && !enhancedCode.includes("debounce")) {
-            enhancedCode +=
-              "\n\n// Added utility function for performance optimization\n/**\n * Debounces function calls to improve performance\n * @param {Function} func - The function to debounce\n * @param {number} wait - Wait time in milliseconds\n * @return {Function} - Debounced function\n */\nfunction debounce(func, wait) {\n  let timeout;\n  return function(...args) {\n    clearTimeout(timeout);\n    timeout = setTimeout(() => func.apply(this, args), wait);\n  };\n}";
-          }
-        } else if (language === "python") {
-          // Add docstrings
-          enhancedCode = code.replace(
-            /def\s+([a-zA-Z_][0-9a-zA-Z_]*)\((.*?)\):/g,
-            'def $1($2):\n    """\n    Function $1 handles specific logic.\n    \n    Parameters:\n        $2\n    Returns:\n        Result of the operation\n    """\n'
-          );
-
-          // Convert prints to f-strings
-          enhancedCode = enhancedCode.replace(
-            /print\("(.*?)"\s*\+\s*str\((.*?)\)(.*?)\)/g,
-            'print(f"$1{$2}$3")'
-          );
-
-          // Add exception handling
-          if (
-            enhancedCode.includes("open(") &&
-            !enhancedCode.includes("try:")
-          ) {
-            enhancedCode = enhancedCode.replace(
-              /([^\n]*open\(.*?\).*?\n)/g,
-              'try:\n    $1except FileNotFoundError as e:\n    # Added error handling for file operations\n    print(f"Error: {e}")\n'
-            );
-          }
-        } else {
-          // Generic enhancements for other languages
-          enhancedCode = "// Enhanced version of your code\n\n" + code;
-
-          // Add some generic comments
-          enhancedCode = enhancedCode.replace(/\/\/.*?\n/g, ""); // Remove existing single-line comments
-          const lines = enhancedCode.split("\n");
-          let newLines = [];
-
-          for (let i = 0; i < lines.length; i++) {
-            if (Math.random() > 0.8 && lines[i].trim().length > 0) {
-              newLines.push(
-                `// Improved this line for better ${
-                  Math.random() > 0.5 ? "performance" : "readability"
-                }`
-              );
+            if (userData && userData.history) {
+                codeHistory = userData.history;
+                updateHistoryDisplay();
             }
-            newLines.push(lines[i]);
-          }
-
-          enhancedCode = newLines.join("\n");
         }
 
-        // Display the enhanced code with highlighting
-        displayEnhancedCode(code, enhancedCode);
-      }
+        function updateHistoryDisplay() {
+            historyItems.innerHTML = "";
 
-      function detectLanguage(code) {
-        // Simple language detection based on keywords/syntax
-        if (
-          code.includes("function") ||
-          code.includes("const") ||
-          code.includes("let") ||
-          code.includes("var") ||
-          code.includes("=>")
-        ) {
-          return "javascript";
-        } else if (
-          code.includes("def") ||
-          code.includes("import") ||
-          (code.includes("class") && code.includes(":"))
-        ) {
-          return "python";
-        } else {
-          return "generic";
-        }
-      }
-
-      function displayEnhancedCode(originalCode, enhancedCode) {
-        // Parse and highlight differences between original and enhanced code
-        const diff = calculateDiff(originalCode, enhancedCode);
-        enhancedCodeDisplay.innerHTML = `<pre><code>${diff}</code></pre>`;
-        hljs.highlightAll();
-      }
-
-      function calculateDiff(originalCode, enhancedCode) {
-        // This is a simplified diff algorithm
-        const originalLines = originalCode.split("\n");
-        const enhancedLines = enhancedCode.split("\n");
-        let result = "";
-
-        // Keep track of where we are in both arrays
-        let i = 0,
-          j = 0;
-
-        while (i < enhancedLines.length) {
-          const enhancedLine = enhancedLines[i];
-
-          // Check if this is a comment line that was added
-          if (
-            enhancedLine.trim().startsWith("//") ||
-            enhancedLine.trim().startsWith("/*") ||
-            enhancedLine.trim().startsWith("*") ||
-            enhancedLine.trim().startsWith('"""')
-          ) {
-            result += `<span class="added comment">${escapeHtml(
-              enhancedLine
-            )}</span>\n`;
-            i++;
-            continue;
-          }
-
-          // If we still have original lines to compare
-          if (j < originalLines.length) {
-            const originalLine = originalLines[j];
-
-            // If lines are identical
-            if (enhancedLine === originalLine) {
-              result += escapeHtml(enhancedLine) + "\n";
-              i++;
-              j++;
+            if (codeHistory.length === 0) {
+                historyItems.innerHTML =
+                    "<p>No history yet. Enhance some code to see it here.</p>";
+                return;
             }
-            // If lines are similar (modification)
-            else if (
-              enhancedLine.includes(originalLine) ||
-              originalLine.includes(enhancedLine) ||
-              levenshteinDistance(enhancedLine, originalLine) <
-                Math.max(enhancedLine.length, originalLine.length) * 0.3
-            ) {
-              result += `<span class="modified">${escapeHtml(
-                enhancedLine
-              )}</span>\n`;
-              i++;
-              j++;
-            }
-            // Line was deleted from original
-            else if (
-              i + 1 < enhancedLines.length &&
-              enhancedLines[i + 1] === originalLine
-            ) {
-              result += `<span class="deleted">${escapeHtml(
-                originalLine
-              )}</span>\n`;
-              j++;
-            }
-            // Line was added in enhanced
-            else {
-              result += `<span class="added">${escapeHtml(
-                enhancedLine
-              )}</span>\n`;
-              i++;
-            }
-          } else {
-            // All original lines are processed, these are additions
-            result += `<span class="added">${escapeHtml(
-              enhancedLine
-            )}</span>\n`;
-            i++;
-          }
-        }
 
-        // Handle any remaining original lines as deletions
-        while (j < originalLines.length) {
-          result += `<span class="deleted">${escapeHtml(
-            originalLines[j]
-          )}</span>\n`;
-          j++;
-        }
+            codeHistory.forEach((item) => {
+                const historyItem = document.createElement("div");
+                historyItem.className = "history-item";
+                historyItem.dataset.id = item.id;
 
-        return result.trim();
-      }
+                const date = new Date(item.timestamp);
+                const formattedDate =
+                    date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
-      function levenshteinDistance(a, b) {
-        // Simple implementation of Levenshtein distance algorithm
-        if (a.length === 0) return b.length;
-        if (b.length === 0) return a.length;
-
-        const matrix = [];
-
-        // Initialize matrix
-        for (let i = 0; i <= b.length; i++) {
-          matrix[i] = [i];
-        }
-
-        for (let j = 0; j <= a.length; j++) {
-          matrix[0][j] = j;
-        }
-
-        // Fill in the rest of the matrix
-        for (let i = 1; i <= b.length; i++) {
-          for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-              matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
-              matrix[i][j] = Math.min(
-                matrix[i - 1][j - 1] + 1, // substitution
-                matrix[i][j - 1] + 1, // insertion
-                matrix[i - 1][j] + 1 // deletion
-              );
-            }
-          }
-        }
-
-        return matrix[b.length][a.length];
-      }
-
-      function copyToClipboard(text) {
-        navigator.clipboard
-          .writeText(text)
-          .then(() => {
-            showToast("Code copied to clipboard", "success");
-          })
-          .catch((err) => {
-            showToast("Failed to copy text: " + err, "error");
-          });
-      }
-
-      function downloadEnhancedCode() {
-        const code = enhancedCodeDisplay.querySelector("code").textContent;
-        const language = detectLanguage(code);
-        let extension = ".txt";
-
-        switch (language) {
-          case "javascript":
-            extension = ".js";
-            break;
-          case "python":
-            extension = ".py";
-            break;
-          // Add more languages as needed
-        }
-
-        const blob = new Blob([code], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "enhanced-code" + extension;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        showToast("Code downloaded successfully", "success");
-      }
-
-      // Authentication functions
-      function handleLogin(e) {
-        e.preventDefault();
-
-        const email = document.getElementById("login-email").value;
-        const password = document.getElementById("login-password").value;
-        const agreement = document.getElementById("login-agreement").checked;
-        const errorDiv = document.getElementById("login-error");
-        
-        // Reset error messages
-        errorDiv.style.display = "none";
-        errorDiv.textContent = "";
-        
-        // Email validation regex
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        // Validate email format
-        if (!emailRegex.test(email)) {
-          errorDiv.textContent = "Please enter a valid email address";
-          errorDiv.style.display = "block";
-          return;
-        }
-        
-        // Check agreement
-        if (!agreement) {
-          errorDiv.textContent = "You must agree to the Privacy Policy and Terms of Service";
-          errorDiv.style.display = "block";
-          return;
-        }
-
-        // Simulate API login (would be a real API call in production)
-        setTimeout(() => {
-          // For demo purposes, any valid-looking email will "work"
-          if (email.includes("@") && password.length > 3) {
-            const userName = email.split("@")[0];
-            setLoggedInState(userName, 5); // Start with 5 credits
-            closeModal(loginModal);
-            loadUserHistory();
-            showToast("Successfully logged in", "success");
-          } else {
-            errorDiv.textContent = "Invalid email or password";
-            errorDiv.style.display = "block";
-          }
-        }, 1000);
-      }
-
-      function handleSignup(e) {
-        e.preventDefault();
-
-        const name = document.getElementById("signup-name").value;
-        const email = document.getElementById("signup-email").value;
-        const password = document.getElementById("signup-password").value;
-        const agreement = document.getElementById("signup-agreement").checked;
-        const errorDiv = document.getElementById("signup-error");
-        
-        // Reset error messages
-        errorDiv.style.display = "none";
-        errorDiv.textContent = "";
-        
-        // Email validation regex
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        // Validate email format
-        if (!emailRegex.test(email)) {
-          errorDiv.textContent = "Please enter a valid email address";
-          errorDiv.style.display = "block";
-          return;
-        }
-        
-        // Check agreement
-        if (!agreement) {
-          errorDiv.textContent = "You must agree to the Privacy Policy and Terms of Service";
-          errorDiv.style.display = "block";
-          return;
-        }
-
-        // Simulate API signup (would be a real API call in production)
-        setTimeout(() => {
-          if (name && email.includes("@") && password.length > 5) {
-            setLoggedInState(name, 3); // New users get 3 free credits
-            closeModal(signupModal);
-            showToast("Account created successfully", "success");
-          } else {
-            if (password.length <= 5) {
-              errorDiv.textContent = "Password must be at least 6 characters long";
-            } else {
-              errorDiv.textContent = "Please fill out all fields correctly";
-            }
-            errorDiv.style.display = "block";
-          }
-        }, 1000);
-      }
-
-      function setLoggedInState(userName, userCredits) {
-        isLoggedIn = true;
-        credits = userCredits;
-
-        // Update UI for logged in state
-        loginBtn.style.display = "none";
-        signupBtn.style.display = "none";
-        accountBtn.style.display = "inline-flex";
-        buyCreditsBtn.style.display = "inline-flex";
-        logoutBtn.style.display = "inline-flex";
-        creditsDisplay.style.display = "flex";
-        historySection.style.display = "block";
-
-        // Update credits display
-        updateCreditsDisplay();
-
-        // Save to localStorage (in a real app, this would be managed by backend sessions)
-        saveUserData(userName);
-      }
-
-      function saveUserData(userName) {
-        const userData = {
-          name:
-            userName ||
-            JSON.parse(localStorage.getItem("codeEnhanceUser")).name,
-          credits: credits,
-          history: codeHistory,
-        };
-
-        localStorage.setItem("codeEnhanceUser", JSON.stringify(userData));
-      }
-
-      function updateCreditsDisplay() {
-        creditsCount.textContent = credits;
-      }
-
-      function logout() {
-        isLoggedIn = false;
-        credits = 0;
-        codeHistory = [];
-
-        // Update UI for logged out state
-        loginBtn.style.display = "inline-flex";
-        signupBtn.style.display = "inline-flex";
-        accountBtn.style.display = "none";
-        buyCreditsBtn.style.display = "none";
-        logoutBtn.style.display = "none";
-        creditsDisplay.style.display = "none";
-        historySection.style.display = "none";
-        historyItems.innerHTML = "";
-
-        // Clear localStorage
-        localStorage.removeItem("codeEnhanceUser");
-
-        showToast("You have been logged out", "info");
-      }
-
-      function showAccountDetails() {
-        // This would typically open an account details page or modal
-        // For this demo, we'll just show a toast with the information
-        showToast(
-          `Account Info: ${
-            JSON.parse(localStorage.getItem("codeEnhanceUser")).name
-          } | ${credits} credits remaining`,
-          "info"
-        );
-      }
-
-      function selectPricingPlan(card) {
-        // Remove selected class from all cards
-        pricingCards.forEach((c) => c.classList.remove("selected"));
-
-        // Add selected class to clicked card
-        card.classList.add("selected");
-
-        // Store selected plan
-        selectedPlan = card.dataset.plan;
-      }
-
-      function purchasePlan() {
-        if (!selectedPlan) {
-          showToast("Please select a plan first", "error");
-          return;
-        }
-
-        // Simulate payment processing
-        showToast("Processing payment...", "info");
-
-        setTimeout(() => {
-          let creditsToAdd = 0;
-
-          switch (selectedPlan) {
-            case "basic":
-              creditsToAdd = 2;
-              break;
-            case "standard":
-              creditsToAdd = 10;
-              break;
-            case "premium":
-              creditsToAdd = 30;
-              break;
-            case "monthly":
-              creditsToAdd = 50;
-              break;
-            case "yearly":
-              creditsToAdd = 1000;
-              break;
-          }
-
-          credits += creditsToAdd;
-          updateCreditsDisplay();
-          saveUserData();
-          closeModal(buyCreditsModal);
-          showToast(
-            `Successfully purchased ${creditsToAdd} credits!`,
-            "success"
-          );
-        }, 2000);
-      }
-
-      // History functions
-      function addToHistory(code) {
-        const historyItem = {
-          id: Date.now(),
-          timestamp: new Date(),
-          codePreview:
-            code.substring(0, 100) + (code.length > 100 ? "..." : ""),
-          code: code,
-        };
-
-        codeHistory.unshift(historyItem); // Add to beginning of array
-
-        // Limit history to 10 items
-        if (codeHistory.length > 10) {
-          codeHistory.pop();
-        }
-
-        // Update history display
-        updateHistoryDisplay();
-
-        // Save to localStorage
-        saveUserData();
-      }
-
-      function loadUserHistory() {
-        const userData = JSON.parse(localStorage.getItem("codeEnhanceUser"));
-
-        if (userData && userData.history) {
-          codeHistory = userData.history;
-          updateHistoryDisplay();
-        }
-      }
-
-      function updateHistoryDisplay() {
-        historyItems.innerHTML = "";
-
-        if (codeHistory.length === 0) {
-          historyItems.innerHTML =
-            "<p>No history yet. Enhance some code to see it here.</p>";
-          return;
-        }
-
-        codeHistory.forEach((item) => {
-          const historyItem = document.createElement("div");
-          historyItem.className = "history-item";
-          historyItem.dataset.id = item.id;
-
-          const date = new Date(item.timestamp);
-          const formattedDate =
-            date.toLocaleDateString() + " " + date.toLocaleTimeString();
-
-          historyItem.innerHTML = `
+                historyItem.innerHTML = `
                     <div class="timestamp">${formattedDate}</div>
                     <div class="code-preview">${escapeHtml(
-                      item.codePreview
+                        item.codePreview
                     )}</div>
                 `;
 
-          historyItem.addEventListener("click", () => loadHistoryItem(item));
+                historyItem.addEventListener("click", () => loadHistoryItem(item));
 
-          historyItems.appendChild(historyItem);
-        });
-      }
-
-      function loadHistoryItem(item) {
-        codeInput.value = item.code;
-        updateOriginalCodeDisplay();
-        showToast("History item loaded", "info");
-
-        // Scroll to code input
-        codeInput.scrollIntoView({ behavior: "smooth" });
-      }
-
-      // UI helper functions
-      function openModal(modal) {
-        modal.classList.add("active");
-        document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
-      }
-
-      function closeModal(modal) {
-        modal.classList.remove("active");
-        document.body.style.overflow = ""; // Re-enable scrolling
-        
-        // Clear form data when closing login or signup modals
-        if (modal === loginModal) {
-          document.getElementById("login-form").reset();
-          document.getElementById("login-error").style.display = "none";
-          document.getElementById("login-error").textContent = "";
-        } else if (modal === signupModal) {
-          document.getElementById("signup-form").reset();
-          document.getElementById("signup-error").style.display = "none";
-          document.getElementById("signup-error").textContent = "";
-        }
-      }
-
-      function showToast(message, type = "info") {
-        const toastIcon = toast.querySelector(".toast-icon i");
-        const toastMessage = toast.querySelector(".toast-message");
-
-        // Remove all existing classes
-        toast.classList.remove("toast-success", "toast-error", "toast-info");
-        toastIcon.className = ""; // Clear icon classes
-
-        // Set appropriate class and icon based on type
-        switch (type) {
-          case "success":
-            toast.classList.add("toast-success");
-            toastIcon.className = "fas fa-check-circle";
-            break;
-          case "error":
-            toast.classList.add("toast-error");
-            toastIcon.className = "fas fa-exclamation-circle";
-            break;
-          case "info":
-          default:
-            toast.classList.add("toast-info");
-            toastIcon.className = "fas fa-info-circle";
-            break;
+                historyItems.appendChild(historyItem);
+            });
         }
 
-        toastMessage.textContent = message;
-        toast.classList.add("show");
+        function loadHistoryItem(item) {
+            codeInput.value = item.code;
+            updateOriginalCodeDisplay();
+            showToast("History item loaded", "info");
 
-        // Auto-hide after 5 seconds
-        clearTimeout(window.toastTimeout);
-        window.toastTimeout = setTimeout(() => {
-          hideToast();
-        }, 5000);
-      }
+            // Scroll to code input
+            codeInput.scrollIntoView({ behavior: "smooth" });
+        }
 
-      function hideToast() {
-        toast.classList.remove("show");
-      }
+        // UI helper functions
+        function openModal(modal) {
+            modal.classList.add("active");
+            document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+        }
 
-      function escapeHtml(text) {
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      }
+        function closeModal(modal) {
+            modal.classList.remove("active");
+            document.body.style.overflow = ""; // Re-enable scrolling
+            
+            // Clear form data when closing login or signup modals
+            if (modal === loginModal) {
+                document.getElementById("login-form").reset();
+                document.getElementById("login-error").style.display = "none";
+                document.getElementById("login-error").textContent = "";
+            } else if (modal === signupModal) {
+                document.getElementById("signup-form").reset();
+                document.getElementById("signup-error").style.display = "none";
+                document.getElementById("signup-error").textContent = "";
+            } else if (modal === forgotPasswordModal) {
+                document.getElementById("forgot-password-form").reset();
+                document.getElementById("reset-error").style.display = "none";
+                document.getElementById("reset-error").textContent = "";
+            }
+        }
+
+        function showToast(message, type = "info") {
+            const toastIcon = toast.querySelector(".toast-icon i");
+            const toastMessage = toast.querySelector(".toast-message");
+
+            // Remove all existing classes
+            toast.classList.remove("toast-success", "toast-error", "toast-info");
+            toastIcon.className = ""; // Clear icon classes
+
+            // Set appropriate class and icon based on type
+            switch (type) {
+                case "success":
+                    toast.classList.add("toast-success");
+                    toastIcon.className = "fas fa-check-circle";
+                    break;
+                case "error":
+                    toast.classList.add("toast-error");
+                    toastIcon.className = "fas fa-exclamation-circle";
+                    break;
+                case "info":
+                default:
+                    toast.classList.add("toast-info");
+                    toastIcon.className = "fas fa-info-circle";
+                    break;
+            }
+
+            toastMessage.textContent = message;
+            toast.classList.add("show");
+
+            // Auto-hide after 5 seconds
+            clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                hideToast();
+            }, 5000);
+        }
+
+        function hideToast() {
+            toast.classList.remove("show");
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('reset-email').value;
+            const errorDiv = document.getElementById('reset-error');
+            
+            // Reset error messages
+            errorDiv.style.display = "none";
+            errorDiv.textContent = "";
+            
+            // Email validation regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            // Validate email format
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = "Please enter a valid email address";
+                errorDiv.style.display = "block";
+                return;
+            }
+            
+            // Simulate API call to send reset password email
+            showToast("Processing your request...", "info");
+            
+            setTimeout(() => {
+                closeModal(forgotPasswordModal);
+                showToast("Password reset link sent to your email", "success");
+            }, 1500);
+        }
     </script>
   </body>
 </html>
