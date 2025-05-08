@@ -1686,9 +1686,8 @@
             ><i class="fas fa-quill-pointed"></i> NovelCraft AI</a
           >
           <ul class="nav-links">
-            <li><a href="#" id="homeLink">Home</a></li>
+            <li><a href="#home" id="homeLink">Home</a></li>
             <li><a href="#features" id="featuresLink">Features</a></li>
-            <li><a href="#about" id="aboutLink">About</a></li>
             <li><a href="#pricing" id="pricingLink">Pricing</a></li>
             <li style="display: none;"><a href="#" id="historyLink">My History</a></li>
           </ul>
@@ -1727,9 +1726,8 @@
         </button>
       </div>
       <ul class="mobile-menu-links">
-        <li><a href="#" id="mobileHomeLink">Home</a></li>
+        <li><a href="#home" id="mobileHomeLink">Home</a></li>
         <li><a href="#features" id="mobileFeaturesLink">Features</a></li>
-        <li><a href="#about" id="mobileAboutLink">About</a></li>
         <li><a href="#pricing" id="mobilePricingLink">Pricing</a></li>
         <li style="display: none;"><a href="#" class="mobile-history-link">My History</a></li>
         <li><a href="#" class="mobile-login-btn">Login</a></li>
@@ -1738,7 +1736,7 @@
     </div>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" id="hero">
       <div class="container">
         <h1>Elevate Your Novel with AI</h1>
         <p>
@@ -1789,8 +1787,8 @@
       </div>
     </section>
 
-    <!-- About Section -->
-    <section class="about-section" id="about">
+    <!-- About Section (now Home) -->
+    <section class="about-section" id="home">
       <div class="container">
         <div class="about-header">
           <h2>About NovelCraft AI</h2>
@@ -3393,8 +3391,8 @@
       // Navigation Logic
       const sections = {
         hero: document.querySelector(".hero"),
+        home: document.querySelector("#home"),
         features: document.querySelector(".input-section"),
-        about: document.querySelector(".about-section"),
         pricing: document.querySelector(".pricing-section"),
         result: document.querySelector(".result-section"),
         history: document.querySelector(".history-section")
@@ -3404,36 +3402,62 @@
       const navLinks = {
         home: document.querySelectorAll("#homeLink, #mobileHomeLink"),
         features: document.querySelectorAll("#featuresLink, #mobileFeaturesLink"),
-        about: document.querySelectorAll("#aboutLink, #mobileAboutLink"),
         pricing: document.querySelectorAll("#pricingLink, #mobilePricingLink")
       };
       
       // Function to show a specific section and hide others
       function showSection(sectionName) {
-        // First hide all sections except hero (always shown)
+        // 特殊处理Home导航
+        if (sectionName === "home") {
+          // 显示Hero和Home两个部分
+          sections.hero.style.display = "block";
+          sections.home.style.display = "block";
+          
+          // 隐藏其他部分
+          Object.keys(sections).forEach(key => {
+            if (key !== "hero" && key !== "home") {
+              sections[key].style.display = "none";
+            }
+          });
+          
+          // 滚动到顶部
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        
+        // 处理其他导航情况
+        // 首先隐藏所有部分（包括hero和home）
         Object.keys(sections).forEach(key => {
-          if (key !== "hero" && key !== sectionName) {
+          if (key !== sectionName) {
             sections[key].style.display = "none";
           }
         });
         
-        // Show the requested section
-        if (sectionName !== "hero") {
-          sections[sectionName].style.display = "block";
-          
-          // Scroll to the section
-          sections[sectionName].scrollIntoView({ behavior: "smooth" });
-        } else {
-          // If home, scroll to top
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+        // 显示请求的部分
+        sections[sectionName].style.display = "block";
+        
+        // 滚动到该部分
+        sections[sectionName].scrollIntoView({ behavior: "smooth" });
       }
       
       // Add event listeners to navigation links
       navLinks.home.forEach(link => {
         link.addEventListener("click", (e) => {
           e.preventDefault();
-          showSection("hero");
+          // 展示Hero和Home两个部分
+          sections.hero.style.display = "block";
+          sections.home.style.display = "block";
+          
+          // 隐藏其他部分
+          Object.keys(sections).forEach(key => {
+            if (key !== "hero" && key !== "home") {
+              sections[key].style.display = "none";
+            }
+          });
+          
+          // 滚动到顶部
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          
           if(link.id === "mobileHomeLink") closeMobileMenu();
         });
       });
@@ -3443,14 +3467,6 @@
           e.preventDefault();
           showSection("features");
           if(link.id === "mobileFeaturesLink") closeMobileMenu();
-        });
-      });
-      
-      navLinks.about.forEach(link => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          showSection("about");
-          if(link.id === "mobileAboutLink") closeMobileMenu();
         });
       });
       
@@ -3467,6 +3483,18 @@
         console.log("Initializing UI, login state:", isLoggedIn);
         console.log("User profile element:", userProfile);
         console.log("Current display style:", userProfile.style.display);
+        
+        // 初始化页面时应该与点击Home按钮效果一致
+        // 显示hero和home部分
+        sections.hero.style.display = "block";
+        sections.home.style.display = "block";
+        
+        // 隐藏其他所有部分
+        Object.keys(sections).forEach(key => {
+          if (key !== "hero" && key !== "home") {
+            sections[key].style.display = "none";
+          }
+        });
         
         if (isLoggedIn) {
           // User is logged in
@@ -3501,7 +3529,7 @@
         showSection("features");
       });
 
-      // About page CTA button
+      // Home page CTA button (原About CTA按钮)
       document.querySelector(".about-cta .btn").addEventListener("click", () => {
         showSection("features");
         closeMobileMenu(); // 如果在移动端，关闭菜单
