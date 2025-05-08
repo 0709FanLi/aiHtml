@@ -952,6 +952,68 @@
         border-radius: 10px;
       }
 
+      /* 成功提示样式 */
+      .success-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: var(--success);
+        color: white;
+        padding: 15px 20px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        transform: translateX(120%);
+        transition: transform 0.3s ease;
+      }
+
+      .success-notification.active {
+        transform: translateX(0);
+      }
+
+      .success-notification i {
+        margin-right: 10px;
+        font-size: 18px;
+      }
+
+      .success-notification p {
+        margin: 0;
+        font-weight: 500;
+      }
+
+      /* 错误提示样式 */
+      .error-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: var(--danger);
+        color: white;
+        padding: 15px 20px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        transform: translateX(120%);
+        transition: transform 0.3s ease;
+      }
+
+      .error-notification.active {
+        transform: translateX(0);
+      }
+
+      .error-notification i {
+        margin-right: 10px;
+        font-size: 18px;
+      }
+
+      .error-notification p {
+        margin: 0;
+        font-weight: 500;
+      }
+
       /* Privacy Policy and Terms of Service Modals */
       #privacyPolicyModal .modal,
       #termsModal .modal {
@@ -2531,6 +2593,9 @@
         // 初始化 - 检查用户登录状态
         checkLoginStatus();
 
+        // 页面加载时初始化显示设置
+        initialPageSetup();
+
         // 初始显示设置 - 页面加载时默认显示Home (About内容)
         function initialPageSetup() {
           // 仅显示About内容相关卡片 (前5个卡片是About内容)
@@ -2546,6 +2611,14 @@
                 } else {
                   contentCards[i].style.display = "block";
                 }
+              }
+            }
+
+            // 显示About相关卡片后的功能卡片需要隐藏
+            const totalCards = contentCards.length;
+            for (let i = 5; i < totalCards; i++) {
+              if (contentCards[i]) {
+                contentCards[i].style.display = "none";
               }
             }
 
@@ -2824,6 +2897,49 @@
           signupBtn.addEventListener("click", function () {
             if (signupModal) {
               signupModal.classList.add("active");
+            }
+          });
+        }
+
+        // 模态框关闭按钮事件处理
+        if (modalCloseButtons) {
+          modalCloseButtons.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              // 找到并关闭所有打开的模态框
+              const modals = document.querySelectorAll(".modal-backdrop");
+              modals.forEach(function (modal) {
+                modal.classList.remove("active");
+              });
+            });
+          });
+        }
+
+        // 忘记密码链接点击事件
+        if (showForgotPasswordLink) {
+          showForgotPasswordLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            // 隐藏登录模态框
+            if (loginModal) {
+              loginModal.classList.remove("active");
+            }
+            // 显示忘记密码模态框
+            if (forgotPasswordModal) {
+              forgotPasswordModal.classList.add("active");
+            }
+          });
+        }
+
+        // 返回登录按钮点击事件
+        if (backToLoginLink) {
+          backToLoginLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            // 隐藏忘记密码模态框
+            if (forgotPasswordModal) {
+              forgotPasswordModal.classList.remove("active");
+            }
+            // 显示登录模态框
+            if (loginModal) {
+              loginModal.classList.add("active");
             }
           });
         }
@@ -3239,6 +3355,205 @@
           loginEmail.addEventListener("focus", function () {
             // 可选：在获得焦点时清除错误，让用户有更好的体验
             // clearErrorMessage("login-email");
+          });
+        }
+
+        // 添加Try Service Now和About CTA按钮点击事件
+        const tryServiceBtn = document.getElementById("try-service-btn");
+        const aboutCtaBtn = document.getElementById("about-cta-btn");
+
+        if (tryServiceBtn) {
+          tryServiceBtn.addEventListener("click", function () {
+            showFeaturesPage();
+          });
+        }
+
+        if (aboutCtaBtn) {
+          aboutCtaBtn.addEventListener("click", function () {
+            showFeaturesPage();
+          });
+        }
+
+        // 忘记密码表单提交处理
+        const forgotPasswordForm = document.getElementById(
+          "forgot-password-form"
+        );
+        if (forgotPasswordForm) {
+          forgotPasswordForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // 获取表单数据
+            const email = document.getElementById("forgot-email").value.trim();
+
+            // 简单验证
+            if (!email || !validateEmail(email)) {
+              showNotification("error", "Please enter a valid email address");
+              return;
+            }
+
+            // 准备请求数据
+            const resetData = {
+              email: email,
+            };
+
+            // 更新按钮状态
+            const submitButton = forgotPasswordForm.querySelector(
+              'button[type="submit"]'
+            );
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+              '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+
+            // 模拟API调用 - 实际项目中应替换为真实API
+            setTimeout(function () {
+              // 恢复按钮状态
+              submitButton.disabled = false;
+              submitButton.innerHTML = originalButtonText;
+
+              // 显示成功消息
+              showNotification(
+                "success",
+                "Password reset link has been sent to your email"
+              );
+
+              // 关闭忘记密码模态框
+              if (forgotPasswordModal) {
+                forgotPasswordModal.classList.remove("active");
+              }
+            }, 1500);
+
+            // 实际项目中的API调用示例
+            /*
+            fetch("http://your-api-endpoint/reset-password", {
+              method: "POST",
+              credentials: "omit",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+              },
+              body: JSON.stringify(resetData)
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status_code >= 200 && data.status_code < 300) {
+                // 成功发送重置链接
+                showNotification("success", "Password reset link has been sent to your email");
+                
+                // 关闭忘记密码模态框
+                if (forgotPasswordModal) {
+                  forgotPasswordModal.classList.remove("active");
+                }
+              } else {
+                // 发送失败
+                throw new Error(data.error || "Failed to send reset link, please try again later");
+              }
+            })
+            .catch(error => {
+              // 显示错误消息
+              showNotification("error", error.message || "Failed to send reset link, please try again later");
+              console.error("Reset password error:", error);
+            })
+            .finally(() => {
+              // 恢复按钮状态
+              submitButton.disabled = false;
+              submitButton.innerHTML = originalButtonText;
+            });
+            */
+          });
+        }
+
+        // 显示错误消息的函数
+        function displayErrorMessage(inputId, message) {
+          const input = document.getElementById(inputId);
+          if (!input) return;
+
+          // 检查是否已存在错误消息
+          let errorElement = input.parentNode.querySelector(".form-error");
+
+          if (!errorElement) {
+            // 创建错误消息元素
+            errorElement = document.createElement("div");
+            errorElement.className = "form-error";
+            errorElement.style.color = "var(--danger)";
+            errorElement.style.fontSize = "14px";
+            errorElement.style.marginTop = "5px";
+
+            // 添加到DOM中
+            input.parentNode.appendChild(errorElement);
+          }
+
+          // 设置错误消息
+          errorElement.textContent = message;
+
+          // 添加错误样式到输入框
+          input.style.borderColor = "var(--danger)";
+        }
+
+        // 清除错误消息的函数
+        function clearErrorMessage(inputId) {
+          const input = document.getElementById(inputId);
+          if (!input) return;
+
+          // 查找并删除错误消息
+          const errorElement = input.parentNode.querySelector(".form-error");
+          if (errorElement) {
+            errorElement.remove();
+          }
+
+          // 恢复输入框样式
+          input.style.borderColor = "";
+        }
+
+        // 显示通知的函数
+        function showNotification(type, message, duration = 3000) {
+          // 先移除可能存在的通知
+          removeAllNotifications();
+
+          // 创建通知元素
+          const notification = document.createElement("div");
+          notification.className =
+            type === "success" ? "success-notification" : "error-notification";
+
+          // 添加图标和消息
+          const icon = document.createElement("i");
+          icon.className =
+            type === "success"
+              ? "fas fa-check-circle"
+              : "fas fa-exclamation-circle";
+          notification.appendChild(icon);
+
+          const messageElem = document.createElement("p");
+          messageElem.textContent = message;
+          notification.appendChild(messageElem);
+
+          // 添加到DOM
+          document.body.appendChild(notification);
+
+          // 显示通知
+          setTimeout(() => {
+            notification.classList.add("active");
+          }, 10);
+
+          // 设置通知自动消失
+          setTimeout(() => {
+            notification.classList.remove("active");
+            setTimeout(() => {
+              notification.remove();
+            }, 300);
+          }, duration);
+        }
+
+        // 移除所有通知的函数
+        function removeAllNotifications() {
+          const notifications = document.querySelectorAll(
+            ".success-notification, .error-notification"
+          );
+          notifications.forEach((notif) => {
+            notif.classList.remove("active");
+            setTimeout(() => {
+              notif.remove();
+            }, 300);
           });
         }
       });
