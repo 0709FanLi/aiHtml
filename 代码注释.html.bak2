@@ -2975,6 +2975,43 @@
           });
         }
 
+        // 忘记密码表单验证
+        if (forgotPasswordForm) {
+          forgotPasswordForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const email = document.getElementById("forgot-email").value;
+
+            // 验证邮箱
+            if (!validateEmail(email)) {
+              displayErrorMessage(
+                "forgot-email",
+                "Please enter a valid email address"
+              );
+              return;
+            } else {
+              clearErrorMessage("forgot-email");
+            }
+
+            if (email) {
+              // 显示成功信息
+              this.innerHTML = `
+                <div class="form-group text-center">
+                  <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <i class="fas fa-check-circle" style="color: var(--success); font-size: 48px;"></i>
+                  </div>
+                  <p>Password reset link has been sent to your email.</p>
+                  <p>Please check your inbox and follow the instructions.</p>
+                </div>
+                <button type="button" class="btn btn-outline btn-large" id="reset-done" style="background-color: var(--light); color: var(--text); border: 1px solid #ddd; margin-top: 20px;">
+                  Done
+                </button>
+              `;
+
+              // 为Done按钮添加事件
+              document
+                .getElementById("reset-done")
+                .addEventListener("click", function () {
+                  if (forgotPasswordModal)
                     forgotPasswordModal.classList.remove("active");
                 });
             }

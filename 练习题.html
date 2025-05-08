@@ -3729,6 +3729,9 @@
                       oninvalid="this.setCustomValidity('Please enter your full name')"
                       oninput="this.setCustomValidity('')"
                     />
+                    <div class="invalid-feedback" id="register-name-feedback">
+                      Please enter your full name.
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="register-email" class="form-label"
@@ -3742,6 +3745,9 @@
                       oninvalid="this.setCustomValidity('Please enter your email address')"
                       oninput="this.setCustomValidity('')"
                     />
+                    <div class="invalid-feedback" id="register-email-feedback">
+                      Please enter a valid email address.
+                    </div>
                   </div>
                   <div class="mb-3">
                     <label for="register-password" class="form-label"
@@ -3779,6 +3785,9 @@
                       oninvalid="this.setCustomValidity('Please confirm your password')"
                       oninput="this.setCustomValidity('')"
                     />
+                    <div class="invalid-feedback" id="register-confirm-feedback">
+                      Passwords do not match.
+                    </div>
                   </div>
                   <div class="mb-3 form-check">
                     <input
@@ -3794,6 +3803,8 @@
                       <a href="#" id="register-terms-link" onclick="openTermsModal(event)">Terms of Service</a> and
                       <a href="#" id="register-privacy-link" onclick="openPrivacyModal(event)">Privacy Policy</a>
                     </label>
+                  </div>
+                  <div class="alert alert-danger d-none" role="alert" id="register-error-message">
                   </div>
                   <button
                     type="submit"
@@ -4883,8 +4894,8 @@
 
         // ===== AUTH FUNCTIONS =====
         function checkLoginStatus() {
-          // Check localStorage for user session
-          const savedUser = localStorage.getItem("currentUser");
+          // 检查localStorage和sessionStorage中的用户信息
+          const savedUser = localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser");
 
           if (savedUser) {
             currentUser = JSON.parse(savedUser);
@@ -4929,118 +4940,338 @@
         function handleLogin(e) {
           e.preventDefault();
 
-          const email = document.getElementById("login-email").value;
+          // 获取表单和可能的错误消息元素
+          const loginForm = document.getElementById("login-form-element");
+          
+          // 隐藏可能存在的错误消息
+          const possibleErrorElement = loginForm.querySelector(".alert");
+          if (possibleErrorElement) {
+            possibleErrorElement.classList.add("d-none");
+          }
+          
+          // 获取用户输入
+          const email = document.getElementById("login-email").value.trim();
           const password = document.getElementById("login-password").value;
+          const rememberMe = document.getElementById("remember-me").checked;
 
-          // Find user in mock database
-          const user = mockUsers.find(
-            (u) => u.email === email && u.password === password
-          );
+          // 基本验证
+          let isValid = true;
+          
+          // 验证邮箱
+          if (!email || !isValidEmail(email)) {
+            const emailInput = document.getElementById("login-email");
+            emailInput.classList.add("is-invalid");
+            isValid = false;
+          }
+          
+          // 验证密码
+          if (!password) {
+            const passwordInput = document.getElementById("login-password");
+            passwordInput.classList.add("is-invalid");
+            isValid = false;
+          }
+          
+          // 如果验证失败，停止提交
+          if (!isValid) {
+            return;
+          }
+          
+          // 准备API数据
+          const loginData = {
+            email: email,
+            password: password
+          };
 
-          if (user) {
-            // Successful login
-            currentUser = { ...user };
-            isLoggedIn = true;
+          // 更新提交按钮状态
+          const loginSubmitButton = document.getElementById("login-submit");
+          const originalButtonText = loginSubmitButton.textContent;
+          loginSubmitButton.disabled = true;
+          loginSubmitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...';
 
-            // Store in localStorage for persistent session
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          // 调用登录API
+          fetch('http://web.practicesnow.com/practice/v1/users/login', {
+            method: 'POST',
+            credentials: 'omit',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+          })
+          .then(response => {
+            // 检查HTTP错误
+            if (!response.ok) {
+              return response.json().then(errorData => {
+                throw new Error(errorData.message || "Login failed");
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            // 检查status_code是否在200-299范围内
+            if (data.status_code >= 200 && data.status_code < 300) {
+              // 登录成功，创建用户对象
+              const user = {
+                id: data.id || generateRandomId(),
+                name: data.full_name || email.split('@')[0], // 如果API没有返回姓名，使用邮箱前缀
+                email: email,
+                plan: data.plan || "free",
+                remainingGenerations: data.remaining_generations || 1,
+                totalGenerations: data.total_generations || 1,
+                createdAt: data.created_at || new Date().toISOString(),
+                avatar: data.avatar || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+              };
 
-            // Close modal
-            const authModal = bootstrap.Modal.getInstance(
-              document.getElementById("authModal")
-            );
-            authModal.hide();
+              // 设置当前用户和登录状态
+              currentUser = { ...user };
+              isLoggedIn = true;
 
-            // Update UI
-            updateUIForLoggedInUser();
+              // 根据记住我选项存储用户信息
+              if (rememberMe) {
+                // 永久存储（或者直到用户清除）
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+              } else {
+                // 会话存储（浏览器关闭后清除）
+                sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+              }
 
-            // Show success notification
-            showNotification(
-              "success",
-              "Login Successful",
-              "Welcome back, " + currentUser.name + "!"
-            );
-          } else {
-            // Failed login
+              // 关闭登录模态框
+              const authModal = bootstrap.Modal.getInstance(
+                document.getElementById("authModal")
+              );
+              authModal.hide();
+
+              // 更新UI
+              updateUIForLoggedInUser();
+
+              // 显示成功通知
+              showNotification(
+                "success",
+                "Login Successful",
+                "Welcome back, " + currentUser.name + "!"
+              );
+            } else {
+              // 登录失败，抛出错误
+              throw new Error(data.error || "登录失败");
+            }
+          })
+          .catch(error => {
+            // 登录失败 - 显示错误消息
+            console.error("Login error:", error);
+            
+            // 创建错误提示（如果不存在）
+            let errorMessageElement = loginForm.querySelector(".alert");
+            if (!errorMessageElement) {
+              errorMessageElement = document.createElement("div");
+              errorMessageElement.className = "alert alert-danger mt-3";
+              errorMessageElement.setAttribute("role", "alert");
+              loginForm.insertBefore(errorMessageElement, loginSubmitButton.parentNode);
+            } else {
+              errorMessageElement.classList.remove("d-none");
+            }
+            
+            // 设置错误信息
+            errorMessageElement.textContent = error.message || "邮箱或密码不正确，请重试。";
+            
+            // 显示通知
             showNotification(
               "error",
-              "Login Failed",
-              "Invalid email or password. Please try again."
+              "登录失败",
+              error.message || "邮箱或密码不正确，请重试。"
             );
-          }
+          })
+          .finally(() => {
+            // 重置登录按钮状态
+            loginSubmitButton.disabled = false;
+            loginSubmitButton.innerHTML = originalButtonText;
+          });
         }
 
-        function handleRegister(e) {
+        async function handleRegister(e) {
           e.preventDefault();
 
-          const name = document.getElementById("register-name").value;
-          const email = document.getElementById("register-email").value;
+          // 获取表单和错误信息元素
+          const registerForm = document.getElementById("register-form-element");
+          const errorMessageElement = document.getElementById("register-error-message");
+          
+          // 隐藏之前的错误消息
+          errorMessageElement.classList.add("d-none");
+          
+          // 重置表单验证状态
+          resetFormValidation(registerForm);
+
+          const name = document.getElementById("register-name").value.trim();
+          const email = document.getElementById("register-email").value.trim();
           const password = document.getElementById("register-password").value;
           const confirmPassword = document.getElementById(
             "register-confirm-password"
           ).value;
 
-          // Basic validation
+          // 增强的客户端表单验证
+          let isValid = true;
+          
+          // 验证姓名
+          if (!name) {
+            showInputError("register-name", "请输入您的姓名");
+            isValid = false;
+          }
+          
+          // 验证邮箱
+          if (!email || !isValidEmail(email)) {
+            showInputError("register-email", "请输入有效的邮箱地址");
+            isValid = false;
+          }
+          
+          // 验证密码
+          if (!password || password.length < 8) {
+            showInputError("register-password", "密码长度必须至少为8个字符");
+            isValid = false;
+          }
+          
+          // 验证确认密码
           if (password !== confirmPassword) {
-            showNotification(
-              "error",
-              "Registration Failed",
-              "Passwords do not match."
-            );
+            showInputError("register-confirm-password", "两次输入的密码不一致");
+            isValid = false;
+          }
+          
+          // 如果验证失败，停止提交
+          if (!isValid) {
             return;
           }
 
-          // Check if email already exists
-          if (mockUsers.some((u) => u.email === email)) {
-            showNotification(
-              "error",
-              "Registration Failed",
-              "Email already in use."
-            );
-            return;
-          }
-
-          // Create new user
-          const newUser = {
-            id: "user" + (mockUsers.length + 1),
-            name,
-            email,
-            password,
-            role: "teacher",
-            plan: "free",
-            remainingGenerations: 1,
-            totalGenerations: 1,
-            createdAt: new Date().toISOString(),
-            avatar: `https://i.pravatar.cc/150?img=${Math.floor(
-              Math.random() * 70
-            )}`,
+          // Prepare data for API
+          const userData = {
+            email: email,
+            password: password,
+            full_name: name
           };
 
-          // Add to mock database
-          mockUsers.push(newUser);
+          // Show loading notification or disable button
+          const registerSubmitButton = document.getElementById("register-submit");
+          const originalButtonText = registerSubmitButton.textContent;
+          registerSubmitButton.disabled = true;
+          registerSubmitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Registering...';
 
-          // Login the user
-          currentUser = { ...newUser };
-          isLoggedIn = true;
+          // Call API
+          fetch('http://web.practicesnow.com/practice/v1/users/register', {
+            method: 'POST',
+            credentials: 'omit',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify(userData),
+          })
+          .then(response => {
+            // 不管状态码如何，先解析JSON响应
+            return response.json();
+          })
+          .then(data => {
+            // 检查status_code是否在200-299范围内
+            if (data.status_code >= 200 && data.status_code < 300) {
+              // 注册成功
+              console.log('>>>>>>>>>', data);
+              // Create user object from response
+              const newUser = {
+                id: data.id || generateRandomId(),
+                name: name,
+                email: email,
+                // Don't store actual password in client-side storage
+                plan: "free",
+                remainingGenerations: 1,
+                totalGenerations: 1,
+                createdAt: new Date().toISOString(),
+                avatar: `https://i.pravatar.cc/150?img=${Math.floor(
+                  Math.random() * 70
+                )}`,
+              };
 
-          // Store in localStorage
-          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+              // Set as current user
+              currentUser = { ...newUser };
+              isLoggedIn = true;
 
-          // Close modal
-          const authModal = bootstrap.Modal.getInstance(
-            document.getElementById("authModal")
-          );
-          authModal.hide();
+              // Store in localStorage
+              localStorage.setItem("currentUser", JSON.stringify(currentUser));
 
-          // Update UI
-          updateUIForLoggedInUser();
+              // Close modal
+              const authModal = bootstrap.Modal.getInstance(
+                document.getElementById("authModal")
+              );
+              authModal.hide();
 
-          // Show success notification
-          showNotification(
-            "success",
-            "Registration Successful",
-            "Welcome to QuizCraft AI, " + currentUser.name + "!"
-          );
+              // Update UI
+              updateUIForLoggedInUser();
+
+              // Show success notification
+              showNotification(
+                "success",
+                "注册成功",
+                "欢迎加入 QuizCraft AI, " + currentUser.name + "!"
+              );
+              
+              // 注册成功后可以自动导航到生成器页面
+              setTimeout(() => {
+                navigateTo('generator');
+              }, 1000);
+            } else {
+              // 注册失败，抛出错误
+              throw new Error(data.error || "注册失败");
+            }
+          })
+          .catch(error => {
+            // Registration failed - 显示错误信息
+            console.error("Registration error:", error);
+            
+            // 在表单中显示错误信息
+            errorMessageElement.textContent = error.message || "注册过程中发生错误，请重试。";
+            errorMessageElement.classList.remove("d-none");
+            
+            // 如果是邮箱已存在错误，聚焦到邮箱输入框
+            if (error.message && error.message.includes("邮箱已存在")) {
+              showInputError("register-email", error.message);
+            }
+            
+            // 显示通知
+            showNotification(
+              "error",
+              "Registration Failed",
+              error.message || "注册过程中发生错误，请重试。"
+            );
+          })
+          .finally(() => {
+            // Re-enable button regardless of outcome
+            registerSubmitButton.disabled = false;
+            registerSubmitButton.innerHTML = originalButtonText;
+          });
+        }
+
+        // 辅助函数：验证邮箱格式
+        function isValidEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+
+        // 辅助函数：显示输入错误
+        function showInputError(elementId, message) {
+          const element = document.getElementById(elementId);
+          if (element) {
+            element.classList.add("is-invalid");
+            
+            // 查找相关的反馈元素并设置消息
+            const feedbackElement = document.getElementById(`${elementId}-feedback`);
+            if (feedbackElement) {
+              feedbackElement.textContent = message;
+            }
+          }
+        }
+
+        // 辅助函数：重置表单验证状态
+        function resetFormValidation(form) {
+          // 移除所有输入字段的错误状态
+          const inputs = form.querySelectorAll("input");
+          inputs.forEach(input => {
+            input.classList.remove("is-invalid");
+          });
         }
 
         function handleLogout(e) {
@@ -5283,8 +5514,8 @@
             // Show notification
             showNotification(
               "info",
-              "Login Required",
-              "Please log in to purchase a plan."
+              "需要登录",
+              "请先登录后再购买套餐。"
             );
             return;
           }
