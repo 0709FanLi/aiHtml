@@ -575,6 +575,233 @@
         padding: 12px;
       }
 
+      /* About Section Styles */
+      .about-section {
+        padding: 60px 0;
+        display: none; /* Initially hidden, shown when About is clicked */
+      }
+      
+      .about-header {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+      
+      .about-header h2 {
+        font-size: 36px;
+        margin-bottom: 15px;
+        background: linear-gradient(
+          45deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      .about-header p {
+        font-size: 18px;
+        color: rgba(240, 240, 240, 0.8);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .about-content {
+        display: flex;
+        flex-direction: column;
+        gap: 60px;
+      }
+      
+      .about-story, .about-mission {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+      }
+      
+      .about-image {
+        flex: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+      
+      .about-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      
+      .about-image:hover img {
+        transform: scale(1.05);
+      }
+      
+      .image-credit {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 5px 10px;
+        font-size: 12px;
+        border-top-left-radius: 8px;
+      }
+      
+      .image-credit a {
+        color: var(--secondary-color);
+        text-decoration: none;
+      }
+      
+      .image-credit a:hover {
+        text-decoration: underline;
+      }
+      
+      .about-text {
+        flex: 1;
+      }
+      
+      .about-text h3 {
+        color: var(--secondary-color);
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .about-text p {
+        margin-bottom: 15px;
+        line-height: 1.8;
+        color: rgba(240, 240, 240, 0.9);
+      }
+      
+      .about-team h3, .about-values h3 {
+        color: var(--secondary-color);
+        font-size: 24px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 30px;
+      }
+      
+      .team-member {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+      
+      .team-member:hover {
+        transform: translateY(-5px);
+      }
+      
+      .member-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 15px;
+        border: 3px solid var(--secondary-color);
+      }
+      
+      .member-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .team-member h4 {
+        color: var(--text-color);
+        font-size: 18px;
+        margin-bottom: 5px;
+      }
+      
+      .member-role {
+        color: var(--secondary-color);
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .member-bio {
+        font-size: 14px;
+        color: rgba(240, 240, 240, 0.8);
+      }
+      
+      .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+      }
+      
+      .value-item {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      
+      .value-item:hover {
+        transform: translateY(-5px);
+        background-color: rgba(106, 48, 147, 0.2);
+      }
+      
+      .value-item i {
+        font-size: 36px;
+        color: var(--secondary-color);
+        margin-bottom: 15px;
+      }
+      
+      .value-item h4 {
+        color: var(--text-color);
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      
+      .value-item p {
+        font-size: 15px;
+        color: rgba(240, 240, 240, 0.8);
+        line-height: 1.6;
+      }
+      
+      .about-cta {
+        text-align: center;
+        padding: 40px;
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        margin-top: 20px;
+      }
+      
+      .about-cta h3 {
+        color: var(--secondary-color);
+        font-size: 24px;
+        margin-bottom: 15px;
+      }
+      
+      .about-cta p {
+        margin-bottom: 25px;
+        color: rgba(240, 240, 240, 0.9);
+      }
+      
+      @media (max-width: 900px) {
+        .about-story, .about-mission {
+          flex-direction: column;
+        }
+        
+        .about-mission {
+          flex-direction: column-reverse;
+        }
+        
+        .team-grid, .values-grid {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+      }
+
       /* Login/Register Modal */
       .modal-overlay {
         position: fixed;
@@ -1459,10 +1686,11 @@
             ><i class="fas fa-quill-pointed"></i> NovelCraft AI</a
           >
           <ul class="nav-links">
-            <li><a href="#">Home</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#" id="historyLink">My History</a></li>
+            <li><a href="#" id="homeLink">Home</a></li>
+            <li><a href="#features" id="featuresLink">Features</a></li>
+            <li><a href="#about" id="aboutLink">About</a></li>
+            <li><a href="#pricing" id="pricingLink">Pricing</a></li>
+            <li style="display: none;"><a href="#" id="historyLink">My History</a></li>
           </ul>
           <div class="user-actions">
             <button class="btn" id="loginBtn">Login</button>
@@ -1499,10 +1727,11 @@
         </button>
       </div>
       <ul class="mobile-menu-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#" class="mobile-history-link">My History</a></li>
+        <li><a href="#" id="mobileHomeLink">Home</a></li>
+        <li><a href="#features" id="mobileFeaturesLink">Features</a></li>
+        <li><a href="#about" id="mobileAboutLink">About</a></li>
+        <li><a href="#pricing" id="mobilePricingLink">Pricing</a></li>
+        <li style="display: none;"><a href="#" class="mobile-history-link">My History</a></li>
         <li><a href="#" class="mobile-login-btn">Login</a></li>
         <li><a href="#" class="mobile-signup-btn">Sign Up</a></li>
       </ul>
@@ -1517,7 +1746,7 @@
           condense your text with intelligent suggestions. Perfect for
           novelists, fantasy writers, and creative minds.
         </p>
-        <button class="btn btn-secondary">Get Started</button>
+        <button class="btn btn-secondary" id="getStartedBtn">Get Started</button>
       </div>
     </section>
 
@@ -1555,6 +1784,134 @@
               <h3>Condense</h3>
               <p>Trim unnecessary content for better pacing</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+      <div class="container">
+        <div class="about-header">
+          <h2>About NovelCraft AI</h2>
+          <p>Empowering writers to transform their vision into compelling prose</p>
+        </div>
+        
+        <div class="about-content">
+          <div class="about-story">
+            <div class="about-image">
+              <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
+                  alt="Typewriter with paper" />
+              <span class="image-credit">Photo by <a href="https://unsplash.com/@markuswinkler" target="_blank">Markus Winkler</a> on Unsplash</span>
+            </div>
+            
+            <div class="about-text">
+              <h3>Our Story</h3>
+              <p>
+                NovelCraft AI was born from a simple observation: many talented writers struggle not with ideas, but with refining their prose to match the vision in their minds. Founded in 2023 by a team of writers, editors, and AI specialists, we set out to create a tool that would serve as a trusted companion in the writing process.
+              </p>
+              <p>
+                What began as a passion project has evolved into a comprehensive platform that helps writers polish their work, expand on their ideas, and streamline their prose without losing their unique voice.
+              </p>
+            </div>
+          </div>
+          
+          <div class="about-mission">
+            <div class="about-text">
+              <h3>Our Mission</h3>
+              <p>
+                We believe that everyone has stories worth telling. Our mission is to democratize access to professional-quality writing assistance, making it possible for writers of all levels to elevate their craft.
+              </p>
+              <p>
+                Unlike generic AI tools, NovelCraft AI is specifically designed for creative writing, understanding the nuances of narrative structure, character development, and the stylistic elements that make fiction compelling.
+              </p>
+            </div>
+            
+            <div class="about-image">
+              <img src="https://images.unsplash.com/photo-1516414447565-b14be0adf13e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
+                  alt="Person writing in notebook" />
+              <span class="image-credit">Photo by <a href="https://unsplash.com/@aaronburden" target="_blank">Aaron Burden</a> on Unsplash</span>
+            </div>
+          </div>
+          
+          <div class="about-team">
+            <h3>Our Team</h3>
+            <div class="team-grid">
+              <div class="team-member">
+                <div class="member-image">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" 
+                      alt="Team member - CEO" />
+                </div>
+                <h4>Michael Chen</h4>
+                <p class="member-role">Founder & CEO</p>
+                <p class="member-bio">Former editor and published author with a passion for technology and creative writing.</p>
+              </div>
+              
+              <div class="team-member">
+                <div class="member-image">
+                  <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" 
+                      alt="Team member - CTO" />
+                </div>
+                <h4>Sophia Rodriguez</h4>
+                <p class="member-role">Chief Technology Officer</p>
+                <p class="member-bio">AI specialist with a background in computational linguistics and natural language processing.</p>
+              </div>
+              
+              <div class="team-member">
+                <div class="member-image">
+                  <img src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" 
+                      alt="Team member - Creative Director" />
+                </div>
+                <h4>James Wilson</h4>
+                <p class="member-role">Creative Director</p>
+                <p class="member-bio">Award-winning novelist and writing coach dedicated to helping new voices emerge.</p>
+              </div>
+              
+              <div class="team-member">
+                <div class="member-image">
+                  <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80" 
+                      alt="Team member - Head of Product" />
+                </div>
+                <h4>Emily Tanaka</h4>
+                <p class="member-role">Head of Product</p>
+                <p class="member-bio">Former publishing executive with expertise in user experience and product development.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="about-values">
+            <h3>Our Values</h3>
+            <div class="values-grid">
+              <div class="value-item">
+                <i class="fas fa-pen-fancy"></i>
+                <h4>Authenticity</h4>
+                <p>We believe AI should enhance a writer's voice, not replace it. Our tools preserve your unique style while elevating your prose.</p>
+              </div>
+              
+              <div class="value-item">
+                <i class="fas fa-lock"></i>
+                <h4>Privacy</h4>
+                <p>Your creative work is precious. We maintain strict privacy standards and never use your content to train our models without consent.</p>
+              </div>
+              
+              <div class="value-item">
+                <i class="fas fa-users"></i>
+                <h4>Inclusivity</h4>
+                <p>We design our tools to help writers from all backgrounds, experience levels, and genres improve their craft.</p>
+              </div>
+              
+              <div class="value-item">
+                <i class="fas fa-lightbulb"></i>
+                <h4>Innovation</h4>
+                <p>We constantly refine our technology to provide cutting-edge assistance that meets the evolving needs of today's writers.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="about-cta">
+            <h3>Join Our Community of Writers</h3>
+            <p>Experience how NovelCraft AI can transform your writing process today.</p>
+            <button class="btn btn-secondary">Get Started</button>
           </div>
         </div>
       </div>
@@ -1604,7 +1961,7 @@
     </section>
 
     <!-- History Section -->
-    <section class="history-section" id="historySection">
+    <section class="history-section" id="historySection" style="display: none;">
       <div class="container">
         <div class="history-title">
           <h2>Your Editing History</h2>
@@ -2503,38 +2860,52 @@
         badgeCredits.textContent = usageCredits;
         creditsBadge.style.display = "flex";
 
-        // Hide login/signup buttons in mobile menu and show history link
-        document.querySelector(".mobile-login-btn").parentElement.style.display = "none";
-        document.querySelector(".mobile-signup-btn").parentElement.style.display = "none";
+        // 历史功能暂时隐藏
+        // document.querySelector(".mobile-login-btn").parentElement.style.display = "none";
+        // document.querySelector(".mobile-signup-btn").parentElement.style.display = "none";
 
+        // 历史功能暂时隐藏
         // Generate history items
-        renderHistoryItems();
+        // renderHistoryItems();
       }
 
       // History related functions
       historyLink.addEventListener("click", (e) => {
         e.preventDefault();
-
+        
+        // 暂时禁用历史功能，显示提示消息
+        showToast("My History功能将在下一版本推出，敬请期待！", "info");
+        
+        // 原始代码，暂时注释掉
+        /*
         if (!isLoggedIn) {
           showToast("Please login to view your history", "info");
           showAuthModal();
           return;
         }
 
-        toggleHistorySection();
+        showSection("history");
+        */
       });
 
       mobileHistoryLink.addEventListener("click", (e) => {
         e.preventDefault();
-
+        
+        // 暂时禁用历史功能，显示提示消息
+        showToast("My History功能将在下一版本推出，敬请期待！", "info");
+        closeMobileMenu();
+        
+        // 原始代码，暂时注释掉
+        /*
         if (!isLoggedIn) {
           showToast("Please login to view your history", "info");
           showAuthModal();
           return;
         }
 
-        toggleHistorySection();
+        showSection("history");
         closeMobileMenu();
+        */
       });
 
       function toggleHistorySection() {
@@ -2590,11 +2961,7 @@
         originalText.innerHTML = item.originalText;
         enhancedText.innerHTML = item.enhancedText;
 
-        historySection.style.display = "none";
-        resultSection.style.display = "block";
-
-        // Scroll to result section
-        resultSection.scrollIntoView({ behavior: "smooth" });
+        showSection("result");
       }
 
       clearHistoryBtn.addEventListener("click", () => {
@@ -3022,7 +3389,79 @@
       // Initialize with sample text
       novelText.value =
         "The ancient castle stood atop the hill, its towers reaching towards the darkening sky. Inside, the princess waited, her heart growing colder with each passing day. She gazed out the window, wondering if anyone would ever come to rescue her from the curse that had befallen this forgotten kingdom.";
+      
+      // Navigation Logic
+      const sections = {
+        hero: document.querySelector(".hero"),
+        features: document.querySelector(".input-section"),
+        about: document.querySelector(".about-section"),
+        pricing: document.querySelector(".pricing-section"),
+        result: document.querySelector(".result-section"),
+        history: document.querySelector(".history-section")
+      };
+      
+      // Navigation links
+      const navLinks = {
+        home: document.querySelectorAll("#homeLink, #mobileHomeLink"),
+        features: document.querySelectorAll("#featuresLink, #mobileFeaturesLink"),
+        about: document.querySelectorAll("#aboutLink, #mobileAboutLink"),
+        pricing: document.querySelectorAll("#pricingLink, #mobilePricingLink")
+      };
+      
+      // Function to show a specific section and hide others
+      function showSection(sectionName) {
+        // First hide all sections except hero (always shown)
+        Object.keys(sections).forEach(key => {
+          if (key !== "hero" && key !== sectionName) {
+            sections[key].style.display = "none";
+          }
+        });
         
+        // Show the requested section
+        if (sectionName !== "hero") {
+          sections[sectionName].style.display = "block";
+          
+          // Scroll to the section
+          sections[sectionName].scrollIntoView({ behavior: "smooth" });
+        } else {
+          // If home, scroll to top
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+      
+      // Add event listeners to navigation links
+      navLinks.home.forEach(link => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          showSection("hero");
+          if(link.id === "mobileHomeLink") closeMobileMenu();
+        });
+      });
+      
+      navLinks.features.forEach(link => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          showSection("features");
+          if(link.id === "mobileFeaturesLink") closeMobileMenu();
+        });
+      });
+      
+      navLinks.about.forEach(link => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          showSection("about");
+          if(link.id === "mobileAboutLink") closeMobileMenu();
+        });
+      });
+      
+      navLinks.pricing.forEach(link => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          showSection("pricing");
+          if(link.id === "mobilePricingLink") closeMobileMenu();
+        });
+      });
+      
       // Initialize UI based on login state
       function initializeUI() {
         console.log("Initializing UI, login state:", isLoggedIn);
@@ -3056,6 +3495,17 @@
       
       // Call initialization function when page loads
       document.addEventListener("DOMContentLoaded", initializeUI);
+
+      // Get Started buttons
+      document.getElementById("getStartedBtn").addEventListener("click", () => {
+        showSection("features");
+      });
+
+      // About page CTA button
+      document.querySelector(".about-cta .btn").addEventListener("click", () => {
+        showSection("features");
+        closeMobileMenu(); // 如果在移动端，关闭菜单
+      });
     </script>
   </body>
 </html>
