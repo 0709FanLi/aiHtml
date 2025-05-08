@@ -1,0 +1,171 @@
+# QuizCraft AI 接口列表
+
+## 用户认证相关接口
+
+1. 用户登录：
+   - 接口：/api/auth/login
+   - 方法：POST
+   - 参数：{email: string, password: string, rememberMe: boolean}
+   - 返回：{success: boolean, token: string, user: {id: string, name: string, email: string, plan: string, remainingGenerations: number, totalGenerations: number, avatar: string}}
+
+2. 用户注册：
+   - 接口：/api/auth/register
+   - 方法：POST
+   - 参数：{name: string, email: string, password: string}
+   - 返回：{success: boolean, token: string, user: {id: string, name: string, email: string, plan: string, remainingGenerations: number, totalGenerations: number, avatar: string}}
+
+3. 用户登出：
+   - 接口：/api/auth/logout
+   - 方法：POST
+   - 参数：{}
+   - 返回：{success: boolean}
+
+4. 忘记密码：
+   - 接口：/api/auth/forgot-password
+   - 方法：POST
+   - 参数：{email: string}
+   - 返回：{success: boolean, message: string}
+
+5. 发送验证码：
+   - 接口：/api/auth/send-verification-code
+   - 方法：POST
+   - 参数：{email: string}
+   - 返回：{success: boolean, message: string}
+
+6. 重置密码：
+   - 接口：/api/auth/reset-password
+   - 方法：POST
+   - 参数：{email: string, verificationCode: string, newPassword: string}
+   - 返回：{success: boolean, message: string}
+
+## 用户信息相关接口
+
+7. 获取用户信息：
+   - 接口：/api/user/profile
+   - 方法：GET
+   - 参数：{}
+   - 返回：{id: string, name: string, email: string, role: string, plan: string, remainingGenerations: number, totalGenerations: number, avatar: string}
+
+8. 更新用户信息：
+   - 接口：/api/user/profile
+   - 方法：PUT
+   - 参数：{name: string, email: string, role: string}
+   - 返回：{success: boolean, user: {id: string, name: string, email: string, role: string, plan: string, remainingGenerations: number, totalGenerations: number, avatar: string}}
+
+9. 修改密码：
+   - 接口：/api/user/change-password
+   - 方法：PUT
+   - 参数：{currentPassword: string, newPassword: string}
+   - 返回：{success: boolean, message: string}
+
+10. 更新用户偏好设置：
+    - 接口：/api/user/preferences
+    - 方法：PUT
+    - 参数：{notificationUpdates: boolean, notificationTips: boolean, notificationSpecial: boolean, defaultDifficulty: string}
+    - 返回：{success: boolean}
+
+## 题目生成相关接口
+
+11. 生成题目：
+    - 接口：/api/generator/generate
+    - 方法：POST
+    - 参数：{grade: string, subject: string, difficulty: string, questionsCount: number, questionTypes: string[], isComprehensive: boolean}
+    - 返回：{success: boolean, questions: [{id: string, type: string, text: string, options?: string[], answer: string, explanation: string}], remainingGenerations: number}
+
+12. 获取可用题目类型：
+    - 接口：/api/generator/question-types
+    - 方法：GET
+    - 参数：{}
+    - 返回：{types: [{id: string, name: string, description: string}]}
+
+13. 获取可用科目：
+    - 接口：/api/generator/subjects
+    - 方法：GET
+    - 参数：{}
+    - 返回：{subjects: [{id: string, name: string, categories: [{id: string, name: string}]}]}
+
+## 历史记录相关接口
+
+14. 获取生成历史：
+    - 接口：/api/history
+    - 方法：GET
+    - 参数：{page: number, limit: number, search?: string}
+    - 返回：{items: [{id: string, title: string, date: string, grade: string, subject: string, questionCount: number, difficulty: string, preview: string}], total: number, page: number, totalPages: number}
+
+15. 获取单个历史记录详情：
+    - 接口：/api/history/:id
+    - 方法：GET
+    - 参数：{}
+    - 返回：{id: string, title: string, date: string, grade: string, subject: string, difficulty: string, questions: [{id: string, type: string, text: string, options?: string[], answer: string, explanation: string}]}
+
+16. 删除历史记录：
+    - 接口：/api/history/:id
+    - 方法：DELETE
+    - 参数：{}
+    - 返回：{success: boolean}
+
+## 收藏夹相关接口
+
+17. 获取收藏列表：
+    - 接口：/api/favorites
+    - 方法：GET
+    - 参数：{page: number, limit: number, search?: string}
+    - 返回：{items: [{id: string, title: string, date: string, grade: string, subject: string, tags: string[], description: string}], total: number, page: number, totalPages: number}
+
+18. 添加到收藏：
+    - 接口：/api/favorites
+    - 方法：POST
+    - 参数：{quizId: string}
+    - 返回：{success: boolean, favoriteId: string}
+
+19. 从收藏删除：
+    - 接口：/api/favorites/:id
+    - 方法：DELETE
+    - 参数：{}
+    - 返回：{success: boolean}
+
+## 支付相关接口
+
+20. 获取套餐列表：
+    - 接口：/api/plans
+    - 方法：GET
+    - 参数：{}
+    - 返回：{plans: [{id: string, name: string, price: number, generations: number, features: string[], recurring: boolean}]}
+
+21. 创建订单：
+    - 接口：/api/payment/create-order
+    - 方法：POST
+    - 参数：{planId: string}
+    - 返回：{success: boolean, orderId: string, amount: number}
+
+22. 处理支付：
+    - 接口：/api/payment/process
+    - 方法：POST
+    - 参数：{orderId: string, cardName: string, cardNumber: string, cardExpiry: string, cardCvv: string, billingEmail: string}
+    - 返回：{success: boolean, order: {id: string, planName: string, amount: number, date: string}}
+
+23. PayPal支付：
+    - 接口：/api/payment/paypal
+    - 方法：POST
+    - 参数：{orderId: string, billingEmail: string}
+    - 返回：{success: boolean, redirectUrl: string}
+
+## 其他接口
+
+24. 联系支持：
+    - 接口：/api/support/contact
+    - 方法：POST
+    - 参数：{name: string, email: string, subject: string, message: string}
+    - 返回：{success: boolean, message: string}
+
+25. 下载题目：
+    - 接口：/api/download/:format
+    - 方法：POST
+    - 参数：{questions: [{id: string, type: string, text: string, options?: string[], answer: string, explanation: string}], showAnswers: boolean, title: string}
+    - 返回：文件流
+
+26. 获取仪表盘统计数据：
+    - 接口：/api/dashboard/stats
+    - 方法：GET
+    - 参数：{}
+    - 返回：{totalQuizzes: number, lastActivity: string, favoritesCount: number, recentActivities: [{title: string, date: string, description: string, tags: string[]}]} 

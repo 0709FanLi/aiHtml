@@ -1734,9 +1734,7 @@
             <li><a href="#home" id="homeLink">Home</a></li>
             <li><a href="#features" id="featuresLink">Features</a></li>
             <li><a href="#pricing" id="pricingLink">Pricing</a></li>
-            <li style="display: none">
-              <a href="#" id="historyLink">My History</a>
-            </li>
+            <li><a href="#" id="historyLink">My History</a></li>
           </ul>
           <div class="user-actions">
             <button class="btn" id="loginBtn">Login</button>
@@ -1776,9 +1774,7 @@
         <li><a href="#home" id="mobileHomeLink">Home</a></li>
         <li><a href="#features" id="mobileFeaturesLink">Features</a></li>
         <li><a href="#pricing" id="mobilePricingLink">Pricing</a></li>
-        <li style="display: none">
-          <a href="#" class="mobile-history-link">My History</a>
-        </li>
+        <li><a href="#" class="mobile-history-link">My History</a></li>
         <li><a href="#" class="mobile-login-btn">Login</a></li>
         <li><a href="#" class="mobile-signup-btn">Sign Up</a></li>
       </ul>
@@ -1915,7 +1911,7 @@
             </div>
           </div>
 
-          <div class="about-team">
+          <div class="about-team" style="display: none">
             <h3>Our Team</h3>
             <div class="team-grid">
               <div class="team-member">
@@ -3096,24 +3092,22 @@
         badgeCredits.textContent = usageCredits;
         creditsBadge.style.display = "flex";
 
-        // 历史功能暂时隐藏
-        // document.querySelector(".mobile-login-btn").parentElement.style.display = "none";
-        // document.querySelector(".mobile-signup-btn").parentElement.style.display = "none";
+        // Hide login/signup in mobile menu
+        document.querySelector(
+          ".mobile-login-btn"
+        ).parentElement.style.display = "none";
+        document.querySelector(
+          ".mobile-signup-btn"
+        ).parentElement.style.display = "none";
 
-        // 历史功能暂时隐藏
         // Generate history items
-        // renderHistoryItems();
+        renderHistoryItems();
       }
 
       // History related functions
       historyLink.addEventListener("click", (e) => {
         e.preventDefault();
 
-        // 暂时禁用历史功能，显示提示消息
-        showToast("My History功能将在下一版本推出，敬请期待！", "info");
-
-        // 原始代码，暂时注释掉
-        /*
         if (!isLoggedIn) {
           showToast("Please login to view your history", "info");
           showAuthModal();
@@ -3121,18 +3115,11 @@
         }
 
         showSection("history");
-        */
       });
 
       mobileHistoryLink.addEventListener("click", (e) => {
         e.preventDefault();
 
-        // 暂时禁用历史功能，显示提示消息
-        showToast("My History功能将在下一版本推出，敬请期待！", "info");
-        closeMobileMenu();
-
-        // 原始代码，暂时注释掉
-        /*
         if (!isLoggedIn) {
           showToast("Please login to view your history", "info");
           showAuthModal();
@@ -3141,7 +3128,6 @@
 
         showSection("history");
         closeMobileMenu();
-        */
       });
 
       function toggleHistorySection() {
@@ -3759,6 +3745,9 @@
           document.querySelector(
             ".mobile-signup-btn"
           ).parentElement.style.display = "none";
+
+          // Generate history items if logged in
+          renderHistoryItems();
         } else {
           // User is not logged in
           console.log("User not logged in, hiding profile");
