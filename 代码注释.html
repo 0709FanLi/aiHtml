@@ -365,6 +365,9 @@
         box-shadow: var(--box-shadow);
         overflow: hidden;
         transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
       }
 
       .pricing-plan:hover {
@@ -397,12 +400,16 @@
 
       .plan-features {
         padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
 
       .feature-list {
         list-style: none;
         margin-bottom: 20px;
         text-align: left;
+        flex-grow: 1;
       }
 
       .feature-list li {
@@ -1199,7 +1206,6 @@
             <li><a href="#">Home</a></li>
             <li><a href="#pricing">Pricing</a></li>
             <li><a href="#">Features</a></li>
-            <li><a href="#about" id="about-nav-link">About</a></li>
           </ul>
           <div class="auth-buttons">
             <button class="btn btn-outline login-btn">Login</button>
@@ -1251,11 +1257,9 @@
     <!-- Hero Section -->
     <section class="hero">
       <div class="container">
-        <h1>AI-Powered Code Annotation</h1>
+        <h1>About CodeAnnotator</h1>
         <p>
-          Upload your code and let our intelligent AI automatically generate
-          comprehensive annotations in English. Enhance code readability and
-          accelerate development.
+          Empowering developers to create more readable and maintainable code
         </p>
       </div>
     </section>
@@ -1263,6 +1267,208 @@
     <!-- Main Content -->
     <section class="main-content">
       <div class="container">
+        <!-- About Content - Replacing Original Hero -->
+        <div class="card" style="margin-bottom: 40px">
+          <!-- Our Story -->
+          <div class="about-story">
+            <div class="about-image">
+              <img
+                src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Code on computer screen"
+              />
+              <span class="image-credit"
+                >Photo by
+                <a href="https://unsplash.com/@markusspiske" target="_blank"
+                  >Markus Spiske</a
+                >
+                on Unsplash</span
+              >
+            </div>
+
+            <div class="about-text">
+              <h3>Our Story</h3>
+              <p>
+                CodeAnnotator was born from a simple observation: as code
+                complexity grows, documentation often becomes an afterthought.
+                Founded in 2025 by a team of developers, teachers, and AI
+                specialists, we set out to create a tool that would bridge the
+                gap between writing code and documenting it.
+              </p>
+              <p>
+                What began as a passion project has evolved into a comprehensive
+                platform that helps developers automatically generate clear,
+                concise, and meaningful annotations for their code, saving time
+                while improving code quality and collaboration.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission and Team -->
+        <div class="card" style="margin-bottom: 40px">
+          <!-- Our Mission -->
+          <div class="about-mission">
+            <div class="about-text">
+              <h3>Our Mission</h3>
+              <p>
+                We believe that well-documented code is a cornerstone of
+                successful software development. Our mission is to make code
+                documentation effortless and accessible for all developers,
+                regardless of experience level or project size.
+              </p>
+              <p>
+                Unlike generic commenting tools, CodeAnnotator is specifically
+                designed for developers, understanding the nuances of different
+                programming languages, code structure, and documentation
+                standards to provide intelligent annotations that truly enhance
+                understanding.
+              </p>
+            </div>
+
+            <div class="about-image">
+              <img
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Team working together on code"
+              />
+              <span class="image-credit"
+                >Photo by
+                <a href="https://unsplash.com/@helloquence" target="_blank"
+                  >Helloquence</a
+                >
+                on Unsplash</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Our Team -->
+        <div class="card" style="margin-bottom: 40px">
+          <div class="about-team">
+            <h3>Our Team</h3>
+            <div class="team-grid">
+              <div class="team-member">
+                <div class="member-image">
+                  <img
+                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                    alt="Team member - CEO"
+                  />
+                </div>
+                <h4>Emily Chen</h4>
+                <p class="member-role">Founder & CEO</p>
+                <p class="member-bio">
+                  Former tech lead with 15+ years of experience in software
+                  architecture and a passion for clean code.
+                </p>
+              </div>
+
+              <div class="team-member">
+                <div class="member-image">
+                  <img
+                    src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                    alt="Team member - CTO"
+                  />
+                </div>
+                <h4>Michael Rodriguez</h4>
+                <p class="member-role">Chief Technology Officer</p>
+                <p class="member-bio">
+                  AI specialist with extensive background in NLP and
+                  computational linguistics.
+                </p>
+              </div>
+
+              <div class="team-member">
+                <div class="member-image">
+                  <img
+                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                    alt="Team member - Product Lead"
+                  />
+                </div>
+                <h4>Sarah Johnson</h4>
+                <p class="member-role">Head of Product</p>
+                <p class="member-bio">
+                  Product manager with a background in developer tools and
+                  educational technology.
+                </p>
+              </div>
+
+              <div class="team-member">
+                <div class="member-image">
+                  <img
+                    src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+                    alt="Team member - Lead Developer"
+                  />
+                </div>
+                <h4>David Park</h4>
+                <p class="member-role">Lead Developer</p>
+                <p class="member-bio">
+                  Full-stack developer specializing in language parsing and code
+                  analysis tools.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Our Values -->
+        <div class="card" style="margin-bottom: 40px">
+          <div class="about-values">
+            <h3>Our Values</h3>
+            <div class="values-grid">
+              <div class="value-item">
+                <i class="fas fa-lightbulb"></i>
+                <h4>Innovation</h4>
+                <p>
+                  We continuously refine our technology to provide cutting-edge
+                  assistance that meets the evolving needs of developers.
+                </p>
+              </div>
+
+              <div class="value-item">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Code Quality</h4>
+                <p>
+                  We believe that good documentation is a cornerstone of
+                  high-quality software and sustainable development practices.
+                </p>
+              </div>
+
+              <div class="value-item">
+                <i class="fas fa-users"></i>
+                <h4>Inclusivity</h4>
+                <p>
+                  We design our tools to help developers from all backgrounds,
+                  experience levels, and programming languages improve their
+                  code documentation.
+                </p>
+              </div>
+
+              <div class="value-item">
+                <i class="fas fa-lock"></i>
+                <h4>Privacy</h4>
+                <p>
+                  Your code is precious. We maintain strict privacy standards
+                  and never use your content to train our models without
+                  consent.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Call to Action - Added to main page -->
+        <div class="card" style="margin-bottom: 60px">
+          <div class="about-cta">
+            <h3>Ready to Improve Your Code Documentation?</h3>
+            <p>
+              Experience how CodeAnnotator can transform your development
+              process with intelligent, automatic code annotations.
+            </p>
+            <button class="btn btn-primary" id="try-service-btn">
+              Try Service Now
+            </button>
+          </div>
+        </div>
+
         <!-- Code Input Card -->
         <div class="card" id="code-input">
           <div class="card-header">
@@ -1346,7 +1552,7 @@
             <div class="history-item">
               <div class="history-header">
                 <div class="history-title">main.js</div>
-                <div class="history-date">2023-07-24, 15:30</div>
+                <div class="history-date">2025-07-24, 15:30</div>
               </div>
               <div class="history-preview">
                 function calculateTotal(items) { // Calculate the total price of
@@ -1364,7 +1570,7 @@
             <div class="history-item">
               <div class="history-header">
                 <div class="history-title">api.py</div>
-                <div class="history-date">2023-07-23, 10:15</div>
+                <div class="history-date">2025-07-23, 10:15</div>
               </div>
               <div class="history-preview">
                 def process_data(data): # Process incoming data and return
@@ -1382,7 +1588,7 @@
             <div class="history-item">
               <div class="history-header">
                 <div class="history-title">User.java</div>
-                <div class="history-date">2023-07-21, 09:45</div>
+                <div class="history-date">2025-07-21, 09:45</div>
               </div>
               <div class="history-preview">
                 public class User { // Represents a user in the system with
@@ -1570,7 +1776,13 @@
     </section>
 
     <!-- About Section -->
-    <section class="about-section" id="about-section" style="display: none">
+    <section
+      class="about-section"
+      id="about-section"
+      style="display: none"
+      hidden
+      aria-hidden="true"
+    >
       <div class="container">
         <div class="about-header">
           <h2>About CodeAnnotator</h2>
@@ -1601,7 +1813,7 @@
               <p>
                 CodeAnnotator was born from a simple observation: as code
                 complexity grows, documentation often becomes an afterthought.
-                Founded in 2023 by a team of developers, teachers, and AI
+                Founded in 2025 by a team of developers, teachers, and AI
                 specialists, we set out to create a tool that would bridge the
                 gap between writing code and documenting it.
               </p>
@@ -1778,15 +1990,11 @@
       <div class="container">
         <div class="footer-content">
           <div class="footer-links">
-            <a href="#">Home</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#">Features</a>
-            <a href="#about" id="footer-about-link">About</a>
             <a href="#" id="privacyPolicyLink">Privacy Policy</a>
             <a href="#" id="termsOfServiceLink">Terms of Service</a>
           </div>
           <div class="copyright">
-            &copy; 2023 CodeAnnotator. All rights reserved.
+            &copy; 2025 CodeAnnotator. All rights reserved.
           </div>
         </div>
       </div>
@@ -2078,7 +2286,7 @@
             us at privacy@codeannotator.com
           </p>
 
-          <p class="last-updated">Last Updated: June 15, 2023</p>
+          <p class="last-updated">Last Updated: June 15, 2025</p>
         </div>
       </div>
     </div>
@@ -2247,946 +2455,244 @@
             terms@codeannotator.com
           </p>
 
-          <p class="last-updated">Last Updated: June 15, 2023</p>
+          <p class="last-updated">Last Updated: June 15, 2025</p>
         </div>
       </div>
     </div>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Sample code to annotate
-        const sampleCode = `function calculateTotal(items) {
-let total = 0;
-for (let i = 0; i < items.length; i++) {
-    total += items[i].price * items[i].quantity;
-}
-return total;
-}
-function applyDiscount(total, discountCode) {
-if (discountCode === 'SAVE10') {
-return total * 0.9;
-} else if (discountCode === 'SAVE20') {
-return total * 0.8;
-}
-return total;
-}
-class ShoppingCart {
-constructor() {
-this.items = [];
-}
-addItem(item) {
-    this.items.push(item);
-}
-
-removeItem(itemId) {
-    this.items = this.items.filter(item => item.id !== itemId);
-}
-
-getTotal() {
-    return calculateTotal(this.items);
-}
-
-checkout(discountCode) {
-    const total = this.getTotal();
-    const discountedTotal = applyDiscount(total, discountCode);
-    this.items = [];
-    return {
-        total: total,
-        discountedTotal: discountedTotal,
-        saved: total - discountedTotal
-    };
-}
-}`;
-        // Sample annotated code
-        const sampleAnnotatedCode = `/**
-
-Calculates the total price of items in the shopping cart.
-@param {Array} items - Array of items with price and quantity properties.
-@return {number} The total price of all items.
-*/
-function calculateTotal(items) {
-let total = 0;
-// Iterate through each item and calculate the total price
-for (let i = 0; i < items.length; i++) {
-total += items[i].price * items[i].quantity;
-}
-return total;
-}
-
-/**
-
-Applies a discount to the total based on the provided discount code.
-@param {number} total - The total price before discount.
-@param {string} discountCode - The discount code to apply.
-@return {number} The total price after applying discount.
-*/
-function applyDiscount(total, discountCode) {
-// Apply 10% discount for 'SAVE10' code
-if (discountCode === 'SAVE10') {
-return total * 0.9;
-}
-// Apply 20% discount for 'SAVE20' code
-else if (discountCode === 'SAVE20') {
-return total * 0.8;
-}
-// Return original total if no valid discount code
-return total;
-}
-
-/**
-
-Class representing a shopping cart with methods to manage items and checkout.
-/
-class ShoppingCart {
-/*
-
-Create a shopping cart instance.
-*/
-constructor() {
-// Initialize empty items array
-this.items = [];
-}
-
-/**
-
-Add an item to the shopping cart.
-@param {Object} item - The item to add to the cart.
-*/
-addItem(item) {
-this.items.push(item);
-}
-
-/**
-
-Remove an item from the shopping cart.
-@param {string|number} itemId - The ID of the item to remove.
-*/
-removeItem(itemId) {
-// Filter out the item with the specified ID
-this.items = this.items.filter(item => item.id !== itemId);
-}
-
-/**
-
-Calculate the total price of all items in the cart.
-@return {number} The total price.
-*/
-getTotal() {
-return calculateTotal(this.items);
-}
-
-/**
-
-Process the checkout with an optional discount code.
-@param {string} discountCode - The discount code to apply.
-@return {Object} An object containing the checkout details.
-*/
-checkout(discountCode) {
-// Calculate the total price
-const total = this.getTotal();
-// Apply any discount
-const discountedTotal = applyDiscount(total, discountCode);
-// Clear the cart after checkout
-this.items = [];
-// Return checkout summary
-return {
-total: total,
-discountedTotal: discountedTotal,
-saved: total - discountedTotal
-};
-}
-}`;
-        // DOM Elements
-        const loginBtn = document.querySelector(".login-btn");
-        const signupBtn = document.querySelector(".signup-btn");
-        const loginModal = document.getElementById("login-modal");
-        const signupModal = document.getElementById("signup-modal");
-        const paymentModal = document.getElementById("payment-modal");
-        const modalCloseButtons = document.querySelectorAll(".modal-close");
-        const showSignupLink = document.getElementById("show-signup");
-        const showLoginLink = document.getElementById("show-login");
-        const loginForm = document.getElementById("login-form");
-        const signupForm = document.getElementById("signup-form");
-        const userMenu = document.querySelector(".user-menu");
-        const userAvatar = document.querySelector(".user-avatar");
-        const dropdownMenu = document.querySelector(".dropdown-menu");
-        const logoutBtn = document.querySelector(".logout-item");
-        const dashboardLink = document.getElementById("dashboard-link");
-        const dashboard = document.getElementById("user-dashboard");
-        const dashboardTabs = document.querySelectorAll(".dashboard-tab");
-        const dashboardContents = document.querySelectorAll(
-          "[data-dashboard-content]"
-        );
-        const tabs = document.querySelectorAll(".tab");
-        const tabContents = document.querySelectorAll("[data-content]");
-        const codeTextarea = document.querySelector(".code-textarea");
-        const fileUpload = document.querySelector(".file-upload");
-        const fileInput = document.getElementById("code-file-input");
-        const annotateBtn = document.getElementById("annotate-btn");
-        const loader = document.getElementById("annotation-loader");
-        const successCheckmark = document.getElementById("annotation-success");
-        const resultsCard = document.getElementById("results-card");
-        const originalCode = document.getElementById("original-code");
-        const annotatedCode = document.getElementById("annotated-code");
-        const originalLineNumbers = document.getElementById(
-          "original-line-numbers"
-        );
-        const annotatedLineNumbers = document.getElementById(
-          "annotated-line-numbers"
-        );
-        const downloadBtn = document.getElementById("download-btn");
-        const buyPlanButtons = document.querySelectorAll(".buy-plan");
-        const selectedPlan = document.getElementById("selected-plan");
-        const paymentOptions = document.querySelectorAll(".payment-option");
-        const cardPaymentFields = document.getElementById(
-          "card-payment-fields"
-        );
-        const paypalFields = document.getElementById("paypal-fields");
-        const completePaymentBtn = document.getElementById("complete-payment");
-        const historyViewButtons =
-          document.querySelectorAll(".history-view-btn");
-        const historyDownloadButtons = document.querySelectorAll(
-          ".history-download-btn"
-        );
-        const authButtons = document.querySelector(".auth-buttons");
-
-        // State
-        let isLoggedIn = false;
-        let usedFreeTrial = false;
-        let userCredits = 25;
-        let currentUser = null;
-
-        // Initialize
-        updateUIState();
-
-        // Load sample code for demo
-        codeTextarea.value = sampleCode;
-
-        // Update UI based on login state
-        function updateUIState() {
-          if (isLoggedIn) {
-            authButtons.style.display = "none";
-            userMenu.style.display = "block";
-            dashboard.style.display = "block";
-            updateCreditDisplay();
-          } else {
-            authButtons.style.display = "flex";
-            userMenu.style.display = "none";
-            dashboard.style.display = "none";
-          }
-        }
-
-        // Update credit count display
-        function updateCreditDisplay() {
-          const creditCountElements =
-            document.querySelectorAll(".credit-count");
-          creditCountElements.forEach((el) => {
-            el.textContent = userCredits;
-          });
-        }
-
-        // Tab navigation
-        tabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            const tabId = tab.getAttribute("data-tab");
-
-            // Remove active class from all tabs and contents
-            tabs.forEach((t) => t.classList.remove("active"));
-            tabContents.forEach((c) => c.classList.remove("active"));
-
-            // Add active class to selected tab and content
-            tab.classList.add("active");
-            document
-              .querySelector(`[data-content="${tabId}"]`)
-              .classList.add("active");
-          });
-        });
-
-        // Dashboard tabs
-        dashboardTabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            const tabId = tab.getAttribute("data-dashboard-tab");
-
-            // Remove active class from all tabs and contents
-            dashboardTabs.forEach((t) => t.classList.remove("active"));
-            dashboardContents.forEach((c) => c.classList.remove("active"));
-
-            // Add active class to selected tab and content
-            tab.classList.add("active");
-            document
-              .querySelector(`[data-dashboard-content="${tabId}"]`)
-              .classList.add("active");
-          });
-        });
-
-        // Modal open/close
-        function openModal(modal) {
-          modal.classList.add("active");
-        }
-
-        function closeModal(modal) {
-          modal.classList.remove("active");
-        }
-
-        // Close all modals
-        function closeAllModals() {
-          const modals = document.querySelectorAll(".modal-backdrop");
-          modals.forEach((modal) => {
-            closeModal(modal);
-          });
-        }
-
-        // Login button click
-        loginBtn.addEventListener("click", () => {
-          openModal(loginModal);
-        });
-
-        // Signup button click
-        signupBtn.addEventListener("click", () => {
-          openModal(signupModal);
-        });
-
-        // Close modal buttons
-        modalCloseButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            closeAllModals();
-          });
-        });
-
-        // Close modal when clicking outside
-        document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
-          backdrop.addEventListener("click", (e) => {
-            if (e.target === backdrop) {
-              closeModal(backdrop);
-            }
-          });
-        });
-
-        // Switch between login and signup
-        showSignupLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          closeModal(loginModal);
-          openModal(signupModal);
-        });
-
-        showLoginLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          closeModal(signupModal);
-          openModal(loginModal);
-        });
-
-        // User dropdown toggle
-        userAvatar.addEventListener("click", () => {
-          dropdownMenu.classList.toggle("active");
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-          if (
-            !userMenu.contains(e.target) &&
-            dropdownMenu.classList.contains("active")
-          ) {
-            dropdownMenu.classList.remove("active");
-          }
-        });
-
-        // Dashboard link
-        dashboardLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          dropdownMenu.classList.remove("active");
-          dashboard.scrollIntoView({ behavior: "smooth" });
-        });
-
-        // File upload
-        fileUpload.addEventListener("click", () => {
-          fileInput.click();
-        });
-
-        fileUpload.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          fileUpload.style.borderColor = "var(--primary)";
-        });
-
-        fileUpload.addEventListener("dragleave", () => {
-          fileUpload.style.borderColor = "#ddd";
-        });
-
-        fileUpload.addEventListener("drop", (e) => {
-          e.preventDefault();
-          fileUpload.style.borderColor = "#ddd";
-
-          if (e.dataTransfer.files.length) {
-            handleFileUpload(e.dataTransfer.files[0]);
-          }
-        });
-
-        fileInput.addEventListener("change", () => {
-          if (fileInput.files.length) {
-            handleFileUpload(fileInput.files[0]);
-          }
-        });
-
-        function handleFileUpload(file) {
-          // Check if file is a code file
-          const validExtensions = [
-            ".js",
-            ".py",
-            ".java",
-            ".c",
-            ".cpp",
-            ".html",
-            ".css",
-            ".php",
-            ".rb",
-            ".go",
-            ".ts",
-          ];
-          const fileName = file.name.toLowerCase();
-          const isValidFile =
-            validExtensions.some((ext) => fileName.endsWith(ext)) ||
-            file.type === "text/plain" ||
-            file.type === "application/javascript" ||
-            file.type === "text/javascript";
-
-          if (isValidFile) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              codeTextarea.value = e.target.result;
-              tabs[0].click(); // Switch to paste tab
-            };
-            reader.readAsText(file);
-          } else {
-            alert("Please upload a valid code file.");
-          }
-        }
-
-        // Generate line numbers
-        function generateLineNumbers(code, container) {
-          container.innerHTML = "";
-          const lineCount = code.split("\n").length;
-
-          for (let i = 1; i <= lineCount; i++) {
-            const line = document.createElement("div");
-            line.textContent = i;
-            container.appendChild(line);
-          }
-        }
-
-        // Process and display code with annotations
-        function displayCode(original, annotated) {
-          // Set original code
-          originalCode.textContent = original;
-
-          // Process annotated code with highlighting
-          let formattedCode = "";
-          const lines = annotated.split("\n");
-
-          lines.forEach((line) => {
-            if (
-              line.includes("//") ||
-              line.includes("/*") ||
-              line.includes("*")
-            ) {
-              // This is a comment or annotation line
-              const commentIndex = Math.min(
-                line.indexOf("//") >= 0 ? line.indexOf("//") : Infinity,
-                line.indexOf("/*") >= 0 ? line.indexOf("/*") : Infinity,
-                line.indexOf("*") === 0 ? 0 : Infinity
-              );
-
-              if (commentIndex !== Infinity) {
-                const codePart = line.substring(0, commentIndex);
-                const commentPart = line.substring(commentIndex);
-
-                formattedCode += `<span class="code-annotation">${escapeHtml(
-                  codePart
-                )}<span class="annotation-comment">${escapeHtml(
-                  commentPart
-                )}</span></span>\n`;
-              } else {
-                formattedCode += `${escapeHtml(line)}\n`;
-              }
-            } else {
-              formattedCode += `${escapeHtml(line)}\n`;
-            }
-          });
-
-          annotatedCode.innerHTML = formattedCode;
-
-          // Generate line numbers
-          generateLineNumbers(original, originalLineNumbers);
-          generateLineNumbers(annotated, annotatedLineNumbers);
-
-          // Show results
-          resultsCard.style.display = "block";
-          resultsCard.scrollIntoView({ behavior: "smooth" });
-        }
-
-        // Escape HTML
-        function escapeHtml(unsafe) {
-          return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
-
-        // Annotate code
-        annotateBtn.addEventListener("click", () => {
-          const code = codeTextarea.value.trim();
-
-          if (!code) {
-            alert("Please enter or upload some code first.");
-            return;
-          }
-
-          if (!isLoggedIn && usedFreeTrial) {
-            alert(
-              "You have used your free trial. Please login or sign up to continue."
-            );
-            openModal(loginModal);
-            return;
-          }
-
-          if (isLoggedIn && userCredits <= 0) {
-            alert(
-              "You have no credits left. Please purchase more to continue."
-            );
-            dashboardTabs[1].click(); // Switch to buy credits tab
-            dashboard.scrollIntoView({ behavior: "smooth" });
-            return;
-          }
-
-          // Show loading animation
-          loader.style.display = "block";
-          annotateBtn.disabled = true;
-
-          // Simulate API call
-          setTimeout(() => {
-            loader.style.display = "none";
-            successCheckmark.style.display = "block";
-
-            // Track free trial usage
-            if (!isLoggedIn) {
-              usedFreeTrial = true;
-            } else {
-              userCredits--;
-              updateCreditDisplay();
-            }
-
-            // Hide success checkmark after a delay
-            setTimeout(() => {
-              successCheckmark.style.display = "none";
-              annotateBtn.disabled = false;
-
-              // Display the annotated code
-              displayCode(code, sampleAnnotatedCode);
-            }, 1000);
-          }, 2000);
-        });
-
-        // Download button
-        downloadBtn.addEventListener("click", () => {
-          // Create blob and download
-          const blob = new Blob([annotatedCode.textContent], {
-            type: "text/plain",
-          });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "annotated_code.js";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
-
-        // Login form submit
-        loginForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-
-          const email = document.getElementById("login-email").value;
-          const password = document.getElementById("login-password").value;
-
-          if (!email || !password) {
-            alert("Please fill in all fields");
-            return;
-          }
-
-          // Simulate login
-          setTimeout(() => {
-            isLoggedIn = true;
-            currentUser = {
-              name: "John Doe",
-              email: email,
-            };
-
-            updateUIState();
-            closeAllModals();
-            alert("Login successful!");
-          }, 1000);
-        });
-
-        // Signup form submit
-        signupForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-
-          const name = document.getElementById("signup-name").value;
-          const email = document.getElementById("signup-email").value;
-          const password = document.getElementById("signup-password").value;
-          const confirmPassword =
-            document.getElementById("signup-confirm").value;
-
-          if (!name || !email || !password || !confirmPassword) {
-            alert("Please fill in all fields");
-            return;
-          }
-
-          if (password !== confirmPassword) {
-            alert("Passwords do not match");
-            return;
-          }
-
-          // Simulate signup
-          setTimeout(() => {
-            isLoggedIn = true;
-            currentUser = {
-              name: name,
-              email: email,
-            };
-
-            updateUIState();
-            closeAllModals();
-            alert("Account created successfully!");
-          }, 1000);
-        });
-
-        // Logout
-        logoutBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-
-          isLoggedIn = false;
-          currentUser = null;
-          dropdownMenu.classList.remove("active");
-          updateUIState();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-
-        // Buy plan buttons
-        buyPlanButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            if (!isLoggedIn) {
-              openModal(loginModal);
-              return;
-            }
-
-            const plan = btn.getAttribute("data-plan");
-            let planDetails;
-
-            switch (plan) {
-              case "basic":
-                planDetails = "Basic - $0.99 for 2 Annotations";
-                break;
-              case "standard":
-                planDetails = "Standard - $4.99 for 10 Annotations";
-                break;
-              case "plus":
-                planDetails = "Plus - $9.99 for 30 Annotations";
-                break;
-              case "monthly":
-                planDetails = "Monthly - $10.99 for 50 Annotations/Month";
-                break;
-              case "annual":
-                planDetails = "Annual - $99.90 for 1000 Annotations/Year";
-                break;
-            }
-
-            selectedPlan.textContent = planDetails;
-            openModal(paymentModal);
-          });
-        });
-
-        // Payment method selection
-        paymentOptions.forEach((option) => {
-          option.addEventListener("click", () => {
-            paymentOptions.forEach((opt) => opt.classList.remove("selected"));
-            option.classList.add("selected");
-
-            const method = option.getAttribute("data-method");
-            if (method === "card") {
-              cardPaymentFields.style.display = "block";
-              paypalFields.style.display = "none";
-            } else {
-              cardPaymentFields.style.display = "none";
-              paypalFields.style.display = "block";
-            }
-          });
-        });
-
-        // Complete payment
-        completePaymentBtn.addEventListener("click", () => {
-          const planText = selectedPlan.textContent;
-
-          // Simulate payment processing
-          setTimeout(() => {
-            // Add credits based on plan
-            if (planText.includes("Basic")) {
-              userCredits += 2;
-            } else if (planText.includes("Standard")) {
-              userCredits += 10;
-            } else if (planText.includes("Plus")) {
-              userCredits += 30;
-            } else if (planText.includes("Monthly")) {
-              userCredits += 50;
-            } else if (planText.includes("Annual")) {
-              userCredits += 1000;
-            }
-
-            updateCreditDisplay();
-            closeAllModals();
-            alert(
-              "Payment successful! Credits have been added to your account."
-            );
-          }, 1500);
-        });
-
-        // History view buttons
-        historyViewButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            displayCode(sampleCode, sampleAnnotatedCode);
-          });
-        });
-
-        // History download buttons
-        historyDownloadButtons.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const blob = new Blob([sampleAnnotatedCode], {
-              type: "text/plain",
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "annotated_code_history.js";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          });
-        });
-
-        // 为Privacy Policy和Terms of Service添加功能
-        // Privacy Policy Modal
-        const privacyPolicyLink = document.getElementById("privacyPolicyLink");
-        const privacyPolicyModal =
-          document.getElementById("privacyPolicyModal");
-        const closePrivacyModal = document.getElementById("closePrivacyModal");
-
-        // Terms of Service Modal
-        const termsOfServiceLink =
-          document.getElementById("termsOfServiceLink");
-        const termsModal = document.getElementById("termsModal");
-        const closeTermsModal = document.getElementById("closeTermsModal");
-
-        // 显示/隐藏Privacy Policy模态框
-        function showPrivacyPolicyModal() {
-          privacyPolicyModal.classList.add("active");
-          document.body.style.overflow = "hidden";
-        }
-
-        function hidePrivacyPolicyModal() {
-          privacyPolicyModal.classList.remove("active");
-          document.body.style.overflow = "auto";
-        }
-
-        // 显示/隐藏Terms of Service模态框
-        function showTermsModal() {
-          termsModal.classList.add("active");
-          document.body.style.overflow = "hidden";
-        }
-
-        function hideTermsModal() {
-          termsModal.classList.remove("active");
-          document.body.style.overflow = "auto";
-        }
-
-        // 添加事件监听
-        if (privacyPolicyLink) {
-          privacyPolicyLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showPrivacyPolicyModal();
-          });
-        }
-
-        if (closePrivacyModal) {
-          closePrivacyModal.addEventListener("click", hidePrivacyPolicyModal);
-        }
-
-        if (termsOfServiceLink) {
-          termsOfServiceLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showTermsModal();
-          });
-        }
-
-        if (closeTermsModal) {
-          closeTermsModal.addEventListener("click", hideTermsModal);
-        }
-
-        // 点击模态框背景关闭模态框
-        if (privacyPolicyModal) {
-          privacyPolicyModal.addEventListener("click", function (e) {
-            if (e.target === privacyPolicyModal) {
-              hidePrivacyPolicyModal();
-            }
-          });
-        }
-
-        if (termsModal) {
-          termsModal.addEventListener("click", function (e) {
-            if (e.target === termsModal) {
-              hideTermsModal();
-            }
-          });
-        }
-
-        // About页面切换功能
+        // 网站结构控制 - Home显示About内容，Features显示功能和价格
         const mainContent = document.querySelector(".main-content");
         const aboutSection = document.getElementById("about-section");
         const pricingSection = document.getElementById("pricing");
+        const codeInputCard = document.getElementById("code-input");
+        const resultsCard = document.getElementById("results-card");
+        const userDashboard = document.getElementById("user-dashboard");
 
-        // 找到导航链接和页脚链接
-        const navLinks = document.querySelectorAll(".nav-links a");
-        const footerLinks = document.querySelectorAll(".footer-links a");
+        // 全局状态变量
+        let isLoggedIn = false; // 默认未登录状态
 
-        // 修改导航中的Features链接为About链接
-        if (navLinks.length >= 3) {
-          // 不需要修改导航链接，已经在HTML中直接设置了
-          // navLinks[2].setAttribute("href", "#about");
-          // navLinks[2].textContent = "About";
-          // navLinks[2].setAttribute("id", "about-nav-link");
-        }
+        // 初始显示设置 - 页面加载时默认显示Home (About内容)
+        function initialPageSetup() {
+          // 仅显示About内容相关卡片 (前5个卡片是About内容)
+          if (mainContent) {
+            const contentCards = mainContent.querySelectorAll(".card");
 
-        // 显示主内容，隐藏About部分的函数
-        function showMainContent() {
-          if (mainContent) mainContent.style.display = "block";
-          if (pricingSection) pricingSection.style.display = "block";
-          if (aboutSection) aboutSection.style.display = "none";
-        }
+            // 显示About相关卡片，但隐藏Our Team部分（第3个卡片）
+            for (let i = 0; i < 5; i++) {
+              if (contentCards[i]) {
+                if (i === 2) {
+                  // Our Team卡片是第3个，索引为2
+                  contentCards[i].style.display = "none";
+                } else {
+                  contentCards[i].style.display = "block";
+                }
+              }
+            }
 
-        // 显示About部分，隐藏主内容的函数
-        function showAboutSection() {
-          if (mainContent) mainContent.style.display = "none";
+            // 隐藏功能相关卡片
+            if (codeInputCard) codeInputCard.style.display = "none";
+            if (resultsCard) resultsCard.style.display = "none";
+            if (userDashboard) userDashboard.style.display = "none";
+          }
+
+          // 隐藏价格部分
           if (pricingSection) pricingSection.style.display = "none";
-          if (aboutSection) aboutSection.style.display = "block";
+        }
+
+        // 显示Home页面功能 (About内容，但不包括Team部分)
+        function showHomePage() {
+          if (mainContent) {
+            // 显示About相关卡片 (前5个卡片是About内容)
+            const contentCards = mainContent.querySelectorAll(".card");
+
+            // 显示About相关卡片，但隐藏Our Team部分（第3个卡片）
+            for (let i = 0; i < 5; i++) {
+              if (contentCards[i]) {
+                if (i === 2) {
+                  // Our Team卡片是第3个，索引为2
+                  contentCards[i].style.display = "none";
+                } else {
+                  contentCards[i].style.display = "block";
+                }
+              }
+            }
+
+            // 隐藏功能相关卡片
+            if (codeInputCard) codeInputCard.style.display = "none";
+            if (resultsCard) resultsCard.style.display = "none";
+            if (userDashboard) userDashboard.style.display = "none";
+          }
+
+          // 隐藏价格部分
+          if (pricingSection) pricingSection.style.display = "none";
 
           // 滚动到顶部
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        // 为About链接添加点击事件
-        const aboutNavLink = document.getElementById("about-nav-link");
-        const aboutFooterLink = document.getElementById("footer-about-link");
+        // 显示Features页面功能 (Code Input和功能相关)
+        function showFeaturesPage() {
+          if (mainContent) {
+            // 获取所有卡片
+            const contentCards = mainContent.querySelectorAll(".card");
 
-        if (aboutNavLink) {
-          aboutNavLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showAboutSection();
-          });
+            // 首先隐藏所有卡片
+            for (let i = 0; i < contentCards.length; i++) {
+              if (contentCards[i]) contentCards[i].style.display = "none";
+            }
+
+            // 显示功能相关卡片 - 仅显示代码输入卡片
+            if (codeInputCard) codeInputCard.style.display = "block";
+            // 不默认显示结果卡片，只在点击Annotate按钮后显示
+            if (resultsCard) resultsCard.style.display = "none";
+            if (isLoggedIn && userDashboard)
+              userDashboard.style.display = "block";
+          }
+
+          // 显示价格部分
+          if (pricingSection) pricingSection.style.display = "block";
+
+          // 滚动到顶部
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        // 页脚About链接
-        if (aboutFooterLink) {
-          aboutFooterLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showAboutSection();
-          });
+        // 显示Pricing页面功能 (仅价格部分)
+        function showPricingPage() {
+          if (mainContent) {
+            // 隐藏About相关卡片 (前5个卡片是About内容)
+            const contentCards = mainContent.querySelectorAll(".card");
+
+            // 隐藏About相关卡片和功能卡片
+            for (let i = 0; i < contentCards.length; i++) {
+              if (contentCards[i]) contentCards[i].style.display = "none";
+            }
+          }
+
+          // 显示价格部分
+          if (pricingSection) pricingSection.style.display = "block";
+
+          // 滚动到价格部分
+          if (pricingSection) {
+            pricingSection.scrollIntoView({ behavior: "smooth" });
+          }
         }
 
-        // Features链接
+        // 导航栏链接
+        const homeLink = document.querySelector(".nav-links li:nth-child(1) a");
+        const pricingLink = document.querySelector(
+          ".nav-links li:nth-child(2) a"
+        );
         const featuresLink = document.querySelector(
           ".nav-links li:nth-child(3) a"
+        );
+
+        // 页脚链接
+        const footerHomeLink = document.querySelector(
+          ".footer-links a:nth-child(1)"
+        );
+        const footerPricingLink = document.querySelector(
+          ".footer-links a:nth-child(2)"
         );
         const footerFeaturesLink = document.querySelector(
           ".footer-links a:nth-child(3)"
         );
 
+        // 导航栏链接事件处理
+        if (homeLink) {
+          homeLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            showHomePage();
+          });
+        }
+
         if (featuresLink) {
           featuresLink.addEventListener("click", function (e) {
             e.preventDefault();
-            showMainContent();
+            showFeaturesPage();
+          });
+        }
+
+        if (pricingLink) {
+          pricingLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            showPricingPage();
+          });
+        }
+
+        // 页脚链接事件处理
+        if (footerHomeLink) {
+          footerHomeLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            showHomePage();
           });
         }
 
         if (footerFeaturesLink) {
           footerFeaturesLink.addEventListener("click", function (e) {
             e.preventDefault();
-            showMainContent();
-          });
-        }
-
-        // Home链接
-        const homeLink = document.querySelector(
-          '.nav-links a[href="#"]:first-child'
-        );
-        const footerHomeLink = document.querySelector(
-          '.footer-links a[href="#"]:first-child'
-        );
-
-        if (homeLink) {
-          homeLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showMainContent();
-          });
-        }
-
-        if (footerHomeLink) {
-          footerHomeLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showMainContent();
-          });
-        }
-
-        // Pricing链接
-        const pricingLink = document.querySelector(
-          '.nav-links a[href="#pricing"]'
-        );
-        const footerPricingLink = document.querySelector(
-          '.footer-links a[href="#pricing"]'
-        );
-
-        if (pricingLink) {
-          pricingLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            showMainContent();
-            document
-              .getElementById("pricing")
-              .scrollIntoView({ behavior: "smooth" });
+            showFeaturesPage();
           });
         }
 
         if (footerPricingLink) {
           footerPricingLink.addEventListener("click", function (e) {
             e.preventDefault();
-            showMainContent();
-            document
-              .getElementById("pricing")
-              .scrollIntoView({ behavior: "smooth" });
+            showPricingPage();
           });
         }
 
-        // About部分的CTA按钮
-        const aboutCtaBtn = document.getElementById("about-cta-btn");
-        if (aboutCtaBtn) {
-          aboutCtaBtn.addEventListener("click", function () {
-            showMainContent();
-            // 可选：滚动到页面上部的CTA区域
-            const heroSection = document.querySelector(".hero");
-            if (heroSection) {
-              heroSection.scrollIntoView({ behavior: "smooth" });
-            }
+        // Annotate Code按钮事件处理
+        const annotateBtn = document.getElementById("annotate-btn");
+        if (annotateBtn) {
+          annotateBtn.addEventListener("click", function () {
+            // 显示加载指示器
+            const loader = document.getElementById("annotation-loader");
+            if (loader) loader.style.display = "block";
+
+            // 模拟处理延迟
+            setTimeout(function () {
+              // 隐藏加载指示器
+              if (loader) loader.style.display = "none";
+
+              // 显示成功指示器
+              const successCheck =
+                document.getElementById("annotation-success");
+              if (successCheck) {
+                successCheck.style.display = "block";
+
+                // 短暂显示成功标记后显示结果
+                setTimeout(function () {
+                  if (successCheck) successCheck.style.display = "none";
+
+                  // 显示注释后的代码结果
+                  if (resultsCard) resultsCard.style.display = "block";
+
+                  // 滚动到结果卡片
+                  if (resultsCard) {
+                    resultsCard.scrollIntoView({ behavior: "smooth" });
+                  }
+                }, 1000);
+              }
+            }, 2000);
           });
         }
+
+        // CTA按钮 - 将用户引导至Features页面
+        const tryCTAButtons = document.querySelectorAll(
+          "#try-service-btn, #about-cta-btn"
+        );
+        tryCTAButtons.forEach((btn) => {
+          if (btn) {
+            btn.addEventListener("click", function () {
+              showFeaturesPage();
+            });
+          }
+        });
+
+        // 页面加载时初始化
+        initialPageSetup();
       });
     </script>
   </body>
