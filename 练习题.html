@@ -43,6 +43,10 @@
         }
 
         /* ===== GLOBAL STYLES ===== */
+        html, body {
+          height: 100%;
+        }
+
         body {
           font-family: var(--font-body);
           font-size: 16px;
@@ -50,6 +54,9 @@
           color: var(--neutral-dark);
           background-color: #fff;
           overflow-x: hidden;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh; /* 视口高度 */
         }
 
         h1,
@@ -1236,6 +1243,34 @@
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           border-color: var(--primary);
         }
+
+        /* 在样式部分添加以下CSS */
+        main {
+          flex: 1; /* 使main元素填充剩余空间 */
+        }
+
+        #how-it-works-section {
+          padding-top: 7rem;
+          min-height: calc(100vh - 100px);
+          display: flex;
+          flex-direction: column;
+        }
+
+        #how-it-works-section section {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        #how-it-works-section .container {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        #how-it-works-section .row:last-child {
+          margin-top: auto;
+        }
       </style>
     </head>
     <body>
@@ -1936,7 +1971,7 @@
           <section
             id="how-it-works"
             class="section-padding"
-            style="padding-top: 7rem"
+            style="padding-top: 7rem; min-height: calc(100vh - 100px); display: flex; flex-direction: column;"
           >
             <div class="container">
               <div class="row justify-content-center mb-5">
@@ -4632,6 +4667,17 @@
           handleScroll();
           checkLoginStatus();
 
+          // 添加：首先处理当前页面状态，确保在页面初始加载时正确隐藏How It Works部分
+          const initialHash = window.location.hash.substring(1) || "home";
+          if (initialHash === "home" || initialHash === "pricing") {
+            // 在页面最初加载时就隐藏How It Works部分
+            const howItWorksSection = document.getElementById("how-it-works-section");
+            if (howItWorksSection) {
+              howItWorksSection.classList.remove("active");
+              howItWorksSection.style.display = "none"; // 确保完全隐藏
+            }
+          }
+
           // Setup SPA functionality
           setupRouting();
           
@@ -5009,18 +5055,18 @@
             body: JSON.stringify(loginData)
           })
           .then(response => {
-            // 检查HTTP错误
-            if (!response.ok) {
-              return response.json().then(errorData => {
-                throw new Error(errorData.message || "Login failed");
-              });
-            }
-            return response.json();
+            // 显式检查HTTP响应状态码是否在200-299之间
+            const isSuccess = response.status >= 200 && response.status < 300;
+            // 解析JSON响应
+            return response.json().then(data => {
+              // 返回包含响应状态和数据的对象
+              return { isSuccess, data, status: response.status };
+            });
           })
-          .then(data => {
-            // 检查status_code是否在200-299范围内
-            if (data.status_code >= 200 && data.status_code < 300) {
+          .then(result => {
+            if (result.isSuccess) {
               // 登录成功，创建用户对象
+              const data = result.data;
               const user = {
                 id: data.id || generateRandomId(),
                 name: data.full_name || email.split('@')[0], // 如果API没有返回姓名，使用邮箱前缀
@@ -5062,7 +5108,7 @@
               );
             } else {
               // 登录失败，抛出错误
-              throw new Error(data.error || "登录失败");
+              throw new Error(result.data.error || `登录失败，状态码: ${result.status}`);
             }
           })
           .catch(error => {
@@ -5173,14 +5219,19 @@
             body: JSON.stringify(userData),
           })
           .then(response => {
-            // 不管状态码如何，先解析JSON响应
-            return response.json();
+            // 显式检查HTTP响应状态码是否在200-299之间
+            const isSuccess = response.status >= 200 && response.status < 300;
+            // 解析JSON响应
+            return response.json().then(data => {
+              // 返回包含响应状态和数据的对象
+              return { isSuccess, data, status: response.status };
+            });
           })
-          .then(data => {
-            // 检查status_code是否在200-299范围内
-            if (data.status_code >= 200 && data.status_code < 300) {
+          .then(result => {
+            if (result.isSuccess) {
               // 注册成功
-              console.log('>>>>>>>>>', data);
+              const data = result.data;
+              
               // Create user object from response
               const newUser = {
                 id: data.id || generateRandomId(),
@@ -5225,7 +5276,7 @@
               }, 1000);
             } else {
               // 注册失败，抛出错误
-              throw new Error(data.error || "注册失败");
+              throw new Error(result.data.error || `注册失败，状态码: ${result.status}`);
             }
           })
           .catch(error => {
@@ -5659,11 +5710,80 @@
             });
           });
 
-          // Handle initial route
-          const initialHash = window.location.hash.substring(1) || "home";
-          navigateTo(initialHash);
+          // 处理"Learn More"按钮的点击事件
+          document.querySelector(".hero-buttons a[href='#how-it-works']").addEventListener("click", function(e) {
+            e.preventDefault();
+            
+            // 隐藏所有部分
+            document.querySelectorAll(".content-section").forEach((section) => {
+              section.classList.remove("active");
+              section.style.display = "none"; // 确保完全隐藏
+            });
+            
+            // 显示How It Works部分
+            const howItWorksSection = document.getElementById("how-it-works-section");
+            if (howItWorksSection) {
+              howItWorksSection.classList.add("active");
+              howItWorksSection.style.display = "block"; // 确保显示
+            }
+            
+            // 更新URL
+            window.location.hash = "how-it-works";
+            
+            // 更新活动导航链接
+            document.querySelectorAll(".nav-link").forEach((link) => {
+              link.classList.remove("active");
+            });
+            const howItWorksLink = document.querySelector(
+              '.nav-link[data-section="how-it-works"]'
+            );
+            if (howItWorksLink) {
+              howItWorksLink.classList.add("active");
+            }
+            
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+          });
 
-          // Update active nav link based on hash
+          // 设置页面初始显示
+          const initialHash = window.location.hash.substring(1) || "home";
+          
+          // 隐藏所有部分
+          document.querySelectorAll(".content-section").forEach((section) => {
+            section.classList.remove("active");
+          });
+          
+          // 如果初始页面是home或pricing，不显示how-it-works部分
+          if (initialHash === "home" || initialHash === "pricing") {
+            // 显示请求的部分
+            const targetSection = document.getElementById(`${initialHash}-section`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+            }
+            
+            // 确保How It Works不会显示
+            const howItWorksSection = document.getElementById("how-it-works-section");
+            if (howItWorksSection) {
+              howItWorksSection.classList.remove("active");
+            }
+          } else {
+            // 对于其他页面，正常显示
+            const targetSection = document.getElementById(`${initialHash}-section`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+            }
+          }
+          
+          // 更新活动导航链接
+          document.querySelectorAll(".nav-link").forEach((link) => {
+            link.classList.remove("active");
+          });
+          const activeLink = document.querySelector(
+            `.nav-link[data-section="${initialHash}"]`
+          );
+          if (activeLink) activeLink.classList.add("active");
+
+          // 更新基于hash的路由
           window.addEventListener("hashchange", function () {
             const hash = window.location.hash.substring(1) || "home";
             navigateTo(hash);
@@ -5671,31 +5791,50 @@
         }
 
         function navigateTo(section) {
-          // Update URL hash
+          // 更新URL hash
           window.location.hash = section;
 
-          // Hide all sections
+          // 隐藏所有部分
           document.querySelectorAll(".content-section").forEach((section) => {
             section.classList.remove("active");
+            section.style.display = "none"; // 确保完全隐藏
           });
 
-          // Show the target section
-          const targetSection = document.getElementById(`${section}-section`);
-          if (targetSection) {
-            targetSection.classList.add("active");
-
-            // Scroll to top
-            window.scrollTo(0, 0);
-
-            // Update active nav link
-            document.querySelectorAll(".nav-link").forEach((link) => {
-              link.classList.remove("active");
-            });
-            const activeLink = document.querySelector(
-              `.nav-link[data-section="${section}"]`
-            );
-            if (activeLink) activeLink.classList.add("active");
+          // 检查是否是home或pricing页面
+          if (section === "home" || section === "pricing") {
+            // 只显示目标部分
+            const targetSection = document.getElementById(`${section}-section`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+              targetSection.style.display = "block"; // 确保显示
+            }
+            
+            // 确保How It Works不会显示
+            const howItWorksSection = document.getElementById("how-it-works-section");
+            if (howItWorksSection) {
+              howItWorksSection.classList.remove("active");
+              howItWorksSection.style.display = "none"; // 确保完全隐藏
+            }
+          } else {
+            // 对于其他页面，显示目标部分
+            const targetSection = document.getElementById(`${section}-section`);
+            if (targetSection) {
+              targetSection.classList.add("active");
+              targetSection.style.display = "block"; // 确保显示
+            }
           }
+
+          // 滚动到顶部
+          window.scrollTo(0, 0);
+
+          // 更新活动导航链接
+          document.querySelectorAll(".nav-link").forEach((link) => {
+            link.classList.remove("active");
+          });
+          const activeLink = document.querySelector(
+            `.nav-link[data-section="${section}"]`
+          );
+          if (activeLink) activeLink.classList.add("active");
         }
 
         function goToGenerator() {
