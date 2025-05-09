@@ -260,6 +260,16 @@
           color: var(--primary);
         }
 
+        .navbar-nav {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+
+        .navbar-nav .nav-item {
+          margin: 0 0.5rem;
+        }
+
         .navbar-nav .nav-link {
           color: var(--neutral-dark);
           font-weight: 500;
@@ -1249,7 +1259,7 @@
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav ms-auto">
+              <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
                   <a class="nav-link active" href="#home" data-section="home"
                     >Home</a
@@ -1277,7 +1287,7 @@
                   <a class="nav-link" href="#faq" data-section="faq">FAQ</a>
                 </li>
               </ul>
-              <div class="ms-lg-3 mt-3 mt-lg-0 d-flex" id="auth-buttons">
+              <div class="ms-lg-auto mt-3 mt-lg-0 d-flex" id="auth-buttons">
                 <button
                   class="btn btn-outline-primary me-2"
                   id="login-button"
@@ -1298,7 +1308,7 @@
                 </button>
               </div>
               <div
-                class="ms-lg-3 mt-3 mt-lg-0 navbar-user"
+                class="ms-lg-auto mt-3 mt-lg-0 navbar-user"
                 id="user-info"
                 style="display: none"
               >
