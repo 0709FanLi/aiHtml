@@ -3186,16 +3186,100 @@
         showSection("result");
       }
 
+      // Create a custom confirmation modal for the page
+      function showConfirmationModal(message, confirmCallback) {
+        // Create a modal overlay
+        const modalOverlay = document.createElement("div");
+        modalOverlay.className = "modal-overlay";
+        modalOverlay.style.display = "flex";
+
+        // Create the modal
+        const modal = document.createElement("div");
+        modal.className = "modal";
+
+        // Create header
+        const modalHeader = document.createElement("div");
+        modalHeader.className = "modal-header";
+        modalHeader.innerHTML = "<h2>Confirmation</h2>";
+
+        // Create close button
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "close-btn";
+        closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        modalHeader.appendChild(closeBtn);
+
+        // Create content
+        const modalContent = document.createElement("div");
+        modalContent.className = "modal-content";
+        modalContent.innerHTML = `<p>${message}</p>`;
+
+        // Create actions
+        const actions = document.createElement("div");
+        actions.className = "modal-actions";
+        actions.style.display = "flex";
+        actions.style.justifyContent = "flex-end";
+        actions.style.gap = "10px";
+        actions.style.marginTop = "20px";
+
+        // Cancel button
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn";
+        cancelBtn.style.background = "var(--card-bg)";
+        cancelBtn.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+        cancelBtn.textContent = "Cancel";
+
+        // Confirm button
+        const confirmBtn = document.createElement("button");
+        confirmBtn.className = "btn btn-secondary";
+        confirmBtn.textContent = "Confirm";
+
+        actions.appendChild(cancelBtn);
+        actions.appendChild(confirmBtn);
+        modalContent.appendChild(actions);
+
+        // Assemble modal
+        modal.appendChild(modalHeader);
+        modal.appendChild(modalContent);
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+        document.body.style.overflow = "hidden"; // Prevent scrolling
+
+        // Add event listeners
+        closeBtn.addEventListener("click", () => {
+          modalOverlay.remove();
+          document.body.style.overflow = "auto";
+        });
+
+        cancelBtn.addEventListener("click", () => {
+          modalOverlay.remove();
+          document.body.style.overflow = "auto";
+        });
+
+        confirmBtn.addEventListener("click", () => {
+          modalOverlay.remove();
+          document.body.style.overflow = "auto";
+          if (confirmCallback) confirmCallback();
+        });
+
+        // Close on click outside
+        modalOverlay.addEventListener("click", (e) => {
+          if (e.target === modalOverlay) {
+            modalOverlay.remove();
+            document.body.style.overflow = "auto";
+          }
+        });
+      }
+
+      // Replace the original confirm in clearHistoryBtn event
       clearHistoryBtn.addEventListener("click", () => {
-        if (
-          confirm(
-            "Are you sure you want to clear your history? This cannot be undone."
-          )
-        ) {
-          userHistory = [];
-          renderHistoryItems();
-          showToast("History cleared successfully", "success");
-        }
+        showConfirmationModal(
+          "Are you sure you want to clear your history? This cannot be undone.",
+          () => {
+            userHistory = [];
+            renderHistoryItems();
+            showToast("History cleared successfully", "success");
+          }
+        );
       });
 
       // File upload handling
@@ -3504,12 +3588,8 @@
       });
 
       newEditBtn.addEventListener("click", () => {
-        resultSection.style.display = "none";
+        showSection("features");
         novelText.focus();
-        window.scrollTo({
-          top: document.querySelector(".input-section").offsetTop - 100,
-          behavior: "smooth",
-        });
       });
 
       // Purchase buttons

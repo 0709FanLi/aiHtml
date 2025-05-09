@@ -7,30 +7,31 @@
   </head>
   <body>
     <div class="container">
-      <div class="item">1</div>
-      <div class="item">2</div>
-      <div class="item">3</div>
-      <div class="item">4</div>
-      <div class="item">5</div>
-      <div class="item">6</div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
+      <div class="item"></div>
     </div>
 
     <style>
       .container {
-        display: flex;
-        flex-wrap: wrap; /* 自动换行 */
-        gap: 10px; /* 元素之间的间距 */
-        justify-content: flex-start; /* 左对齐 */
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fill,
+          150px
+        ); /* 每列宽度为 150px，自动换行 */
+        padding: 10px;
       }
 
       .item {
-        flex: 1 1 150px; /* 元素基础宽度为150px，可伸缩 */
-        min-width: 100px; /* 最小宽度 */
-        background-color: #3498db;
-        color: #fff;
-        padding: 10px;
-        text-align: center;
-        border-radius: 5px;
+        width: 150px;
+        height: 150px;
+        background-color: #4caf50; /* 示例背景色 */
       }
     </style>
   </body>

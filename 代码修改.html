@@ -895,10 +895,10 @@
                     <i class="fas fa-bolt"></i>
                     <span id="credits-count">0</span> credits
                 </div>
-                <button class="btn btn-secondary" id="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                <button class="btn btn-secondary" id="login-btn" style="width: auto; justify-content: center;">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i> Login
                 </button>
-                <button class="btn" id="signup-btn" style="display: flex; justify-content: center; align-items: center;">
+                <button class="btn" id="signup-btn" style="width: auto; justify-content: center;">
                     <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Sign Up
                 </button>
                 <button class="btn btn-secondary" id="account-btn" style="display: none;">
@@ -1162,7 +1162,8 @@
                             id="login-email"
                             placeholder="Enter your email"
                             required
-                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            lang="en"
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please enter a valid email address with @ symbol')"
                             oninput="this.setCustomValidity('')"
                         />
                     </div>
@@ -1193,8 +1194,8 @@
                         </div>
                     </div>
                     <div id="login-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
-                    <button type="submit" class="btn" style="width: 100%">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                    <button type="submit" class="btn" style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i> Login
                     </button>
                 </form>
             </div>
@@ -1395,7 +1396,8 @@
                             id="signup-email"
                             placeholder="Enter your email"
                             required
-                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            lang="en"
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please enter a valid email address with @ symbol')"
                             oninput="this.setCustomValidity('')"
                         />
                     </div>
@@ -1423,8 +1425,8 @@
                         </div>
                     </div>
                     <div id="signup-error" style="color: var(--danger-color); margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
-                    <button type="submit" class="btn" style="width: 100%">
-                        <i class="fas fa-user-plus"></i> Sign Up
+                    <button type="submit" class="btn" style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                        <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Sign Up
                     </button>
                 </form>
             </div>
@@ -1516,7 +1518,8 @@
                             id="reset-email"
                             placeholder="Enter your email"
                             required
-                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please include an @ in the email address')"
+                            lang="en"
+                            oninvalid="this.setCustomValidity(this.validity.valueMissing ? 'Please fill out this field' : 'Please enter a valid email address with @ symbol')"
                             oninput="this.setCustomValidity('')"
                         />
                     </div>

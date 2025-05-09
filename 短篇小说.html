@@ -1023,7 +1023,7 @@
           <button class="modal-close" id="authClose">&times;</button>
         </div>
         <div class="modal-body">
-          <form class="auth-form" id="authForm">
+          <form class="auth-form" id="authForm" novalidate>
             <div class="form-group" id="nameGroup" style="display: none">
               <label for="name">Full Name</label>
               <input
@@ -1036,10 +1036,11 @@
             <div class="form-group">
               <label for="email">Email</label>
               <input
-                type="email"
+                type="text"
                 id="email"
                 class="form-control"
                 placeholder="Your email"
+                novalidate
               />
             </div>
             <div class="form-group">
@@ -1052,6 +1053,26 @@
               />
               <div class="forgot-password-link">
                 <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+              </div>
+            </div>
+            <div class="form-group">
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  margin-bottom: 15px;
+                "
+              >
+                <input
+                  type="checkbox"
+                  id="agreeTerms"
+                  style="margin-right: 10px; margin-top: 3px"
+                />
+                <label for="agreeTerms" style="font-size: 0.9rem; color: #ddd">
+                  I agree to the
+                  <a href="#" id="termsLink">Terms of Service</a> and
+                  <a href="#" id="privacyLink">Privacy Policy</a>
+                </label>
               </div>
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%">
@@ -1942,16 +1963,57 @@
       // Event Listeners
       function attachEventListeners() {
         // Navigation
-        elements.navLogin.addEventListener("click", toggleAuthModal);
+        elements.navLogin.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          if (state.isLoggedIn) {
+            // If already logged in, perform logout
+            logout();
+          } else {
+            // If not logged in, show login modal
+            elements.authModal.style.display = "block";
+          }
+        });
         elements.navDashboard.addEventListener("click", showDashboard);
         elements.navPricing.addEventListener("click", togglePricingModal);
         elements.navHome.addEventListener("click", showGenerator);
         elements.navAbout.addEventListener("click", showAbout);
 
         // Auth Modal
-        elements.authClose.addEventListener("click", toggleAuthModal);
+        elements.authClose.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          // Close the modal
+          elements.authModal.style.display = "none";
+
+          // Reset form fields
+          document.getElementById("email").value = "";
+          document.getElementById("password").value = "";
+          document.getElementById("agreeTerms").checked = false;
+          if (document.getElementById("name")) {
+            document.getElementById("name").value = "";
+          }
+
+          // Reset any error styles
+          document.getElementById("email").style.borderColor = "";
+        });
         elements.authForm.addEventListener("submit", handleAuth);
         elements.switchAuthMode.addEventListener("click", switchAuthMode);
+
+        // Terms and Privacy links in auth form
+        document
+          .getElementById("termsLink")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            toggleTermsOfServiceModal();
+          });
+
+        document
+          .getElementById("privacyLink")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            togglePrivacyPolicyModal();
+          });
 
         // Pricing Modal
         elements.pricingClose.addEventListener("click", togglePricingModal);
@@ -2026,10 +2088,18 @@
           "submit",
           handleForgotPassword
         );
-        elements.forgotPasswordClose.addEventListener(
-          "click",
-          toggleForgotPasswordModal
-        );
+        elements.forgotPasswordClose.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          // Close the modal
+          elements.forgotPasswordModal.style.display = "none";
+
+          // Clear the email field
+          elements.resetEmail.value = "";
+
+          // Hide success message if it was shown
+          elements.resetMessage.style.display = "none";
+        });
       }
 
       // Check login status (simulated)
@@ -2080,13 +2150,21 @@
       function toggleAuthModal(e) {
         if (e) e.preventDefault();
 
-        if (state.isLoggedIn) {
-          logout();
-          return;
+        const isCurrentlyVisible = elements.authModal.style.display === "block";
+        elements.authModal.style.display = isCurrentlyVisible
+          ? "none"
+          : "block";
+
+        // Reset form fields both when opening and closing the modal
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("agreeTerms").checked = false;
+        if (document.getElementById("name")) {
+          document.getElementById("name").value = "";
         }
 
-        elements.authModal.style.display =
-          elements.authModal.style.display === "block" ? "none" : "block";
+        // Reset any error styles
+        document.getElementById("email").style.borderColor = "";
       }
 
       // Toggle pricing modal
@@ -2152,23 +2230,65 @@
           elements.nameGroup.style.display = "none";
         }
 
+        // Make sure we re-attach the event listener to the new link
         document
           .getElementById("switchAuthMode")
           .addEventListener("click", switchAuthMode);
+
+        // Re-attach event listeners for Terms and Privacy links
+        document
+          .getElementById("termsLink")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            toggleTermsOfServiceModal();
+          });
+
+        document
+          .getElementById("privacyLink")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            togglePrivacyPolicyModal();
+          });
       }
 
       // Handle authentication (login/register)
       function handleAuth(e) {
         e.preventDefault();
         const isLogin = elements.authTitle.textContent === "Login";
-        const email = document.getElementById("email").value;
+        const emailField = document.getElementById("email");
+        const email = emailField.value;
         const password = document.getElementById("password").value;
+        const agreeTerms = document.getElementById("agreeTerms").checked;
+
+        // Reset any previous error styles
+        emailField.style.borderColor = "";
 
         if (!email || !password) {
           showToast("Please fill in all fields", "error");
           return;
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          // Highlight the email field with error style
+          emailField.style.borderColor = "var(--error-color)";
+          showToast(
+            "Please enter a valid email address (user@example.com)",
+            "error"
+          );
+          return;
+        }
+
+        if (!agreeTerms) {
+          showToast(
+            "You must agree to the Terms of Service and Privacy Policy",
+            "error"
+          );
+          return;
+        }
+
+        // Simulate registration or login
         if (!isLogin) {
           const name = document.getElementById("name").value;
           if (!name) {
@@ -2206,6 +2326,8 @@
         // Update UI
         updateUIForLoggedInUser();
         toggleAuthModal();
+
+        // Only show one toast message
         showToast(
           isLogin ? "Login successful!" : "Registration successful!",
           "success"
@@ -2220,7 +2342,7 @@
         state.storyHistory = [];
         localStorage.removeItem("user");
         updateUIForLoggedOutUser();
-        showToast("Logged out successfully", "success");
+        showToast("Login out successfully", "success");
       }
 
       // Show dashboard
@@ -2705,10 +2827,18 @@ With a deep breath and a silent prayer to forgotten gods, the first step was tak
       // Toggle forgot password modal
       function toggleForgotPasswordModal(e) {
         if (e) e.preventDefault();
-        elements.forgotPasswordModal.style.display =
-          elements.forgotPasswordModal.style.display === "block"
-            ? "none"
-            : "block";
+
+        const isCurrentlyVisible =
+          elements.forgotPasswordModal.style.display === "block";
+        elements.forgotPasswordModal.style.display = isCurrentlyVisible
+          ? "none"
+          : "block";
+
+        // Clear the email field when opening or closing
+        elements.resetEmail.value = "";
+
+        // Hide success message if it was shown
+        elements.resetMessage.style.display = "none";
       }
 
       // Handle forgot password form submission
@@ -2721,9 +2851,23 @@ With a deep breath and a silent prayer to forgotten gods, the first step was tak
         }
         // Simulate sending reset link
         showToast("Reset link sent to your email", "success");
-        elements.resetEmail.value = "";
-        toggleForgotPasswordModal();
+        // Display success message
+        elements.resetMessage.style.display = "block";
       }
+
+      // Elements for forgot password
+      elements.forgotPasswordClose.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        // Close the modal
+        elements.forgotPasswordModal.style.display = "none";
+
+        // Clear the email field
+        elements.resetEmail.value = "";
+
+        // Hide success message if it was shown
+        elements.resetMessage.style.display = "none";
+      });
     </script>
   </body>
 </html>
