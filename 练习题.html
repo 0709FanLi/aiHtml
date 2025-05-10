@@ -2518,7 +2518,7 @@
                           <div class="question-type-item">
                             <div class="form-check">
                               <input
-                                class="form-check-input"
+                                class="form-check-input question-type-checkbox"
                                 type="checkbox"
                                 value="multiple_choice"
                                 id="type-multiple-choice"
@@ -2535,7 +2535,7 @@
                           <div class="question-type-item">
                             <div class="form-check">
                               <input
-                                class="form-check-input"
+                                class="form-check-input question-type-checkbox"
                                 type="checkbox"
                                 value="true_false"
                                 id="type-true-false"
@@ -2552,7 +2552,7 @@
                           <div class="question-type-item">
                             <div class="form-check">
                               <input
-                                class="form-check-input"
+                                class="form-check-input question-type-checkbox"
                                 type="checkbox"
                                 value="fill_blank"
                                 id="type-fill-blank"
@@ -2568,7 +2568,7 @@
                           <div class="question-type-item">
                             <div class="form-check">
                               <input
-                                class="form-check-input"
+                                class="form-check-input question-type-checkbox"
                                 type="checkbox"
                                 value="short_answer"
                                 id="type-short-answer"
@@ -2584,7 +2584,7 @@
                           <div class="question-type-item">
                             <div class="form-check">
                               <input
-                                class="form-check-input"
+                                class="form-check-input question-type-checkbox"
                                 type="checkbox"
                                 value="word_problem"
                                 id="type-word-problem"
@@ -4727,6 +4727,32 @@
           document
             .getElementById("toggle-answers")
             .addEventListener("click", toggleAnswers);
+            
+          // Add event listeners for question type checkboxes and comprehensive test
+          const questionTypeCheckboxes = document.querySelectorAll('.question-type-checkbox');
+          const comprehensiveTestCheckbox = document.getElementById('comprehensive-test');
+          
+          // Add event listeners to all question type checkboxes
+          questionTypeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+              // If any question type is checked and comprehensive test is also checked
+              if (this.checked && comprehensiveTestCheckbox.checked) {
+                // Uncheck comprehensive test
+                comprehensiveTestCheckbox.checked = false;
+              }
+            });
+          });
+          
+          // Add event listener to comprehensive test checkbox
+          comprehensiveTestCheckbox.addEventListener('change', function() {
+            // If comprehensive test is checked
+            if (this.checked) {
+              // Uncheck all question type checkboxes
+              questionTypeCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+              });
+            }
+          });
 
           // Dashboard tabs
           const dashboardLinks = document.querySelectorAll(
