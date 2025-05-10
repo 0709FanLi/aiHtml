@@ -4351,6 +4351,7 @@
       <!-- Bootstrap JS -->
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
       <!-- Custom JS -->
+      <script src="https://cdn.jsdelivr.net/npm/js-md5@0.8.3/src/md5.min.js"></script>
       <script>
         // ===== GLOBAL VARIABLES =====
         let isLoggedIn = false;
@@ -4835,6 +4836,44 @@
           }
         }
 
+        function handleContactSubmit(e) {
+          e.preventDefault();
+          
+          // Get form values
+          const name = document.getElementById("contact-name").value.trim();
+          const email = document.getElementById("contact-email").value.trim();
+          const message = document.getElementById("contact-message").value.trim();
+          
+          // Basic validation
+          if (!name || !email || !message) {
+            showNotification(
+              "error",
+              "Form Error",
+              "Please fill in all fields."
+            );
+            return;
+          }
+          
+          if (!isValidEmail(email)) {
+            showNotification(
+              "error",
+              "Form Error",
+              "Please enter a valid email address."
+            );
+            return;
+          }
+          
+          // Simulate sending the contact form
+          showNotification(
+            "success",
+            "Message Sent",
+            "Thank you for your message. We'll get back to you soon!"
+          );
+          
+          // Reset the form
+          document.getElementById("contact-form").reset();
+        }
+
         function switchAuthTab(e) {
           const authTabs = document.querySelectorAll(".auth-tab");
           authTabs.forEach((tab) => tab.classList.remove("active"));
@@ -5032,10 +5071,13 @@
             return;
           }
           
+          // 使用MD5加密密码
+          const md5Password = md5(password);
+          
           // 准备API数据
           const loginData = {
             email: email,
-            password: password
+            password: md5Password
           };
 
           // 更新提交按钮状态
@@ -5168,25 +5210,25 @@
           
           // 验证姓名
           if (!name) {
-            showInputError("register-name", "请输入您的姓名");
+            showInputError("register-name", "Please enter your name");
             isValid = false;
           }
           
           // 验证邮箱
           if (!email || !isValidEmail(email)) {
-            showInputError("register-email", "请输入有效的邮箱地址");
+            showInputError("register-email", "Please enter a valid email address");
             isValid = false;
           }
           
           // 验证密码
           if (!password || password.length < 8) {
-            showInputError("register-password", "密码长度必须至少为8个字符");
+            showInputError("register-password", "Password must be at least 8 characters long");
             isValid = false;
           }
           
           // 验证确认密码
           if (password !== confirmPassword) {
-            showInputError("register-confirm-password", "两次输入的密码不一致");
+            showInputError("register-confirm-password", "Passwords do not match");
             isValid = false;
           }
           
@@ -5195,11 +5237,16 @@
             return;
           }
 
+          // 使用MD5加密密码
+          const md5Password = md5(password);
+          const md5ConfirmPassword = md5(confirmPassword);
+
           // Prepare data for API
           const userData = {
             email: email,
-            password: password,
-            full_name: name
+            password: md5Password,
+            password_confirm: md5ConfirmPassword,
+            name: name
           };
 
           // Show loading notification or disable button
@@ -5209,7 +5256,7 @@
           registerSubmitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Registering...';
 
           // Call API
-          fetch('http://web.practicesnow.com/practice/v1/users/register', {
+          fetch('http://web.practicesnow.com/api/v1/auth/register', {
             method: 'POST',
             credentials: 'omit',
             headers: {
@@ -5266,8 +5313,8 @@
               // Show success notification
               showNotification(
                 "success",
-                "注册成功",
-                "欢迎加入 QuizCraft AI, " + currentUser.name + "!"
+                "Registration Successful",
+                "Welcome to QuizCraft AI, " + currentUser.name + "!"
               );
               
               // 注册成功后可以自动导航到生成器页面
@@ -5276,7 +5323,7 @@
               }, 1000);
             } else {
               // 注册失败，抛出错误
-              throw new Error(result.data.error || `注册失败，状态码: ${result.status}`);
+              throw new Error(result.data.error || `Registration failed, status code: ${result.status}`);
             }
           })
           .catch(error => {
@@ -5284,19 +5331,19 @@
             console.error("Registration error:", error);
             
             // 在表单中显示错误信息
-            errorMessageElement.textContent = error.message || "注册过程中发生错误，请重试。";
+            errorMessageElement.textContent = error.message || "An error occurred during registration, please try again.";
             errorMessageElement.classList.remove("d-none");
             
             // 如果是邮箱已存在错误，聚焦到邮箱输入框
             if (error.message && error.message.includes("邮箱已存在")) {
-              showInputError("register-email", error.message);
+              showInputError("register-email", "Email already exists");
             }
             
             // 显示通知
             showNotification(
               "error",
               "Registration Failed",
-              error.message || "注册过程中发生错误，请重试。"
+              error.message || "An error occurred during registration, please try again."
             );
           })
           .finally(() => {
@@ -5575,8 +5622,8 @@
             // Show notification
             showNotification(
               "info",
-              "需要登录",
-              "请先登录后再购买套餐。"
+              "Login Required",
+              "Please log in before purchasing a plan."
             );
             return;
           }
@@ -5710,27 +5757,27 @@
             });
           });
 
-          // 处理"Learn More"按钮的点击事件
+          // Handle "Learn More" button click event
           document.querySelector(".hero-buttons a[href='#how-it-works']").addEventListener("click", function(e) {
             e.preventDefault();
             
-            // 隐藏所有部分
+            // Hide all sections
             document.querySelectorAll(".content-section").forEach((section) => {
               section.classList.remove("active");
-              section.style.display = "none"; // 确保完全隐藏
+              section.style.display = "none"; // Ensure completely hidden
             });
             
-            // 显示How It Works部分
+            // Show How It Works section
             const howItWorksSection = document.getElementById("how-it-works-section");
             if (howItWorksSection) {
               howItWorksSection.classList.add("active");
-              howItWorksSection.style.display = "block"; // 确保显示
+              howItWorksSection.style.display = "block"; // Ensure visible
             }
             
-            // 更新URL
+            // Update URL
             window.location.hash = "how-it-works";
             
-            // 更新活动导航链接
+            // Update active navigation links
             document.querySelectorAll(".nav-link").forEach((link) => {
               link.classList.remove("active");
             });
@@ -5741,40 +5788,40 @@
               howItWorksLink.classList.add("active");
             }
             
-            // 滚动到顶部
+            // Scroll to top
             window.scrollTo(0, 0);
           });
 
-          // 设置页面初始显示
+          // Set initial page display
           const initialHash = window.location.hash.substring(1) || "home";
           
-          // 隐藏所有部分
+          // Hide all sections
           document.querySelectorAll(".content-section").forEach((section) => {
             section.classList.remove("active");
           });
           
-          // 如果初始页面是home或pricing，不显示how-it-works部分
+          // If initial page is home or pricing, don't show how-it-works section
           if (initialHash === "home" || initialHash === "pricing") {
-            // 显示请求的部分
+            // Show requested section
             const targetSection = document.getElementById(`${initialHash}-section`);
             if (targetSection) {
               targetSection.classList.add("active");
             }
             
-            // 确保How It Works不会显示
+            // Ensure How It Works is not displayed
             const howItWorksSection = document.getElementById("how-it-works-section");
             if (howItWorksSection) {
               howItWorksSection.classList.remove("active");
             }
           } else {
-            // 对于其他页面，正常显示
+            // For other pages, display normally
             const targetSection = document.getElementById(`${initialHash}-section`);
             if (targetSection) {
               targetSection.classList.add("active");
             }
           }
           
-          // 更新活动导航链接
+          // Update active navigation links
           document.querySelectorAll(".nav-link").forEach((link) => {
             link.classList.remove("active");
           });
@@ -5783,7 +5830,7 @@
           );
           if (activeLink) activeLink.classList.add("active");
 
-          // 更新基于hash的路由
+          // Update hash-based routing
           window.addEventListener("hashchange", function () {
             const hash = window.location.hash.substring(1) || "home";
             navigateTo(hash);
@@ -5791,43 +5838,43 @@
         }
 
         function navigateTo(section) {
-          // 更新URL hash
+          // Update URL hash
           window.location.hash = section;
 
-          // 隐藏所有部分
+          // Hide all sections
           document.querySelectorAll(".content-section").forEach((section) => {
             section.classList.remove("active");
-            section.style.display = "none"; // 确保完全隐藏
+            section.style.display = "none"; // Ensure completely hidden
           });
 
-          // 检查是否是home或pricing页面
+          // Check if it's home or pricing page
           if (section === "home" || section === "pricing") {
-            // 只显示目标部分
+            // Only show target section
             const targetSection = document.getElementById(`${section}-section`);
             if (targetSection) {
               targetSection.classList.add("active");
-              targetSection.style.display = "block"; // 确保显示
+              targetSection.style.display = "block"; // Ensure visible
             }
             
-            // 确保How It Works不会显示
+            // Ensure How It Works is not displayed
             const howItWorksSection = document.getElementById("how-it-works-section");
             if (howItWorksSection) {
               howItWorksSection.classList.remove("active");
-              howItWorksSection.style.display = "none"; // 确保完全隐藏
+              howItWorksSection.style.display = "none"; // Ensure completely hidden
             }
           } else {
-            // 对于其他页面，显示目标部分
+            // For other pages, show target section
             const targetSection = document.getElementById(`${section}-section`);
             if (targetSection) {
               targetSection.classList.add("active");
-              targetSection.style.display = "block"; // 确保显示
+              targetSection.style.display = "block"; // Ensure visible
             }
           }
 
-          // 滚动到顶部
+          // Scroll to top
           window.scrollTo(0, 0);
 
-          // 更新活动导航链接
+          // Update active navigation links
           document.querySelectorAll(".nav-link").forEach((link) => {
             link.classList.remove("active");
           });
@@ -5841,63 +5888,73 @@
           navigateTo("generator");
         }
 
-        // ===== FORM HANDLERS =====
-        function handleContactSubmit(e) {
-          e.preventDefault();
-
-          // Get form values
-          const name = document.getElementById("contact-name").value;
-          const email = document.getElementById("contact-email").value;
-          const subject = document.getElementById("contact-subject").value;
-          const message = document.getElementById("contact-message").value;
-
-          // Simulate sending message
-          setTimeout(() => {
-            // Close modal
-            const contactModal = bootstrap.Modal.getInstance(
-              document.getElementById("contactModal")
-            );
-            contactModal.hide();
-
-            // Reset form
-            e.target.reset();
-
-            // Show success notification
-            showNotification(
-              "success",
-              "Message Sent",
-              "Your message has been sent successfully. We'll get back to you soon."
-            );
-          }, 1000);
+        function openTermsModal(event) {
+          if (event) event.preventDefault();
+          const modal = new bootstrap.Modal(document.getElementById("terms-modal"));
+          modal.show();
+        }
+        
+        function openPrivacyModal(event) {
+          if (event) event.preventDefault();
+          const modal = new bootstrap.Modal(document.getElementById("privacy-modal"));
+          modal.show();
+        }
+        
+        function openCookieModal(event) {
+          if (event) event.preventDefault();
+          const modal = new bootstrap.Modal(document.getElementById("cookie-modal"));
+          modal.show();
         }
 
         function handleProfileUpdate(e) {
           e.preventDefault();
-
+          
           // Get form values
-          const name = document.getElementById("profile-name").value;
-          const email = document.getElementById("profile-email").value;
-          const role = document.getElementById("profile-role").value;
-
-          // Update user object
+          const name = document.getElementById("profile-name").value.trim();
+          const email = document.getElementById("profile-email").value.trim();
+          
+          // Basic validation
+          if (!name || !email) {
+            showNotification(
+              "error",
+              "Update Failed",
+              "Please fill in all required fields."
+            );
+            return;
+          }
+          
+          if (!isValidEmail(email)) {
+            showNotification(
+              "error",
+              "Update Failed",
+              "Please enter a valid email address."
+            );
+            return;
+          }
+          
+          // Update user profile
           currentUser.name = name;
           currentUser.email = email;
-          currentUser.role = role;
-
-          // Save to localStorage
-          localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
+          
+          // Update storage
+          if (localStorage.getItem("currentUser")) {
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          } else if (sessionStorage.getItem("currentUser")) {
+            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+          }
+          
           // Update UI
-          updateUIForLoggedInUser();
-
+          document.getElementById("navbar-username").textContent = name;
+          document.getElementById("sidebar-username").textContent = name;
+          
           // Show success notification
           showNotification(
             "success",
             "Profile Updated",
-            "Your profile information has been updated successfully."
+            "Your profile has been successfully updated."
           );
         }
-
+        
         function handlePasswordUpdate(e) {
           e.preventDefault();
 
@@ -5909,7 +5966,7 @@
             document.getElementById("confirm-password").value;
 
           // Basic validation
-          if (currentPassword !== currentUser.password) {
+          if (md5(currentPassword) !== currentUser.password) {
             showNotification(
               "error",
               "Password Update Failed",
@@ -5926,542 +5983,73 @@
             );
             return;
           }
+          
+          if (newPassword.length < 8) {
+            showNotification(
+              "error",
+              "Password Update Failed",
+              "Password must be at least 8 characters long."
+            );
+            return;
+          }
 
-          // Update password
-          currentUser.password = newPassword;
-
-          // Save to localStorage
-          localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
+          // Update user password
+          currentUser.password = md5(newPassword);
+          
+          // Update storage
+          if (localStorage.getItem("currentUser")) {
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          } else if (sessionStorage.getItem("currentUser")) {
+            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+          }
+          
           // Reset form
-          e.target.reset();
-
+          document.getElementById("password-form").reset();
+          
           // Show success notification
           showNotification(
             "success",
             "Password Updated",
-            "Your password has been updated successfully."
+            "Your password has been successfully updated."
           );
         }
-
+        
         function handlePreferencesUpdate(e) {
           e.preventDefault();
-
-          // Simulate saving preferences
+          
+          // Get form values
+          const theme = document.querySelector('input[name="theme-preference"]:checked').value;
+          const notifications = document.getElementById("notification-preference").checked;
+          const language = document.getElementById("language-preference").value;
+          
+          // Update user preferences
+          currentUser.preferences = {
+            theme,
+            notifications,
+            language
+          };
+          
+          // Update storage
+          if (localStorage.getItem("currentUser")) {
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          } else if (sessionStorage.getItem("currentUser")) {
+            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+          }
+          
+          // Apply theme if changed
+          if (theme === "dark") {
+            document.body.classList.add("dark-theme");
+          } else {
+            document.body.classList.remove("dark-theme");
+          }
+          
+          // Show success notification
           showNotification(
             "success",
-            "Preferences Saved",
-            "Your preferences have been updated successfully."
+            "Preferences Updated",
+            "Your preferences have been successfully updated."
           );
         }
-
-        // 移除所有多余的backdrop
-        function removeExtraBackdrops() {
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          if (backdrops.length > 1) {
-            for (let i = 0; i < backdrops.length - 1; i++) {
-              backdrops[i].remove();
-            }
-          }
-        }
-        
-        // 直接打开Terms of Service模态框的函数
-        function openTermsModal(event) {
-          event.preventDefault();
-          
-          // 首先移除所有现有的backdrop
-          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-          document.body.classList.remove('modal-open');
-          
-          // 手动创建自定义backdrop
-          const customBackdrop = document.createElement('div');
-          customBackdrop.className = 'custom-backdrop';
-          document.body.appendChild(customBackdrop);
-          
-          // 将条款模态框内容设置为最高层级
-          const termsModal = document.getElementById("termsModal");
-          termsModal.style.zIndex = "2050";
-          
-          // 手动显示模态框，不使用Bootstrap自带的backdrop
-          termsModal.classList.add('show');
-          termsModal.style.display = 'block';
-          termsModal.setAttribute('aria-modal', 'true');
-          termsModal.removeAttribute('aria-hidden');
-          
-          // 添加事件监听器到关闭按钮
-          termsModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
-            button.addEventListener('click', closeTermsModal, { once: true });
-          });
-          
-          // 添加点击自定义背景关闭模态框的功能
-          customBackdrop.addEventListener('click', closeTermsModal, { once: true });
-          
-          // 阻止事件冒泡，避免点击模态框内容关闭模态框
-          termsModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
-            e.stopPropagation();
-          });
-        }
-        
-        // 关闭条款模态框的函数
-        function closeTermsModal() {
-          const termsModal = document.getElementById("termsModal");
-          termsModal.classList.remove('show');
-          termsModal.style.display = 'none';
-          termsModal.setAttribute('aria-hidden', 'true');
-          termsModal.removeAttribute('aria-modal');
-          
-          // 移除自定义backdrop
-          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
-        }
-        
-        // 直接打开Privacy Policy模态框的函数
-        function openPrivacyModal(event) {
-          event.preventDefault();
-          
-          // 首先移除所有现有的backdrop
-          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-          document.body.classList.remove('modal-open');
-          
-          // 手动创建自定义backdrop
-          const customBackdrop = document.createElement('div');
-          customBackdrop.className = 'custom-backdrop';
-          document.body.appendChild(customBackdrop);
-          
-          // 将隐私政策模态框内容设置为最高层级
-          const privacyModal = document.getElementById("privacyModal");
-          privacyModal.style.zIndex = "2050";
-          
-          // 手动显示模态框，不使用Bootstrap自带的backdrop
-          privacyModal.classList.add('show');
-          privacyModal.style.display = 'block';
-          privacyModal.setAttribute('aria-modal', 'true');
-          privacyModal.removeAttribute('aria-hidden');
-          
-          // 添加事件监听器到关闭按钮
-          privacyModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
-            button.addEventListener('click', closePrivacyModal, { once: true });
-          });
-          
-          // 添加点击自定义背景关闭模态框的功能
-          customBackdrop.addEventListener('click', closePrivacyModal, { once: true });
-          
-          // 阻止事件冒泡，避免点击模态框内容关闭模态框
-          privacyModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
-            e.stopPropagation();
-          });
-        }
-        
-        // 关闭隐私政策模态框的函数
-        function closePrivacyModal() {
-          const privacyModal = document.getElementById("privacyModal");
-          privacyModal.classList.remove('show');
-          privacyModal.style.display = 'none';
-          privacyModal.setAttribute('aria-hidden', 'true');
-          privacyModal.removeAttribute('aria-modal');
-          
-          // 移除自定义backdrop
-          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
-        }
-        
-        // 直接打开Cookie Policy模态框的函数
-        function openCookieModal(event) {
-          event.preventDefault();
-          
-          // 首先移除所有现有的backdrop
-          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-          document.body.classList.remove('modal-open');
-          
-          // 手动创建自定义backdrop
-          const customBackdrop = document.createElement('div');
-          customBackdrop.className = 'custom-backdrop';
-          document.body.appendChild(customBackdrop);
-          
-          // 将Cookie策略模态框内容设置为最高层级
-          const cookieModal = document.getElementById("cookieModal");
-          cookieModal.style.zIndex = "2050";
-          
-          // 手动显示模态框，不使用Bootstrap自带的backdrop
-          cookieModal.classList.add('show');
-          cookieModal.style.display = 'block';
-          cookieModal.setAttribute('aria-modal', 'true');
-          cookieModal.removeAttribute('aria-hidden');
-          
-          // 添加事件监听器到关闭按钮
-          cookieModal.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
-            button.addEventListener('click', closeCookieModal, { once: true });
-          });
-          
-          // 添加点击自定义背景关闭模态框的功能
-          customBackdrop.addEventListener('click', closeCookieModal, { once: true });
-          
-          // 阻止事件冒泡，避免点击模态框内容关闭模态框
-          cookieModal.querySelector('.modal-dialog').addEventListener('click', function(e) {
-            e.stopPropagation();
-          });
-        }
-        
-        // 关闭Cookie策略模态框的函数
-        function closeCookieModal() {
-          const cookieModal = document.getElementById("cookieModal");
-          cookieModal.classList.remove('show');
-          cookieModal.style.display = 'none';
-          cookieModal.setAttribute('aria-hidden', 'true');
-          cookieModal.removeAttribute('aria-modal');
-          
-          // 移除自定义backdrop
-          document.querySelectorAll('.custom-backdrop').forEach(el => el.remove());
-        }
-
-        // 在其他模态框后添加忘记密码模态框
-        // Reset Password Modal
-        document
-          .getElementById("resetPasswordModal")
-          .addEventListener("show.bs.modal", function () {
-            // 添加忘记密码相关功能
-            document.getElementById("reset-password-form").addEventListener("submit", function(e) {
-              e.preventDefault();
-              
-              const email = document.getElementById("reset-email").value;
-              const verificationCode = document.getElementById("verification-code").value;
-              const newPassword = document.getElementById("new-password").value;
-              const confirmPassword = document.getElementById("confirm-new-password").value;
-              
-              // 验证密码匹配
-              if (newPassword !== confirmPassword) {
-                document.getElementById("confirm-new-password").setCustomValidity("Passwords do not match");
-                document.getElementById("confirm-new-password").reportValidity();
-                return;
-              }
-              
-              // 模拟重置密码API调用
-              const submitBtn = document.getElementById("reset-password-submit");
-              submitBtn.disabled = true;
-              submitBtn.textContent = "Processing...";
-              
-              // 模拟API调用延迟
-              setTimeout(function() {
-                // 关闭重置密码模态框
-                const resetPasswordModal = bootstrap.Modal.getInstance(document.getElementById("resetPasswordModal"));
-                resetPasswordModal.hide();
-                
-                // 显示成功通知
-                showNotification(
-                  "success",
-                  "Password Reset Successfully",
-                  "Your password has been reset. You can now login with your new password."
-                );
-                
-                // 重置表单
-                document.getElementById("reset-password-form").reset();
-                submitBtn.disabled = false;
-                submitBtn.textContent = "Reset Password";
-                
-                // 恢复模态框元素状态
-                document.getElementById("verification-feedback").textContent = "We'll send a verification code to your email";
-                document.getElementById("verification-feedback").classList.remove("text-success", "text-danger");
-                document.getElementById("new-password-strength").style.width = "0%";
-                document.getElementById("new-password-strength").className = "progress-bar bg-danger";
-                document.getElementById("new-password-feedback").textContent = "Password strength will be shown here";
-                
-                // 延迟一点打开登录模态框
-                setTimeout(function() {
-                  // 打开认证模态框并切换到登录
-                  const authModal = new bootstrap.Modal(document.getElementById("authModal"));
-                  authModal.show();
-                  
-                  // 切换到登录表单
-                  document.getElementById("login-form").style.display = "block";
-                  document.getElementById("register-form").style.display = "none";
-                  
-                  // 更新活动标签
-                  document.querySelectorAll('.auth-tab-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                  });
-                  document.querySelector('[data-tab="login-form"]').classList.add('active');
-                  
-                  // 自动填写邮箱
-                  document.getElementById("login-email").value = email;
-                  // 聚焦密码字段
-                  setTimeout(() => document.getElementById("login-password").focus(), 500);
-                }, 500);
-              }, 2000);
-            });
-          });
-        
-
-        // 添加忘记密码相关功能
-        document.getElementById("forgot-password").addEventListener("click", function(e) {
-          e.preventDefault();
-          
-          // 获取登录表单中的邮箱值（如果有）
-          const loginEmail = document.getElementById("login-email").value;
-          
-          // 不再隐藏认证模态框
-          // const authModal = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-          // if (authModal) {
-          //   authModal.hide();
-          // }
-          
-          // 如果登录表单中有邮箱，则填入重置表单
-          if (loginEmail) {
-            document.getElementById("reset-email").value = loginEmail;
-          }
-          
-          // 设置重置密码模态框的z-index，确保其显示在认证模态框之上
-          const resetPasswordModal = document.getElementById("resetPasswordModal");
-          resetPasswordModal.style.zIndex = "1060"; // 比默认模态框z-index高
-          
-          // 创建一个额外的半透明背景，放在两个模态框之间
-          const extraBackdrop = document.createElement('div');
-          extraBackdrop.className = 'modal-backdrop fade show extra-backdrop';
-          extraBackdrop.style.zIndex = "1055"; // 在第一个模态框和第二个模态框z-index之间
-          extraBackdrop.style.opacity = "0.5";
-          document.body.appendChild(extraBackdrop);
-          
-          // 打开重置密码模态框
-          const resetModal = new bootstrap.Modal(resetPasswordModal);
-          resetModal.show();
-          
-          // 监听resetPasswordModal关闭事件，移除额外的背景
-          resetPasswordModal.addEventListener('hidden.bs.modal', function removeExtraBackdrop() {
-            // 移除额外的背景
-            document.querySelectorAll('.extra-backdrop').forEach(el => el.remove());
-            
-            // 重置z-index
-            resetPasswordModal.style.zIndex = "";
-            
-            // 移除事件监听器，防止多次绑定
-            resetPasswordModal.removeEventListener('hidden.bs.modal', removeExtraBackdrop);
-          }, { once: true });
-        });
-        
-        // 修改重置密码表单提交成功后的逻辑，不再打开登录模态框（因为它已经打开）
-        document.getElementById("resetPasswordModal").addEventListener("show.bs.modal", function() {
-          // 获取重置密码表单
-          const resetForm = document.getElementById("reset-password-form");
-          
-          // 移除之前可能绑定的事件监听器
-          const newResetForm = resetForm.cloneNode(true);
-          resetForm.parentNode.replaceChild(newResetForm, resetForm);
-          
-          // 添加新的表单提交事件监听器
-          newResetForm.addEventListener("submit", function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById("reset-email").value;
-            const verificationCode = document.getElementById("verification-code").value;
-            const newPassword = document.getElementById("new-password").value;
-            const confirmPassword = document.getElementById("confirm-new-password").value;
-            
-            // 验证密码匹配
-            if (newPassword !== confirmPassword) {
-              document.getElementById("confirm-new-password").setCustomValidity("Passwords do not match");
-              document.getElementById("confirm-new-password").reportValidity();
-              return;
-            }
-            
-            // 模拟重置密码API调用
-            const submitBtn = document.getElementById("reset-password-submit");
-            submitBtn.disabled = true;
-            submitBtn.textContent = "Processing...";
-            
-            // 模拟API调用延迟
-            setTimeout(function() {
-              // 关闭重置密码模态框
-              const resetPasswordModal = bootstrap.Modal.getInstance(document.getElementById("resetPasswordModal"));
-              resetPasswordModal.hide();
-              
-              // 显示成功通知
-              showNotification(
-                "success",
-                "Password Reset Successfully",
-                "Your password has been reset. You can now login with your new password."
-              );
-              
-              // 重置表单
-              document.getElementById("reset-password-form").reset();
-              submitBtn.disabled = false;
-              submitBtn.textContent = "Reset Password";
-              
-              // 恢复模态框元素状态
-              document.getElementById("verification-feedback").textContent = "We'll send a verification code to your email";
-              document.getElementById("verification-feedback").classList.remove("text-success", "text-danger");
-              document.getElementById("new-password-strength").style.width = "0%";
-              document.getElementById("new-password-strength").className = "progress-bar bg-danger";
-              document.getElementById("new-password-feedback").textContent = "Password strength will be shown here";
-              
-              // 重置密码成功后，在登录表单自动填写邮箱
-              document.getElementById("login-email").value = email;
-              // 聚焦密码字段
-              setTimeout(() => document.getElementById("login-password").focus(), 300);
-            }, 2000);
-          });
-          
-          // 确保验证码按钮功能正常
-          document.getElementById("send-code-btn").addEventListener("click", sendVerificationCode);
-          
-          // 确保密码强度检测正常
-          document.getElementById("new-password").addEventListener("input", checkPasswordStrength);
-        });
-        
-        // 抽取发送验证码功能为单独的函数
-        function sendVerificationCode() {
-          const resetEmail = document.getElementById("reset-email").value;
-          
-          // 验证邮箱格式
-          if (!resetEmail || !resetEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            document.getElementById("verification-feedback").textContent = "Please enter a valid email address first";
-            document.getElementById("verification-feedback").classList.add("text-danger");
-            return;
-          }
-          
-          // 随机生成4-6位验证码
-          const verificationCode = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 4 + Math.floor(Math.random() * 3));
-          
-          // 模拟发送验证码
-          const sendBtn = this;
-          sendBtn.disabled = true;
-          sendBtn.textContent = "Sending...";
-          
-          // 模拟API调用延迟
-          setTimeout(function() {
-            // 将验证码存储在控制台中，方便调试（实际应用中不应这样做）
-            console.log("Verification code for " + resetEmail + ": " + verificationCode);
-            
-            // 显示成功消息
-            document.getElementById("verification-feedback").textContent = "Verification code sent! Check your email";
-            document.getElementById("verification-feedback").classList.remove("text-danger");
-            document.getElementById("verification-feedback").classList.add("text-success");
-            
-            // 60秒倒计时
-            let countdown = 60;
-            sendBtn.textContent = `Resend (${countdown}s)`;
-            
-            const timer = setInterval(function() {
-              countdown--;
-              if (countdown <= 0) {
-                clearInterval(timer);
-                sendBtn.disabled = false;
-                sendBtn.textContent = "Get Code";
-                document.getElementById("verification-feedback").textContent = "Need a new code?";
-                document.getElementById("verification-feedback").classList.remove("text-success");
-              } else {
-                sendBtn.textContent = `Resend (${countdown}s)`;
-              }
-            }, 1000);
-            
-            // 在测试环境中，自动填写验证码（实际应用中不应这样做）
-            document.getElementById("verification-code").value = verificationCode;
-          }, 1500);
-        }
-        
-        // 抽取密码强度检测为单独的函数
-        function checkPasswordStrength() {
-          const password = this.value;
-          let strength = 0;
-          
-          // 检查密码长度
-          if (password.length >= 8) strength += 25;
-          
-          // 检查是否包含数字
-          if (/\d/.test(password)) strength += 25;
-          
-          // 检查是否包含小写字母
-          if (/[a-z]/.test(password)) strength += 25;
-          
-          // 检查是否包含大写字母或特殊字符
-          if (/[A-Z]/.test(password) || /[^a-zA-Z0-9]/.test(password)) strength += 25;
-          
-          // 更新密码强度条
-          const strengthBar = document.getElementById("new-password-strength");
-          strengthBar.style.width = strength + "%";
-          
-          // 更新颜色和文本
-          if (strength < 50) {
-            strengthBar.className = "progress-bar bg-danger";
-            document.getElementById("new-password-feedback").textContent = "Weak password";
-          } else if (strength < 75) {
-            strengthBar.className = "progress-bar bg-warning";
-            document.getElementById("new-password-feedback").textContent = "Medium strength password";
-          } else {
-            strengthBar.className = "progress-bar bg-success";
-            document.getElementById("new-password-feedback").textContent = "Strong password";
-          }
-        }
-
-        // 在document ready或初始化部分添加authModal关闭事件监听
-        document
-          .getElementById("authModal")
-          .addEventListener("hidden.bs.modal", function () {
-            // 重置表单数据
-            document.getElementById("login-form-element").reset();
-            document.getElementById("register-form-element").reset();
-            
-            // 重置密码强度指示
-            const strengthBar = document.getElementById("register-password-strength");
-            strengthBar.style.width = "0%";
-            strengthBar.className = "progress-bar bg-danger";
-            document.getElementById("register-password-feedback").textContent = "Password strength will be shown here";
-            
-            // 清除可能的自定义验证消息
-            document.querySelectorAll('#login-form-element input, #register-form-element input').forEach(input => {
-              input.setCustomValidity('');
-            });
-          });
-
-        // 处理登录和注册按钮点击事件，打开相应标签页
-        document.getElementById("login-button").addEventListener("click", function(e) {
-          // 打开模态框后Bootstrap会自动处理，所以我们只需要处理激活标签
-          setTimeout(function() {
-            // 切换到登录表单
-            document.getElementById("login-form").style.display = "block";
-            document.getElementById("register-form").style.display = "none";
-            
-            // 更新活动标签
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-              tab.classList.remove('active');
-            });
-            document.getElementById("login-tab").classList.add('active');
-          }, 150); // 短暂延迟确保模态框已打开
-        });
-        
-        document.getElementById("register-button").addEventListener("click", function(e) {
-          // 打开模态框后Bootstrap会自动处理，所以我们只需要处理激活标签
-          setTimeout(function() {
-            // 切换到注册表单
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("register-form").style.display = "block";
-            
-            // 更新活动标签
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-              tab.classList.remove('active');
-            });
-            document.getElementById("register-tab").classList.add('active');
-          }, 150); // 短暂延迟确保模态框已打开
-        });
-
-        // 修改页面上的其他注册按钮，使其打开模态框并切换到注册tab
-        document.querySelectorAll('.register-btn, .get-started-btn, #try-free-button').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            // 避免链接的默认行为
-            e.preventDefault();
-            
-            // 打开认证模态框
-            const authModal = new bootstrap.Modal(document.getElementById("authModal"));
-            authModal.show();
-            
-            // 切换到注册表单
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("register-form").style.display = "block";
-            
-            // 更新活动标签
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-              tab.classList.remove('active');
-            });
-            document.getElementById("register-tab").classList.add('active');
-          });
-        });
       </script>
     </body>
   </html>
-
