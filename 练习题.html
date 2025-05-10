@@ -5087,7 +5087,7 @@
           loginSubmitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...';
 
           // 调用登录API
-          fetch('http://web.practicesnow.com/practice/v1/users/login', {
+          fetch('http://web.practicesnow.com/api/v1/auth/login', {
             method: 'POST',
             credentials: 'omit',
             headers: {
@@ -5097,6 +5097,7 @@
             body: JSON.stringify(loginData)
           })
           .then(response => {
+            console.log('login--response',response)
             // 显式检查HTTP响应状态码是否在200-299之间
             const isSuccess = response.status >= 200 && response.status < 300;
             // 解析JSON响应
@@ -5106,18 +5107,37 @@
             });
           })
           .then(result => {
+            console.log('login--result',result)
             if (result.isSuccess) {
-              // 登录成功，创建用户对象
-              const data = result.data;
+              // 登录成功，处理API返回的数据
+              const responseData = result.data;
+              
+              // 检查API返回是否成功
+              if (responseData.ok !== 1) {
+                throw new Error(responseData.message || "登录失败");
+              }
+              
+              // 获取API返回的数据
+              const data = responseData.data;
+              const userData = data.user;
+              
+              // 创建用户对象
               const user = {
-                id: data.id || generateRandomId(),
-                name: data.full_name || email.split('@')[0], // 如果API没有返回姓名，使用邮箱前缀
-                email: email,
-                plan: data.plan || "free",
-                remainingGenerations: data.remaining_generations || 1,
-                totalGenerations: data.total_generations || 1,
-                createdAt: data.created_at || new Date().toISOString(),
-                avatar: data.avatar || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+                id: userData.id,
+                name: userData.name,
+                email: userData.email,
+                plan: "free", // 默认plan，可根据API返回调整
+                remainingGenerations: 5, // 默认值，可根据API返回调整
+                totalGenerations: 10, // 默认值，可根据API返回调整
+                createdAt: userData.created_at,
+                lastLoginAt: userData.last_login_at,
+                avatar: userData.avatar_url || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+                // 存储认证相关信息
+                auth: {
+                  accessToken: data.access_token,
+                  refreshToken: data.refresh_token,
+                  tokenType: data.token_type
+                }
               };
 
               // 设置当前用户和登录状态
@@ -5128,9 +5148,17 @@
               if (rememberMe) {
                 // 永久存储（或者直到用户清除）
                 localStorage.setItem("currentUser", JSON.stringify(currentUser));
+                // 单独存储token，方便后续API调用使用
+                localStorage.setItem("accessToken", data.access_token);
+                localStorage.setItem("refreshToken", data.refresh_token);
+                localStorage.setItem("tokenType", data.token_type);
               } else {
                 // 会话存储（浏览器关闭后清除）
                 sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+                // 单独存储token，方便后续API调用使用
+                sessionStorage.setItem("accessToken", data.access_token);
+                sessionStorage.setItem("refreshToken", data.refresh_token);
+                sessionStorage.setItem("tokenType", data.token_type);
               }
 
               // 关闭登录模态框
@@ -5148,6 +5176,11 @@
                 "Login Successful",
                 "Welcome back, " + currentUser.name + "!"
               );
+              
+              // 登录成功后导航到generator页面
+              setTimeout(() => {
+                navigateTo('generator');
+              }, 1000);
             } else {
               // 登录失败，抛出错误
               throw new Error(result.data.error || `登录失败，状态码: ${result.status}`);
@@ -5279,47 +5312,33 @@
               // 注册成功
               const data = result.data;
               
-              // Create user object from response
-              const newUser = {
-                id: data.id || generateRandomId(),
-                name: name,
-                email: email,
-                // Don't store actual password in client-side storage
-                plan: "free",
-                remainingGenerations: 1,
-                totalGenerations: 1,
-                createdAt: new Date().toISOString(),
-                avatar: `https://i.pravatar.cc/150?img=${Math.floor(
-                  Math.random() * 70
-                )}`,
-              };
-
-              // Set as current user
-              currentUser = { ...newUser };
-              isLoggedIn = true;
-
-              // Store in localStorage
-              localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-              // Close modal
+              // 注册成功后，关闭当前模态框
               const authModal = bootstrap.Modal.getInstance(
                 document.getElementById("authModal")
               );
               authModal.hide();
-
-              // Update UI
-              updateUIForLoggedInUser();
-
-              // Show success notification
+              
+              // 显示成功通知
               showNotification(
                 "success",
                 "Registration Successful",
-                "Welcome to QuizCraft AI, " + currentUser.name + "!"
+                "Please login with your new account."
               );
               
-              // 注册成功后可以自动导航到生成器页面
+              // 短暂延迟后重新打开登录模态框并自动填充邮箱
               setTimeout(() => {
-                navigateTo('generator');
+                // 打开登录模态框
+                const loginModal = new bootstrap.Modal(document.getElementById("authModal"));
+                loginModal.show();
+                
+                // 切换到登录标签
+                document.getElementById("login-tab").click();
+                
+                // 自动填充邮箱
+                document.getElementById("login-email").value = email;
+                
+                // 聚焦密码输入框
+                document.getElementById("login-password").focus();
               }, 1000);
             } else {
               // 注册失败，抛出错误
@@ -5385,24 +5404,70 @@
         function handleLogout(e) {
           e.preventDefault();
 
-          // Clear session
-          isLoggedIn = false;
-          currentUser = null;
-          localStorage.removeItem("currentUser");
+          // 更新登出按钮状态
+          const logoutButton = document.getElementById("logout-button");
+          const originalButtonText = logoutButton.textContent;
+          logoutButton.disabled = true;
+          logoutButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging out...';
+          
+          // 调用登出API
+          fetch('http://web.practicesnow.com/api/v1/auth/logout', {
+            method: 'POST',
+            credentials: 'omit',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || ""}`
+            },
+            body: JSON.stringify({})
+          })
+          .then(response => {
+            // 无论API返回什么结果，都进行本地登出处理
+            console.log("Logout API response:", response);
+            return { success: true };
+          })
+          .catch(error => {
+            // 即使API调用失败，也进行本地登出处理
+            console.error("Logout API error:", error);
+            return { success: true };
+          })
+          .finally(() => {
+            // 本地登出处理
+            
+            // 清除会话
+            isLoggedIn = false;
+            currentUser = null;
+            
+            // 清除LocalStorage中的所有存储
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("tokenType");
+            
+            // 清除SessionStorage中的所有存储
+            sessionStorage.removeItem("currentUser");
+            sessionStorage.removeItem("accessToken");
+            sessionStorage.removeItem("refreshToken");
+            sessionStorage.removeItem("tokenType");
 
-          // Update UI
-          document.getElementById("auth-buttons").style.display = "flex";
-          document.getElementById("user-info").style.display = "none";
+            // 更新UI
+            document.getElementById("auth-buttons").style.display = "flex";
+            document.getElementById("user-info").style.display = "none";
 
-          // Navigate to home
-          navigateTo("home");
+            // 重置登出按钮状态
+            logoutButton.disabled = false;
+            logoutButton.textContent = originalButtonText;
 
-          // Show notification
-          showNotification(
-            "info",
-            "Logged Out",
-            "You have been successfully logged out."
-          );
+            // 导航到首页
+            navigateTo("home");
+
+            // 显示通知
+            showNotification(
+              "info",
+              "Logged Out",
+              "You have been successfully logged out."
+            );
+          });
         }
 
         // ===== GENERATOR FUNCTIONS =====
