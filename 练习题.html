@@ -4731,6 +4731,7 @@
           // Add event listeners for question type checkboxes and comprehensive test
           const questionTypeCheckboxes = document.querySelectorAll('.question-type-checkbox');
           const comprehensiveTestCheckbox = document.getElementById('comprehensive-test');
+          const questionsCountInput = document.getElementById('questions-count');
           
           // Add event listeners to all question type checkboxes
           questionTypeCheckboxes.forEach(checkbox => {
@@ -4739,6 +4740,8 @@
               if (this.checked && comprehensiveTestCheckbox.checked) {
                 // Uncheck comprehensive test
                 comprehensiveTestCheckbox.checked = false;
+                // 恢复问题数量输入框
+                questionsCountInput.disabled = false;
               }
             });
           });
@@ -4751,6 +4754,12 @@
               questionTypeCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
               });
+              // 设置问题数量为1并禁用输入框
+              questionsCountInput.value = 1;
+              questionsCountInput.disabled = true;
+            } else {
+              // 恢复问题数量输入框
+              questionsCountInput.disabled = false;
             }
           });
 
