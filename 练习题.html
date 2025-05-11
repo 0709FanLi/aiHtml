@@ -5514,85 +5514,226 @@
           }
 
           // Get form values
-          const grade = document.getElementById("grade-select").value;
-          const subject = document.getElementById("subject-select").value;
+          const gradeSelect = document.getElementById("grade-select");
+          const grade = gradeSelect.options[gradeSelect.selectedIndex].text;
+          
+          const subjectSelect = document.getElementById("subject-select");
+          const subjectValue = subjectSelect.value;
+          const subjectText = subjectSelect.options[subjectSelect.selectedIndex].text;
+          
+          // 提取主题分类，例如从"math-arithmetic"提取为"Mathematics Arithmetic"
+          let formattedSubject = "";
+          if (subjectValue.includes("math")) {
+            formattedSubject = "Mathematics " + subjectText;
+          } else if (subjectValue.includes("science")) {
+            formattedSubject = "Science " + subjectText;
+          } else if (subjectValue.includes("ela")) {
+            formattedSubject = "English " + subjectText;
+          } else if (subjectValue.includes("social")) {
+            formattedSubject = "Social Studies " + subjectText;
+          } else if (subjectValue.includes("language")) {
+            formattedSubject = "Language " + subjectText;
+          }
+
           const difficulty = getDifficultyLevel();
-          const count = document.getElementById("questions-count").value;
+          const isComprehensive = document.getElementById("comprehensive-test").checked;
+          
+          // 确定问题数量
+          let numberOfQuestions = parseInt(document.getElementById("questions-count").value, 10);
+          
+          // 如果是综合测试，强制设置为1
+          if (isComprehensive) {
+            numberOfQuestions = 1;
+          } else {
+            // 限制普通测试最大问题数为100
+            numberOfQuestions = Math.min(numberOfQuestions, 100);
+          }
 
           // Get selected question types
           const selectedTypes = [];
           document
-            .querySelectorAll('input[type="checkbox"]:checked')
+            .querySelectorAll('.question-type-checkbox:checked')
             .forEach((checkbox) => {
-              if (checkbox.value.includes("type-")) return;
-              selectedTypes.push(checkbox.value);
+              // 将值首字母大写并添加到数组中
+              const typeValue = checkbox.value;
+              let formattedType = "";
+              
+              if (typeValue === "multiple_choice") {
+                formattedType = "Multiple Choice";
+              } else if (typeValue === "true_false") {
+                formattedType = "True/False";
+              } else if (typeValue === "fill_blank") {
+                formattedType = "Fill in the Blank";
+              } else if (typeValue === "short_answer") {
+                formattedType = "Short Answer";
+              } else if (typeValue === "word_problem") {
+                formattedType = "Word Problems";
+              }
+              
+              selectedTypes.push(formattedType);
             });
 
           // Validate form
-          if (!grade || !subject || selectedTypes.length === 0) {
+          if (!grade || !subjectValue) {
             showNotification(
               "error",
               "Validation Error",
-              "Please fill in all required fields."
+              "Please select a grade level and subject."
             );
             return;
           }
+
+          if (!isComprehensive && selectedTypes.length === 0) {
+            showNotification(
+              "error",
+              "Validation Error",
+              "Please select at least one question type or choose 'Make comprehensive test'."
+            );
+            return;
+          }
+
+          // 检查用户是否登录
+          if (!isLoggedIn) {
+            showNotification(
+              "warning",
+              "Login Required",
+              "Please log in to generate quizzes."
+            );
+            
+            // 打开登录模态框
+            const authModal = new bootstrap.Modal(document.getElementById("authModal"));
+            authModal.show();
+            return;
+          }
+
+          // 准备API请求数据
+          let requestData = {
+            grade_level: grade,
+            subject: formattedSubject,
+            difficulty_level: difficulty,
+            number_of_questions: numberOfQuestions,
+            make_comprehensive_test: isComprehensive
+          };
+          
+          // 只有在非综合测试模式下才添加问题类型
+          if (!isComprehensive) {
+            requestData.question_types = selectedTypes;
+          }
+
+          console.log("API Request Data:", requestData);
 
           // Show loading indicator
           document.getElementById("loading-indicator").style.display = "flex";
           document.getElementById("preview-placeholder").style.display = "none";
           document.getElementById("preview-content").style.display = "none";
 
-          // Simulate generation delay
-          setTimeout(() => {
-            // Generate questions
-            generatedQuestions = generateQuestions(
-              subject,
-              difficulty,
-              count,
-              selectedTypes
-            );
+          // 获取 accessToken
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
 
-            // Update preview title and date
-            document.getElementById(
-              "preview-title"
-            ).textContent = `${grade} ${getSubjectName(subject)} Quiz`;
-            document.getElementById("preview-date").textContent = formatDate();
-
-            // Render questions
-            renderQuestions(generatedQuestions);
-
-            // Hide loading indicator and show preview
-            document.getElementById("loading-indicator").style.display = "none";
-            document.getElementById("preview-content").style.display = "block";
-
-            // Reset answer display state
-            showingAnswers = false;
-            document.getElementById("toggle-answers").innerHTML =
-              '<i class="fas fa-eye me-1"></i> Show Answers';
-
-            // Decrement user's remaining generations if logged in
-            if (isLoggedIn && currentUser.plan !== "free") {
-              currentUser.remainingGenerations--;
-              localStorage.setItem("currentUser", JSON.stringify(currentUser));
-              updateUIForLoggedInUser();
-
-              // Add to history (would be implemented in a real app)
-
-              // Show notification
-              showNotification(
-                "success",
-                "Quiz Generated",
-                `Quiz generated successfully. You have ${currentUser.remainingGenerations} generations remaining.`
-              );
+          // 调用API生成测验
+          fetch('http://web.practicesnow.com/api/v1/quiz/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(requestData)
+          })
+          .then(response => {
+            console.log("API Response:", response);
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            console.log("API Result:", result);
+            if (result.isSuccess && result.data.ok === 1) {
+              // 生成成功
+              const responseData = result.data.data;
+              
+              // 更新预览标题
+              document.getElementById(
+                "preview-title"
+              ).textContent = `${grade} ${formattedSubject} Quiz`;
+              document.getElementById("preview-date").textContent = formatDate();
+              
+              // 渲染问题和答案内容
+              displayQuizContent(responseData);
+              
+              // 隐藏加载指示器并显示预览
+              document.getElementById("loading-indicator").style.display = "none";
+              document.getElementById("preview-content").style.display = "block";
+              
+              // 重置答案显示状态
+              showingAnswers = false;
+              document.getElementById("toggle-answers").innerHTML =
+                '<i class="fas fa-eye me-1"></i> Show Answers';
+              
+              // 减少用户的剩余生成次数
+              if (isLoggedIn && currentUser.plan !== "free") {
+                currentUser.remainingGenerations--;
+                if (localStorage.getItem("currentUser")) {
+                  localStorage.setItem("currentUser", JSON.stringify(currentUser));
+                } else if (sessionStorage.getItem("currentUser")) {
+                  sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+                }
+                updateUIForLoggedInUser();
+                
+                // 显示通知
+                showNotification(
+                  "success",
+                  "Quiz Generated",
+                  `Quiz generated successfully. You have ${currentUser.remainingGenerations} generations remaining.`
+                );
+              } else {
+                showNotification(
+                  "success",
+                  "Quiz Generated",
+                  "Quiz generated successfully."
+                );
+              }
             } else {
-              showNotification(
-                "success",
-                "Quiz Generated",
-                "Quiz generated successfully."
-              );
+              // 处理API错误
+              throw new Error(result.data.message || "Failed to generate quiz. Please try again.");
             }
-          }, 3000);
+          })
+          .catch(error => {
+            console.error("Quiz generation error:", error);
+            
+            // 隐藏加载指示器并显示占位符
+            document.getElementById("loading-indicator").style.display = "none";
+            document.getElementById("preview-placeholder").style.display = "flex";
+            
+            // 显示错误通知
+            showNotification(
+              "error",
+              "Generation Failed",
+              error.message || "Failed to generate quiz. Please try again."
+            );
+          });
+        }
+
+        // 显示API生成的问题和答案
+        function displayQuizContent(data) {
+          const container = document.getElementById("questions-container");
+          container.innerHTML = "";
+          
+          // 创建问题容器
+          const questionsDiv = document.createElement("div");
+          questionsDiv.className = "generated-questions";
+          questionsDiv.innerHTML = data.question;
+          
+          // 创建答案容器（默认隐藏）
+          const answersDiv = document.createElement("div");
+          answersDiv.className = "question-answer";
+          answersDiv.style.display = "none";
+          answersDiv.innerHTML = data.answer;
+          
+          // 添加到容器
+          container.appendChild(questionsDiv);
+          container.appendChild(answersDiv);
         }
 
         function getDifficultyLevel() {
