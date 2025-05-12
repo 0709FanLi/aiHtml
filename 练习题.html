@@ -4597,6 +4597,8 @@
               setupRouting();
               // 默认显示dashboard overview标签
               document.querySelector('.nav-link[data-tab="dashboard-overview"]').click();
+              // 加载Recent Activity数据
+              updateRecentActivity();
             } else {
               // 如果未登录但尝试访问dashboard，重定向到首页
               window.location.hash = "home";
@@ -4863,6 +4865,12 @@
           tabs.forEach((tab) => (tab.style.display = "none"));
 
           document.getElementById(tabId).style.display = "block";
+          
+          // 如果切换到Dashboard概览，加载Recent Activity
+          if (tabId === "dashboard-overview") {
+            // 加载最近活动数据
+            updateRecentActivity();
+          }
           
           // 如果切换到历史记录标签页，加载历史记录数据
           if (tabId === "generation-history") {
@@ -7597,5 +7605,7 @@
           </div>
         </div>
       </div>
+  <!-- Dashboard Recent Activity Script -->
+  <script src="js/dashboard/recent_activity.js"></script>
     </body>
   </html>
