@@ -6782,10 +6782,26 @@
 
         // 确认删除测验
         function confirmDeleteQuiz(quizId) {
-          // 使用Bootstrap确认对话框
-          if (confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
+          // 使用Bootstrap模态框替代原生confirm
+          const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+          
+          // 设置确认删除按钮的点击事件
+          const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+          
+          // 移除之前可能存在的事件监听器
+          const newConfirmDeleteButton = confirmDeleteButton.cloneNode(true);
+          confirmDeleteButton.parentNode.replaceChild(newConfirmDeleteButton, confirmDeleteButton);
+          
+          // 添加新的事件监听器
+          newConfirmDeleteButton.addEventListener('click', function() {
+            // 隐藏模态框
+            deleteModal.hide();
+            // 执行删除操作
             deleteQuiz(quizId);
-          }
+          });
+          
+          // 显示模态框
+          deleteModal.show();
         }
 
         // 删除测验
@@ -6793,13 +6809,31 @@
           // 获取访问令牌
           const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
           
-          // 调用API
-          fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}`, {
-            method: 'DELETE',
+          // 显示删除中状态
+          const quizElement = document.querySelector(`.generation-history-item[data-quiz-id="${quizId}"]`);
+          if (quizElement) {
+            // 禁用删除按钮，显示加载状态
+            const deleteButton = quizElement.querySelector('.delete-quiz-btn');
+            if (deleteButton) {
+              deleteButton.disabled = true;
+              deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Deleting...';
+            }
+          }
+          
+          // 准备请求体
+          const requestData = {
+            quiz_id: quizId
+          };
+          
+          // 调用API - 使用POST方法和新接口
+          fetch('http://web.practicesnow.com/api/v1/quiz/delete', {
+            method: 'POST',
             headers: {
+              'Content-Type': 'application/json',
               'Accept': 'application/json',
               'Authorization': `Bearer ${accessToken}`
-            }
+            },
+            body: JSON.stringify(requestData)
           })
           .then(response => {
             const isSuccess = response.status >= 200 && response.status < 300;
@@ -6810,18 +6844,45 @@
           .then(result => {
             if (result.isSuccess && result.data.ok === 1) {
               // 从列表中移除测验
-              const quizElement = document.querySelector(`.generation-history-item[data-quiz-id="${quizId}"]`);
               if (quizElement) {
                 quizElement.remove();
               }
               
               // 如果列表为空，显示空状态
               const historyList = document.querySelector('.generation-history-list');
-              if (historyList.children.length === 0) {
+              if (historyList && historyList.children.length === 0) {
                 historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-inbox text-muted mb-3" style="font-size: 2.5rem"></i><p>No quiz history records</p><button class="btn btn-primary" id="create-new-quiz-from-history">Create New Quiz</button></div>';
                 
                 // 添加创建新测验按钮的事件监听
                 document.getElementById('create-new-quiz-from-history').addEventListener('click', goToGenerator);
+              }
+              
+              // 同样检查收藏列表中是否有该测验，如果有也移除
+              const favoriteQuizElement = document.querySelector(`.favorites-list .generation-history-item[data-quiz-id="${quizId}"]`);
+              if (favoriteQuizElement) {
+                favoriteQuizElement.remove();
+                
+                // 如果收藏列表为空，显示空状态
+                const favoritesList = document.querySelector('.favorites-list');
+                if (favoritesList && favoritesList.children.length === 0) {
+                  favoritesList.innerHTML = '<div class="text-center py-5"><i class="fas fa-heart text-muted mb-3" style="font-size: 2.5rem"></i><p>No favorite quizzes found</p><button class="btn btn-primary" id="go-to-history">Browse History</button></div>';
+                  
+                  // 添加浏览历史记录按钮的事件监听
+                  document.getElementById('go-to-history').addEventListener('click', function() {
+                    document.querySelector('.nav-link[data-tab="generation-history"]').click();
+                  });
+                }
+              }
+              
+              // 从allHistoryItems和allFavoriteItems中移除该测验
+              const historyIndex = allHistoryItems.findIndex(item => item.id == quizId);
+              if (historyIndex !== -1) {
+                allHistoryItems.splice(historyIndex, 1);
+              }
+              
+              const favoriteIndex = allFavoriteItems.findIndex(item => item.id == quizId);
+              if (favoriteIndex !== -1) {
+                allFavoriteItems.splice(favoriteIndex, 1);
               }
               
               showNotification(
@@ -6830,11 +6891,29 @@
                 "Quiz has been successfully deleted"
               );
             } else {
+              // 恢复删除按钮状态
+              if (quizElement) {
+                const deleteButton = quizElement.querySelector('.delete-quiz-btn');
+                if (deleteButton) {
+                  deleteButton.disabled = false;
+                  deleteButton.innerHTML = '<i class="fas fa-trash me-1"></i> Delete';
+                }
+              }
+              
               throw new Error(result.data.message || "Failed to delete quiz");
             }
           })
           .catch(error => {
             console.error("Failed to delete quiz:", error);
+            
+            // 恢复删除按钮状态
+            if (quizElement) {
+              const deleteButton = quizElement.querySelector('.delete-quiz-btn');
+              if (deleteButton) {
+                deleteButton.disabled = false;
+                deleteButton.innerHTML = '<i class="fas fa-trash me-1"></i> Delete';
+              }
+            }
             
             showNotification(
               "error",
@@ -7133,17 +7212,10 @@
           // 清空分页控件
           paginationElement.innerHTML = '';
           
-          // 显示总条数
-          const listInfoElement = document.createElement('div');
-          listInfoElement.className = 'pagination-info text-secondary mb-2 text-center';
-          listInfoElement.textContent = `Total ${totalItems} favorites, ${totalPages} pages`;
-          
-          // 先移除所有可能存在的旧信息元素
-          const oldInfoElements = document.querySelectorAll('.favorites-pagination-info');
+          // 删除显示总条数的代码
+          // 移除所有可能存在的旧信息元素
+          const oldInfoElements = document.querySelectorAll('.pagination-info');
           oldInfoElements.forEach(element => element.remove());
-          
-          // 添加新的信息元素
-          paginationElement.parentNode.insertBefore(listInfoElement, paginationElement);
           
           // 上一页按钮
           const prevItem = document.createElement('li');
@@ -7327,19 +7399,12 @@
                   // 更新分页信息
                   const tempPagination = document.querySelector('.favorites-pagination');
                   if (tempPagination) {
-                    // 更新信息显示
-                    const listInfoElement = document.createElement('div');
-                    listInfoElement.className = 'pagination-info text-secondary mb-2 text-center';
-                    
-                    // 先移除所有可能存在的旧信息元素
+                    // 移除所有信息元素
                     const oldInfoElements = document.querySelectorAll('.pagination-info');
                     oldInfoElements.forEach(element => element.remove());
                     
-                    // 如果有搜索结果，显示数量信息
+                    // 如果有搜索结果，不显示数量信息
                     if (filteredItems.length > 0) {
-                      listInfoElement.textContent = `Found ${filteredItems.length} matching favorites`;
-                      tempPagination.parentNode.insertBefore(listInfoElement, tempPagination);
-                      
                       // 在搜索模式下隐藏分页控件
                       tempPagination.innerHTML = '';
                     } else {
@@ -7365,5 +7430,24 @@
           }
         });
       </script>
+      
+      <!-- 添加删除确认模态框 -->
+      <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure you want to delete this quiz? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </body>
   </html>
