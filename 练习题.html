@@ -2270,7 +2270,7 @@
                           guarantee if you're not satisfied. For one-time
                           purchases, refunds are considered on a case-by-case
                           basis if there are technical issues that prevent you
-                          from using the service. Please contact our support
+                          from using the Service. Please contact our support
                           team within 14 days of purchase if you encounter any
                           problems.
                         </div>
@@ -4943,6 +4943,12 @@
           tabs.forEach((tab) => (tab.style.display = "none"));
 
           document.getElementById(tabId).style.display = "block";
+          
+          // 如果切换到历史记录标签页，加载历史记录数据
+          if (tabId === "generation-history") {
+            // 默认加载第一页数据
+            fetchQuizHistory(1);
+          }
         }
 
         function updatePasswordStrength(e) {
@@ -6314,6 +6320,604 @@
             "Your preferences have been successfully updated."
           );
         }
+
+        // 获取测验历史记录
+        function fetchQuizHistory(page = 1, pageSize = 10, subject = null, gradeLevel = null) {
+          // 显示加载状态
+          const historyList = document.querySelector('.generation-history-list');
+          historyList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Loading history records...</p></div>';
+          
+          // 清空分页控件
+          document.querySelector('.pagination').innerHTML = '';
+          
+          // 构建请求参数（改为POST请求体参数）
+          const requestData = {
+            page: page,
+            page_size: pageSize
+          };
+          
+          // 添加可选参数
+          if (subject) requestData.subject = subject;
+          if (gradeLevel) requestData.grade_level = gradeLevel;
+          
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          
+          if (!accessToken) {
+            showNotification(
+              "error",
+              "Authentication Failed",
+              "No valid login credentials found. Please login again."
+            );
+            
+            // 显示空状态
+            historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 2.5rem"></i><p>Not logged in or session expired. Please login to view.</p><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal">Login</button></div>';
+            return;
+          }
+          
+          // 发起请求获取历史记录 - 改为POST方法
+          fetch('http://web.practicesnow.com/api/v1/quiz/list', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(requestData)
+          })
+          .then(response => {
+            console.log("response-history",response);
+            // 检查响应状态
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            console.log("result-history",result);
+            if (result.isSuccess && result.data.ok === 1) {
+              // 成功获取数据
+              const responseData = result.data.data;
+              
+              // 显示历史记录
+              renderHistoryItems(responseData.items);
+              
+              // 显示分页控件
+              renderPagination(responseData.page, responseData.pages, responseData.total);
+              
+              // 如果没有记录，显示空状态
+              if (responseData.items.length === 0) {
+                historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-inbox text-muted mb-3" style="font-size: 2.5rem"></i><p>No quiz history records found</p><button class="btn btn-primary" id="create-new-quiz-from-history">Create New Quiz</button></div>';
+                
+                // 添加创建新测验按钮的事件监听
+                document.getElementById('create-new-quiz-from-history').addEventListener('click', goToGenerator);
+              }
+            } else {
+              // 处理API错误
+              let errorMessage = result.data.message || "Failed to fetch history records";
+              
+              // 如果是认证问题，提示重新登录
+              if (result.status === 401) {
+                errorMessage = "Session expired. Please login again.";
+                
+                // 显示登录按钮
+                historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 2.5rem"></i><p>Session expired. Please login again.</p><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal">Login</button></div>';
+              } else {
+                // 其他错误
+                historyList.innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>${errorMessage}</p><button class="btn btn-outline-primary" onclick="fetchQuizHistory(1)">Retry</button></div>`;
+              }
+              
+              showNotification(
+                "error",
+                "Loading Failed",
+                errorMessage
+              );
+            }
+          })
+          .catch(error => {
+            console.error("Failed to fetch quiz history:", error);
+            
+            // 显示错误状态
+            historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>Loading failed. Please check your network connection.</p><button class="btn btn-outline-primary" onclick="fetchQuizHistory(1)">Retry</button></div>';
+            
+            showNotification(
+              "error",
+              "Loading Failed",
+              "An error occurred while fetching history records. Please try again later."
+            );
+          });
+        }
+
+        // 渲染历史记录列表项
+        function renderHistoryItems(items) {
+          const historyList = document.querySelector('.generation-history-list');
+          historyList.innerHTML = '';
+          
+          items.forEach(item => {
+            // 格式化创建时间
+            const createdDate = new Date(item.created_at);
+            const formattedDate = formatDate(createdDate);
+            
+            // 解析问题类型数组
+            let questionTypes = [];
+            try {
+              questionTypes = JSON.parse(item.question_types);
+            } catch (e) {
+              console.error("Error parsing question types:", e);
+            }
+            
+            // 创建历史记录项 HTML
+            const historyItemHtml = `
+              <div class="generation-history-item" data-quiz-id="${item.id}">
+                <div class="generation-history-header">
+                  <h5 class="generation-history-title">
+                    ${item.grade_level} ${item.subject} ${item.make_comprehensive_test ? 'Comprehensive Test' : 'Quiz'}
+                  </h5>
+                  <div class="generation-history-date">
+                    ${formattedDate}
+                  </div>
+                </div>
+                <div class="generation-history-meta">
+                  <span class="generation-history-tag">${item.grade_level}</span>
+                  <span class="generation-history-tag">${item.subject}</span>
+                  <span class="generation-history-tag">${item.number_of_questions} ${item.number_of_questions > 1 ? 'Questions' : 'Question'}</span>
+                  <span class="generation-history-tag">${item.difficulty_level.charAt(0).toUpperCase() + item.difficulty_level.slice(1)}</span>
+                  ${item.make_comprehensive_test ? '<span class="generation-history-tag bg-warning">Comprehensive</span>' : ''}
+                </div>
+                <div class="generation-history-preview">
+                  ${extractPreview(item.question, 150)}
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button class="btn btn-sm btn-outline-primary me-2 view-quiz-btn" data-quiz-id="${item.id}">
+                    <i class="fas fa-eye me-1"></i> View
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary me-2 toggle-favorite-btn" data-quiz-id="${item.id}" data-is-favorite="${item.is_favorite}">
+                    <i class="fas ${item.is_favorite ? 'fa-star' : 'fa-star-o'} me-1"></i> ${item.is_favorite ? 'Unfavorite' : 'Favorite'}
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-quiz-btn" data-quiz-id="${item.id}">
+                    <i class="fas fa-trash me-1"></i> Delete
+                  </button>
+                </div>
+              </div>
+            `;
+            
+            historyList.innerHTML += historyItemHtml;
+          });
+          
+          // 添加事件监听器
+          document.querySelectorAll('.view-quiz-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const quizId = this.getAttribute('data-quiz-id');
+              viewQuiz(quizId);
+            });
+          });
+          
+          document.querySelectorAll('.toggle-favorite-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const quizId = this.getAttribute('data-quiz-id');
+              const isFavorite = this.getAttribute('data-is-favorite') === 'true';
+              toggleFavorite(quizId, !isFavorite);
+            });
+          });
+          
+          document.querySelectorAll('.delete-quiz-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const quizId = this.getAttribute('data-quiz-id');
+              confirmDeleteQuiz(quizId);
+            });
+          });
+        }
+
+        // 提取问题预览（截取前N个字符）
+        function extractPreview(htmlContent, maxLength = 150) {
+          // 创建临时元素解析HTML
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = htmlContent;
+          
+          // 获取纯文本内容
+          const textContent = tempDiv.textContent || tempDiv.innerText || '';
+          
+          // 截取前N个字符
+          let preview = textContent.trim().substring(0, maxLength);
+          
+          // 如果原文更长，添加省略号
+          if (textContent.length > maxLength) {
+            preview += '...';
+          }
+          
+          return preview;
+        }
+
+        // 渲染分页控件
+        function renderPagination(currentPage, totalPages, totalItems) {
+          const paginationElement = document.querySelector('.pagination');
+          
+          if (!paginationElement) return;
+          
+          // 清空分页控件
+          paginationElement.innerHTML = '';
+          
+          // 显示总条数
+          const listInfoElement = document.createElement('div');
+          listInfoElement.className = 'pagination-info text-secondary mb-2 text-center';
+          listInfoElement.textContent = `Total ${totalItems} records, ${totalPages} pages`;
+          paginationElement.parentNode.insertBefore(listInfoElement, paginationElement);
+          
+          // 上一页按钮
+          const prevItem = document.createElement('li');
+          prevItem.className = `page-item ${currentPage <= 1 ? 'disabled' : ''}`;
+          
+          const prevLink = document.createElement('a');
+          prevLink.className = 'page-link';
+          prevLink.href = '#';
+          prevLink.textContent = 'Previous';
+          prevLink.setAttribute('aria-label', 'Previous');
+          
+          if (currentPage > 1) {
+            prevLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              fetchQuizHistory(currentPage - 1);
+            });
+          }
+          
+          prevItem.appendChild(prevLink);
+          paginationElement.appendChild(prevItem);
+          
+          // 页码按钮
+          const maxButtons = 5; // 最多显示5个页码按钮
+          let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+          let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+          
+          // 调整startPage，确保显示足够的页码按钮
+          if (endPage - startPage + 1 < maxButtons && startPage > 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+          }
+          
+          // 添加第一页按钮（如果不在可见范围内）
+          if (startPage > 1) {
+            const firstItem = document.createElement('li');
+            firstItem.className = 'page-item';
+            
+            const firstLink = document.createElement('a');
+            firstLink.className = 'page-link';
+            firstLink.href = '#';
+            firstLink.textContent = '1';
+            
+            firstLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              fetchQuizHistory(1);
+            });
+            
+            firstItem.appendChild(firstLink);
+            paginationElement.appendChild(firstItem);
+            
+            // 添加省略号（如果不是紧挨着第一页）
+            if (startPage > 2) {
+              const ellipsisItem = document.createElement('li');
+              ellipsisItem.className = 'page-item disabled';
+              
+              const ellipsisLink = document.createElement('a');
+              ellipsisLink.className = 'page-link';
+              ellipsisLink.textContent = '...';
+              
+              ellipsisItem.appendChild(ellipsisLink);
+              paginationElement.appendChild(ellipsisItem);
+            }
+          }
+          
+          // 添加中间的页码按钮
+          for (let i = startPage; i <= endPage; i++) {
+            const pageItem = document.createElement('li');
+            pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            
+            const pageLink = document.createElement('a');
+            pageLink.className = 'page-link';
+            pageLink.href = '#';
+            pageLink.textContent = i;
+            
+            if (i !== currentPage) {
+              pageLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetchQuizHistory(i);
+              });
+            }
+            
+            pageItem.appendChild(pageLink);
+            paginationElement.appendChild(pageItem);
+          }
+          
+          // 添加最后一页按钮（如果不在可见范围内）
+          if (endPage < totalPages) {
+            // 添加省略号（如果不是紧挨着最后一页）
+            if (endPage < totalPages - 1) {
+              const ellipsisItem = document.createElement('li');
+              ellipsisItem.className = 'page-item disabled';
+              
+              const ellipsisLink = document.createElement('a');
+              ellipsisLink.className = 'page-link';
+              ellipsisLink.textContent = '...';
+              
+              ellipsisItem.appendChild(ellipsisLink);
+              paginationElement.appendChild(ellipsisItem);
+            }
+            
+            const lastItem = document.createElement('li');
+            lastItem.className = 'page-item';
+            
+            const lastLink = document.createElement('a');
+            lastLink.className = 'page-link';
+            lastLink.href = '#';
+            lastLink.textContent = totalPages;
+            
+            lastLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              fetchQuizHistory(totalPages);
+            });
+            
+            lastItem.appendChild(lastLink);
+            paginationElement.appendChild(lastItem);
+          }
+          
+          // 下一页按钮
+          const nextItem = document.createElement('li');
+          nextItem.className = `page-item ${currentPage >= totalPages ? 'disabled' : ''}`;
+          
+          const nextLink = document.createElement('a');
+          nextLink.className = 'page-link';
+          nextLink.href = '#';
+          nextLink.textContent = 'Next';
+          nextLink.setAttribute('aria-label', 'Next');
+          
+          if (currentPage < totalPages) {
+            nextLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              fetchQuizHistory(currentPage + 1);
+            });
+          }
+          
+          nextItem.appendChild(nextLink);
+          paginationElement.appendChild(nextItem);
+        }
+
+        // 查看测验详情
+        function viewQuiz(quizId) {
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          
+          // 显示加载中状态
+          showNotification(
+            "info",
+            "Loading",
+            "Loading quiz details..."
+          );
+          
+          // 调用API获取测验详情
+          fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}`, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            }
+          })
+          .then(response => {
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            if (result.isSuccess && result.data.ok === 1) {
+              // 成功获取数据
+              const quizData = result.data.data;
+              
+              // 导航到生成器页面
+              navigateTo("generator");
+              
+              // 显示测验内容
+              displayHistoryQuiz(quizData);
+            } else {
+              // 处理API错误
+              throw new Error(result.data.message || "Failed to fetch quiz details");
+            }
+          })
+          .catch(error => {
+            console.error("Failed to fetch quiz details:", error);
+            
+            showNotification(
+              "error",
+              "Loading Failed",
+              error.message || "An error occurred while loading quiz details. Please try again later."
+            );
+          });
+        }
+
+        // 显示历史测验内容
+        function displayHistoryQuiz(quizData) {
+          // 更新预览标题
+          document.getElementById("preview-title").textContent = 
+            `${quizData.grade_level} ${quizData.subject} ${quizData.make_comprehensive_test ? 'Comprehensive Test' : 'Quiz'}`;
+          
+          // 更新日期
+          const createdDate = new Date(quizData.created_at);
+          document.getElementById("preview-date").textContent = formatDate(createdDate);
+          
+          // 创建问题和答案容器
+          const container = document.getElementById("questions-container");
+          container.innerHTML = "";
+          
+          // 创建问题容器
+          const questionsDiv = document.createElement("div");
+          questionsDiv.className = "generated-questions";
+          questionsDiv.innerHTML = quizData.question;
+          
+          // 创建答案容器（默认隐藏）
+          const answersDiv = document.createElement("div");
+          answersDiv.className = "question-answer";
+          answersDiv.style.display = "none";
+          answersDiv.innerHTML = quizData.answer;
+          
+          // 添加到容器
+          container.appendChild(questionsDiv);
+          container.appendChild(answersDiv);
+          
+          // 隐藏占位符和加载指示器，显示内容
+          document.getElementById("preview-placeholder").style.display = "none";
+          document.getElementById("loading-indicator").style.display = "none";
+          document.getElementById("preview-content").style.display = "block";
+          
+          // 重置答案显示状态
+          showingAnswers = false;
+          document.getElementById("toggle-answers").innerHTML =
+            '<i class="fas fa-eye me-1"></i> Show Answers';
+        }
+
+        // 收藏/取消收藏测验
+        function toggleFavorite(quizId, makeFavorite) {
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          
+          // 准备API数据
+          const endpoint = makeFavorite ? 'favorite' : 'unfavorite';
+          
+          // 调用API
+          fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({})
+          })
+          .then(response => {
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            if (result.isSuccess && result.data.ok === 1) {
+              // 更新按钮状态
+              const button = document.querySelector(`.toggle-favorite-btn[data-quiz-id="${quizId}"]`);
+              if (button) {
+                button.setAttribute('data-is-favorite', makeFavorite);
+                button.innerHTML = `<i class="fas ${makeFavorite ? 'fa-star' : 'fa-star-o'} me-1"></i> ${makeFavorite ? 'Unfavorite' : 'Favorite'}`;
+              }
+              
+              showNotification(
+                "success",
+                makeFavorite ? "Added to Favorites" : "Removed from Favorites",
+                makeFavorite ? "Quiz has been added to favorites" : "Quiz has been removed from favorites"
+              );
+            } else {
+              throw new Error(result.data.message || (makeFavorite ? "Failed to add to favorites" : "Failed to remove from favorites"));
+            }
+          })
+          .catch(error => {
+            console.error(`Failed to ${makeFavorite ? 'favorite' : 'unfavorite'} quiz:`, error);
+            
+            showNotification(
+              "error",
+              makeFavorite ? "Favorite Failed" : "Unfavorite Failed",
+              error.message || "Operation failed. Please try again later."
+            );
+          });
+        }
+
+        // 确认删除测验
+        function confirmDeleteQuiz(quizId) {
+          // 使用Bootstrap确认对话框
+          if (confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
+            deleteQuiz(quizId);
+          }
+        }
+
+        // 删除测验
+        function deleteQuiz(quizId) {
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          
+          // 调用API
+          fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}`, {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            }
+          })
+          .then(response => {
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            if (result.isSuccess && result.data.ok === 1) {
+              // 从列表中移除测验
+              const quizElement = document.querySelector(`.generation-history-item[data-quiz-id="${quizId}"]`);
+              if (quizElement) {
+                quizElement.remove();
+              }
+              
+              // 如果列表为空，显示空状态
+              const historyList = document.querySelector('.generation-history-list');
+              if (historyList.children.length === 0) {
+                historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-inbox text-muted mb-3" style="font-size: 2.5rem"></i><p>No quiz history records</p><button class="btn btn-primary" id="create-new-quiz-from-history">Create New Quiz</button></div>';
+                
+                // 添加创建新测验按钮的事件监听
+                document.getElementById('create-new-quiz-from-history').addEventListener('click', goToGenerator);
+              }
+              
+              showNotification(
+                "success",
+                "Delete Successful",
+                "Quiz has been successfully deleted"
+              );
+            } else {
+              throw new Error(result.data.message || "Failed to delete quiz");
+            }
+          })
+          .catch(error => {
+            console.error("Failed to delete quiz:", error);
+            
+            showNotification(
+              "error",
+              "Delete Failed",
+              error.message || "An error occurred while deleting quiz. Please try again later."
+            );
+          });
+        }
+
+        // 添加搜索功能
+        document.addEventListener('DOMContentLoaded', function() {
+          const historySearchInput = document.getElementById('history-search');
+          if (historySearchInput) {
+            // 使用防抖函数减少频繁搜索
+            let searchTimeout;
+            historySearchInput.addEventListener('input', function() {
+              clearTimeout(searchTimeout);
+              searchTimeout = setTimeout(() => {
+                const searchTerm = this.value.trim().toLowerCase();
+                
+                // 如果搜索词太短，不执行搜索
+                if (searchTerm.length < 2 && searchTerm.length > 0) return;
+                
+                // 当输入为空时，重置为第一页
+                if (searchTerm.length === 0) {
+                  fetchQuizHistory(1);
+                  return;
+                }
+                
+                // 根据输入内容搜索
+                if (searchTerm.length >= 2) {
+                  // 根据搜索词过滤
+                  // 这里可以调用API，也可以在前端过滤，取决于API是否支持搜索参数
+                  fetchQuizHistory(1, 10, null, null, searchTerm);
+                }
+              }, 500); // 500ms防抖延迟
+            });
+          }
+        });
       </script>
     </body>
   </html>
