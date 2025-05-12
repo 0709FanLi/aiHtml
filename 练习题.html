@@ -3297,9 +3297,8 @@
             </div>
             <div class="col-lg-8 col-md-8 mb-4 mb-md-0">
               <ul class="footer-links d-flex justify-content-around align-items-center" style="position: relative;top:50%;">
-                <li class="me-4"><a href="#" id="terms-link">Terms of Service</a></li>
-                <li class="me-4"><a href="#" id="privacy-link">Privacy Policy</a></li>
-                <li><a href="#" id="cookie-link">Cookie Policy</a></li>
+                <li class="me-4"><a href="#" id="terms-link" onclick="openTermsModal(event)">Terms of Service</a></li>
+                <li class="me-4"><a href="#" id="privacy-link" onclick="openPrivacyModal(event)">Privacy Policy</a></li>
               </ul>
             </div>
           </div>
@@ -3319,7 +3318,7 @@
             </div>
             <div class="modal-body">
               <h4>QuizCraft AI Terms of Service</h4>
-              <p>Last Updated: February 15, 2024</p>
+              <p>Last Updated: February 15, 2025</p>
               
               <h5>1. Introduction</h5>
               <p>Welcome to QuizCraft AI. These Terms of Service ("Terms") govern your access to and use of the QuizCraft AI platform, including our website at www.quizcraftai.com, our mobile applications, and all related services (collectively, the "Service"). By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of the Terms, you do not have permission to access the Service.</p>
@@ -3409,7 +3408,7 @@
             </div>
             <div class="modal-body">
               <h4>QuizCraft AI Privacy Policy</h4>
-              <p>Last Updated: February 15, 2024</p>
+              <p>Last Updated: February 15, 2025</p>
               
               <h5>1. Introduction</h5>
               <p>At QuizCraft AI, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this Privacy Policy carefully. If you do not agree with the terms of this Privacy Policy, please do not access the Service.</p>
@@ -3484,7 +3483,7 @@
             </div>
             <div class="modal-body">
               <h4>QuizCraft AI Cookie Policy</h4>
-              <p>Last Updated: February 15, 2024</p>
+              <p>Last Updated: February 15, 2025</p>
               
               <h5>1. What Are Cookies?</h5>
               <p>Cookies are small text files that are placed on your computer or mobile device when you visit a website. They are widely used to make websites work more efficiently and provide useful information to website owners.</p>
@@ -3608,6 +3607,7 @@
                       required
                       oninvalid="this.setCustomValidity('Please enter your email address')"
                       oninput="this.setCustomValidity('')"
+                      placeholder="Please use English characters"
                     />
                   </div>
                   <div class="mb-3">
@@ -3621,6 +3621,7 @@
                       required
                       oninvalid="this.setCustomValidity('Please enter your password')"
                       oninput="this.setCustomValidity('')"
+                      placeholder="Please use English characters"
                     />
                   </div>
                   <div class="mb-3 form-check">
@@ -3635,6 +3636,21 @@
                     <a href="#" class="float-end" id="forgot-password"
                       >Forgot password?</a
                     >
+                  </div>
+                  <div class="mb-3 form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="login-agree-terms"
+                      required
+                      oninvalid="this.setCustomValidity('Please accept the Terms of Service and Privacy Policy')"
+                      oninput="this.setCustomValidity('')"
+                    />
+                    <label class="form-check-label" for="login-agree-terms">
+                      I agree to the
+                      <a href="#" id="login-terms-link" onclick="openTermsModal(event)">Terms of Service</a> and
+                      <a href="#" id="login-privacy-link" onclick="openPrivacyModal(event)">Privacy Policy</a>
+                    </label>
                   </div>
                   <button
                     type="submit"
@@ -4609,10 +4625,20 @@
             setupRouting();
           }
           
-          // 手动添加模态框事件监听器，确保它们在页面加载后正确初始化
+          // 手动添加Terms和Privacy点击事件
           document.getElementById("terms-link").addEventListener("click", openTermsModal);
           document.getElementById("privacy-link").addEventListener("click", openPrivacyModal);
-          document.getElementById("cookie-link").addEventListener("click", openCookieModal);
+          
+          // 确保登录表单中的条款链接也正常工作
+          const loginTermsLink = document.getElementById("login-terms-link");
+          if (loginTermsLink) {
+            loginTermsLink.addEventListener("click", openTermsModal);
+          }
+          
+          const loginPrivacyLink = document.getElementById("login-privacy-link");
+          if (loginPrivacyLink) {
+            loginPrivacyLink.addEventListener("click", openPrivacyModal);
+          }
         });
 
         // ===== EVENT LISTENERS =====
@@ -4636,6 +4662,14 @@
           document
             .getElementById("logout-button")
             .addEventListener("click", handleLogout);
+
+          // 添加中文输入检测
+          const inputFields = document.querySelectorAll('input[type="email"], input[type="password"], input[type="text"]');
+          inputFields.forEach(field => {
+            field.addEventListener('input', function() {
+              checkChineseInput(this);
+            });
+          });
 
           // Password strength meter
           document
@@ -4780,10 +4814,10 @@
             .getElementById("privacy-link")
             .addEventListener("click", openPrivacyModal);
             
-          // Cookie Policy link
-          document
-            .getElementById("cookie-link")
-            .addEventListener("click", openCookieModal);
+          // 移除对不存在的cookie-link元素的引用
+          // document
+          //   .getElementById("cookie-link")
+          //   .addEventListener("click", openCookieModal);
         }
 
         // ===== UI HANDLERS =====
@@ -5083,46 +5117,65 @@
         function handleLogin(e) {
           e.preventDefault();
 
-          // 获取表单和可能的错误消息元素
+          // 获取表单和错误信息元素
           const loginForm = document.getElementById("login-form-element");
           
-          // 隐藏可能存在的错误消息
-          const possibleErrorElement = loginForm.querySelector(".alert");
-          if (possibleErrorElement) {
-            possibleErrorElement.classList.add("d-none");
-          }
-          
-          // 获取用户输入
+          // 获取输入值
           const email = document.getElementById("login-email").value.trim();
           const password = document.getElementById("login-password").value;
           const rememberMe = document.getElementById("remember-me").checked;
-
+          
+          // 检查是否同意条款
+          const agreeTerms = document.getElementById("login-agree-terms").checked;
+          if (!agreeTerms) {
+            // 创建错误提示（如果不存在）
+            let errorMessageElement = loginForm.querySelector(".alert");
+            if (!errorMessageElement) {
+              errorMessageElement = document.createElement("div");
+              errorMessageElement.className = "alert alert-danger mt-3";
+              errorMessageElement.setAttribute("role", "alert");
+              const submitButton = document.getElementById("login-submit");
+              loginForm.insertBefore(errorMessageElement, submitButton.parentNode);
+            } else {
+              errorMessageElement.classList.remove("d-none");
+            }
+            
+            // 设置错误信息
+            errorMessageElement.textContent = "Please agree to our Terms of Service and Privacy Policy to continue.";
+            
+            // 显示通知
+            showNotification(
+              "error",
+              "Login Failed",
+              "Please agree to our Terms of Service and Privacy Policy to continue."
+            );
+            return;
+          }
+          
           // 基本验证
-          let isValid = true;
-          
-          // 验证邮箱
-          if (!email || !isValidEmail(email)) {
-            const emailInput = document.getElementById("login-email");
-            emailInput.classList.add("is-invalid");
-            isValid = false;
+          if (!email || !password) {
+            showNotification(
+              "error",
+              "Login Failed",
+              "Please enter both email and password."
+            );
+            return;
           }
-          
-          // 验证密码
-          if (!password) {
-            const passwordInput = document.getElementById("login-password");
-            passwordInput.classList.add("is-invalid");
-            isValid = false;
-          }
-          
-          // 如果验证失败，停止提交
-          if (!isValid) {
+
+          // 提醒使用英文
+          if (/[\u4e00-\u9fa5]/.test(email) || /[\u4e00-\u9fa5]/.test(password)) {
+            showNotification(
+              "warning", 
+              "Language Notice", 
+              "Please use English characters for login credentials."
+            );
             return;
           }
           
           // 使用MD5加密密码
           const md5Password = md5(password);
           
-          // 准备API数据
+          // 准备API请求数据
           const loginData = {
             email: email,
             password: md5Password
@@ -6154,19 +6207,19 @@
 
         function openTermsModal(event) {
           if (event) event.preventDefault();
-          const modal = new bootstrap.Modal(document.getElementById("terms-modal"));
+          const modal = new bootstrap.Modal(document.getElementById("termsModal"));
           modal.show();
         }
         
         function openPrivacyModal(event) {
           if (event) event.preventDefault();
-          const modal = new bootstrap.Modal(document.getElementById("privacy-modal"));
+          const modal = new bootstrap.Modal(document.getElementById("privacyModal"));
           modal.show();
         }
         
         function openCookieModal(event) {
           if (event) event.preventDefault();
-          const modal = new bootstrap.Modal(document.getElementById("cookie-modal"));
+          const modal = new bootstrap.Modal(document.getElementById("cookieModal"));
           modal.show();
         }
 
@@ -7584,6 +7637,27 @@
           // 显示登录模态框
           const authModal = new bootstrap.Modal(document.getElementById("authModal"));
           authModal.show();
+        }
+
+        // 添加检测中文输入的函数
+        function checkChineseInput(inputElement) {
+          // 检查输入是否包含中文字符
+          if (/[\u4e00-\u9fa5]/.test(inputElement.value)) {
+            // 如果没有警告提示，添加一个
+            if (!inputElement.nextElementSibling || !inputElement.nextElementSibling.classList.contains('text-warning')) {
+              const warningElement = document.createElement('small');
+              warningElement.className = 'text-warning d-block mt-1';
+              warningElement.textContent = 'Please use English characters';
+              inputElement.parentNode.insertBefore(warningElement, inputElement.nextSibling);
+              
+              // 3秒后自动隐藏提示
+              setTimeout(() => {
+                if (warningElement.parentNode) {
+                  warningElement.parentNode.removeChild(warningElement);
+                }
+              }, 3000);
+            }
+          }
         }
       </script>
       
