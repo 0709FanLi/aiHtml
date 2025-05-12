@@ -4364,6 +4364,12 @@
         let showingAnswers = false;
         let generatedQuestions = [];
 
+        // 历史记录全局变量
+        let allHistoryItems = [];
+        let currentHistoryPage = 1;
+        let totalHistoryPages = 1;
+        let totalHistoryItems = 0;
+
         // ===== UTILITY FUNCTIONS =====
         function showNotification(type, title, message, duration = 3000) {
           const notification = document.getElementById("notification");
@@ -6323,6 +6329,9 @@
 
         // 获取测验历史记录
         function fetchQuizHistory(page = 1, pageSize = 10, subject = null, gradeLevel = null) {
+          // 保存当前页码
+          currentHistoryPage = page;
+          
           // 显示加载状态
           const historyList = document.querySelector('.generation-history-list');
           historyList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Loading history records...</p></div>';
@@ -6378,6 +6387,11 @@
             if (result.isSuccess && result.data.ok === 1) {
               // 成功获取数据
               const responseData = result.data.data;
+              
+              // 保存历史记录数据供本地搜索使用
+              allHistoryItems = responseData.items;
+              totalHistoryPages = responseData.pages;
+              totalHistoryItems = responseData.total;
               
               // 显示历史记录
               renderHistoryItems(responseData.items);
@@ -6537,10 +6551,16 @@
           // 清空分页控件
           paginationElement.innerHTML = '';
           
-          // 显示总条数
+          // 显示总条数 - 只显示一次
           const listInfoElement = document.createElement('div');
           listInfoElement.className = 'pagination-info text-secondary mb-2 text-center';
           listInfoElement.textContent = `Total ${totalItems} records, ${totalPages} pages`;
+          
+          // 先移除所有可能存在的旧信息元素
+          const oldInfoElements = document.querySelectorAll('.pagination-info');
+          oldInfoElements.forEach(element => element.remove());
+          
+          // 添加新的信息元素
           paginationElement.parentNode.insertBefore(listInfoElement, paginationElement);
           
           // 上一页按钮
@@ -6902,17 +6922,65 @@
                 // 如果搜索词太短，不执行搜索
                 if (searchTerm.length < 2 && searchTerm.length > 0) return;
                 
-                // 当输入为空时，重置为第一页
+                // 当输入为空时，恢复显示所有记录
                 if (searchTerm.length === 0) {
-                  fetchQuizHistory(1);
+                  // 使用原始数据恢复显示
+                  renderHistoryItems(allHistoryItems);
+                  renderPagination(currentHistoryPage, totalHistoryPages, totalHistoryItems);
                   return;
                 }
                 
-                // 根据输入内容搜索
+                // 根据输入内容在本地进行模糊搜索
                 if (searchTerm.length >= 2) {
-                  // 根据搜索词过滤
-                  // 这里可以调用API，也可以在前端过滤，取决于API是否支持搜索参数
-                  fetchQuizHistory(1, 10, null, null, searchTerm);
+                  // 在本地进行搜索匹配
+                  const filteredItems = allHistoryItems.filter(item => {
+                    // 在多个字段中搜索匹配项
+                    return (
+                      (item.subject && item.subject.toLowerCase().includes(searchTerm)) ||
+                      (item.grade_level && item.grade_level.toLowerCase().includes(searchTerm)) ||
+                      (item.difficulty_level && item.difficulty_level.toLowerCase().includes(searchTerm)) ||
+                      (item.question && item.question.toLowerCase().includes(searchTerm))
+                    );
+                  });
+                  
+                  // 显示筛选后的结果
+                  renderHistoryItems(filteredItems);
+                  
+                  // 更新分页信息
+                  const tempPagination = document.querySelector('.pagination');
+                  if (tempPagination) {
+                    // 更新信息显示
+                    const listInfoElement = document.createElement('div');
+                    listInfoElement.className = 'pagination-info text-secondary mb-2 text-center';
+                    
+                    // 先移除所有可能存在的旧信息元素
+                    const oldInfoElements = document.querySelectorAll('.pagination-info');
+                    oldInfoElements.forEach(element => element.remove());
+                    
+                    // 如果有搜索结果，显示数量信息
+                    if (filteredItems.length > 0) {
+                      listInfoElement.textContent = `Found ${filteredItems.length} matching records`;
+                      tempPagination.parentNode.insertBefore(listInfoElement, tempPagination);
+                      
+                      // 在搜索模式下隐藏分页控件
+                      tempPagination.innerHTML = '';
+                    } else {
+                      // 如果没有搜索结果
+                      const historyList = document.querySelector('.generation-history-list');
+                      historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-search text-muted mb-3" style="font-size: 2.5rem"></i><p>No matching records found</p><button class="btn btn-outline-primary" id="clear-search">Clear Search</button></div>';
+                      
+                      // 添加清除搜索按钮事件
+                      document.getElementById('clear-search').addEventListener('click', function() {
+                        historySearchInput.value = '';
+                        // 恢复原始数据显示
+                        renderHistoryItems(allHistoryItems);
+                        renderPagination(currentHistoryPage, totalHistoryPages, totalHistoryItems);
+                      });
+                      
+                      // 隐藏分页控件
+                      tempPagination.innerHTML = '';
+                    }
+                  }
                 }
               }, 500); // 500ms防抖延迟
             });
