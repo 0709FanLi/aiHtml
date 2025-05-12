@@ -6796,18 +6796,29 @@
           // 获取访问令牌
           const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
           
-          // 准备API数据
-          const endpoint = makeFavorite ? 'favorite' : 'unfavorite';
+          // 准备请求体数据
+          const requestBody = {
+            quiz_id: quizId,
+            is_favorite: makeFavorite
+          };
+          
+          // 显示加载中状态
+          const button = document.querySelector(`.toggle-favorite-btn[data-quiz-id="${quizId}"]`);
+          if (button) {
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Loading...';
+          }
           
           // 调用API
-          fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}/${endpoint}`, {
+          fetch('http://web.practicesnow.com/api/v1/quiz/favorite', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'Authorization': `Bearer ${accessToken}`
             },
-            body: JSON.stringify({})
+            body: JSON.stringify(requestBody)
           })
           .then(response => {
             const isSuccess = response.status >= 200 && response.status < 300;
@@ -6818,10 +6829,16 @@
           .then(result => {
             if (result.isSuccess && result.data.ok === 1) {
               // 更新按钮状态
-              const button = document.querySelector(`.toggle-favorite-btn[data-quiz-id="${quizId}"]`);
               if (button) {
+                button.disabled = false;
                 button.setAttribute('data-is-favorite', makeFavorite);
                 button.innerHTML = `<i class="fas ${makeFavorite ? 'fa-star' : 'fa-star-o'} me-1"></i> ${makeFavorite ? 'Unfavorite' : 'Favorite'}`;
+              }
+              
+              // 更新本地数据中的收藏状态
+              const itemIndex = allHistoryItems.findIndex(item => item.id == quizId);
+              if (itemIndex !== -1) {
+                allHistoryItems[itemIndex].is_favorite = makeFavorite;
               }
               
               showNotification(
@@ -6830,11 +6847,23 @@
                 makeFavorite ? "Quiz has been added to favorites" : "Quiz has been removed from favorites"
               );
             } else {
+              // 恢复按钮状态
+              if (button) {
+                button.disabled = false;
+                button.innerHTML = `<i class="fas ${!makeFavorite ? 'fa-star' : 'fa-star-o'} me-1"></i> ${!makeFavorite ? 'Unfavorite' : 'Favorite'}`;
+              }
+              
               throw new Error(result.data.message || (makeFavorite ? "Failed to add to favorites" : "Failed to remove from favorites"));
             }
           })
           .catch(error => {
             console.error(`Failed to ${makeFavorite ? 'favorite' : 'unfavorite'} quiz:`, error);
+            
+            // 恢复按钮状态
+            if (button) {
+              button.disabled = false;
+              button.innerHTML = `<i class="fas ${!makeFavorite ? 'fa-star' : 'fa-star-o'} me-1"></i> ${!makeFavorite ? 'Unfavorite' : 'Favorite'}`;
+            }
             
             showNotification(
               "error",
