@@ -5488,6 +5488,18 @@
           });
         }
 
+        document.addEventListener('DOMContentLoaded', function() {
+          const forgotPasswordLink = document.getElementById('forgot-password');
+          if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              // 打开重置密码模态框
+              const resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+              resetModal.show();
+            });
+          }
+        });
+
         // ===== GENERATOR FUNCTIONS =====
         function handleGenerate(e) {
           e.preventDefault();
