@@ -3543,17 +3543,6 @@
 
               <!-- Register Form -->
               <div id="register-form" style="display: none">
-                <!-- <div class="mb-4">
-                  <button class="social-login-btn google-btn">
-                    <i class="fab fa-google"></i> Continue with Google
-                  </button>
-                  <button class="social-login-btn facebook-btn">
-                    <i class="fab fa-facebook-f"></i> Continue with Facebook
-                  </button>
-                </div>
-                <div class="text-center mb-4">
-                  <span class="text-muted">or register with email</span>
-                </div> -->
                 <form id="register-form-element">
                   <div class="mb-3">
                     <label for="register-name" class="form-label"
@@ -4035,6 +4024,7 @@
         tabindex="-1"
         aria-labelledby="resetPasswordModalLabel"
         aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false"
       >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
@@ -4085,11 +4075,11 @@
                 </div>
                 
                 <div class="mb-3 password-section">
-                  <label for="new-password" class="form-label">New Password</label>
+                  <label for="reset-new-password" class="form-label">New Password</label>
                   <input
                     type="password"
                     class="form-control"
-                    id="new-password"
+                    id="reset-new-password"
                     required
                     oninvalid="this.setCustomValidity('Please enter your new password')"
                     oninput="this.setCustomValidity('')"
@@ -4108,11 +4098,11 @@
                 </div>
                 
                 <div class="mb-3 password-section">
-                  <label for="confirm-new-password" class="form-label">Confirm New Password</label>
+                  <label for="reset-confirm-new-password" class="form-label">Confirm New Password</label>
                   <input
                     type="password"
                     class="form-control"
-                    id="confirm-new-password"
+                    id="reset-confirm-new-password"
                     required
                     oninvalid="this.setCustomValidity('Please confirm your new password')"
                     oninput="this.setCustomValidity('')"
@@ -4975,6 +4965,116 @@
           });
         }
 
+        
+        document.addEventListener('DOMContentLoaded', function() {
+          // 获取验证码
+          const sendCodeBtn = document.getElementById('send-code-btn');
+          const resetEmailInput = document.getElementById('reset-email');
+          const verificationFeedback = document.getElementById('verification-feedback');
+          if (sendCodeBtn && resetEmailInput) {
+            sendCodeBtn.addEventListener('click', function() {
+              const email = resetEmailInput.value.trim();
+              if (!email) {
+                verificationFeedback.textContent = 'Please enter your email address.';
+                verificationFeedback.classList.add('text-danger');
+                return;
+              }
+              // 获取token
+              const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+              sendCodeBtn.disabled = true;
+              sendCodeBtn.textContent = 'Sending...';
+              fetch('http://web.practicesnow.com/api/v1/auth/email-verification', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ email })
+              })
+              .then(response => response.json().then(data => ({ ok: response.ok, data })))
+              .then(result => {
+                if (result.ok && result.data.ok === 1) {
+                  verificationFeedback.textContent = 'Verification code sent to your email.';
+                  verificationFeedback.classList.remove('text-danger');
+                  verificationFeedback.classList.add('text-success');
+                } else {
+                  verificationFeedback.textContent = result.data.message || 'Failed to send code.';
+                  verificationFeedback.classList.add('text-danger');
+                }
+              })
+              .catch(err => {
+                verificationFeedback.textContent = 'Network error, please try again.';
+                verificationFeedback.classList.add('text-danger');
+              })
+              .finally(() => {
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.textContent = 'Get Code';
+              });
+            });
+          }
+
+          // 重置密码
+          const resetPasswordForm = document.getElementById('reset-password-form');
+          if (resetPasswordForm) {
+            resetPasswordForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              const email = document.getElementById('reset-email').value.trim();
+              const code = document.getElementById('verification-code').value.trim();
+              const password = document.getElementById('reset-new-password').value;
+              const passwordConfirm = document.getElementById('reset-confirm-new-password').value;
+              if (!email || !code || !password || !passwordConfirm) {
+                showNotification('error', 'Error', 'Please fill in all fields.');
+                return;
+              }
+              if (password !== passwordConfirm) {
+                showNotification('error', 'Error', 'Passwords do not match.');
+                return;
+              }
+              // 获取token
+              const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+              // md5加密
+              const md5Password = md5(password);
+              const md5PasswordConfirm = md5(passwordConfirm);
+              const submitBtn = document.getElementById('reset-password-submit');
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Resetting...';
+              fetch('http://web.practicesnow.com/api/v1/auth/forgot-password', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                  email,
+                  verification_code: code,
+                  password: md5Password,
+                  password_confirm: md5PasswordConfirm
+                })
+              })
+              .then(response => response.json().then(data => ({ ok: response.ok, data })))
+              .then(result => {
+                if (result.ok && result.data.ok === 1) {
+                  showNotification('success', 'Success', 'Password reset successfully, please login.');
+                  // 关闭弹窗
+                  const resetModal = bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal'));
+                  if (resetModal) resetModal.hide();
+                } else {
+                  showNotification('error', 'Error', result.data.message || 'Failed to reset password.');
+                }
+              })
+              .catch(err => {
+                showNotification('error', 'Error', 'Network error, please try again.');
+              })
+              .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Reset Password';
+              });
+            });
+          }
+        });
+
         function updateUIForLoggedInUser() {
           // 确保用户确实已登录
           if (!isLoggedIn || !currentUser) {
@@ -5514,8 +5614,8 @@
 
             // Open pricing page
             navigateTo("pricing");
-            return;
-          }
+                return;
+              }
 
           // Get form values
           const gradeSelect = document.getElementById("grade-select");
@@ -5632,16 +5732,16 @@
           document.getElementById("preview-content").style.display = "none";
 
           // 获取 accessToken
-          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+              const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
 
           // 调用API生成测验
           fetch('http://web.practicesnow.com/api/v1/quiz/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            },
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${accessToken}`
+                },
             body: JSON.stringify(requestData)
           })
           .then(response => {
@@ -5651,7 +5751,7 @@
               return { isSuccess, data, status: response.status };
             });
           })
-          .then(result => {
+              .then(result => {
             console.log("API Result:", result);
             if (result.isSuccess && result.data.ok === 1) {
               // 生成成功
@@ -5691,7 +5791,7 @@
                   "Quiz Generated",
                   `Quiz generated successfully. You have ${currentUser.remainingGenerations} generations remaining.`
                 );
-              } else {
+                } else {
                 showNotification(
                   "success",
                   "Quiz Generated",
@@ -6247,8 +6347,8 @@
               "Update Failed",
               error.message || "An error occurred while updating your profile."
             );
-          })
-          .finally(() => {
+              })
+              .finally(() => {
             // 恢复按钮状态
             updateButton.disabled = false;
             updateButton.innerHTML = originalButtonText;
@@ -6256,7 +6356,7 @@
         }
         
         function handlePasswordUpdate(e) {
-          e.preventDefault();
+              e.preventDefault();
 
           // Get form values
           const currentPassword =
@@ -6272,8 +6372,8 @@
               "Password Update Failed",
               "Current password is incorrect."
             );
-            return;
-          }
+                return;
+              }
 
           if (newPassword !== confirmPassword) {
             showNotification(
@@ -6281,8 +6381,8 @@
               "Password Update Failed",
               "New passwords do not match."
             );
-            return;
-          }
+                return;
+              }
           
           if (newPassword.length < 8) {
             showNotification(
@@ -6337,7 +6437,7 @@
           if (gradeLevel) requestData.grade_level = gradeLevel;
           
           // 获取访问令牌 - 确保从localStorage和sessionStorage都尝试获取
-          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+              const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
           
           // 检查令牌是否有效并且用户是否登录
           if (!accessToken || !isLoggedIn) {
@@ -6354,12 +6454,12 @@
           
           // 发起请求获取历史记录 - 改为POST方法
           fetch('http://web.practicesnow.com/api/v1/quiz/list', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            },
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${accessToken}`
+                },
             body: JSON.stringify(requestData)
           })
           .then(response => {
@@ -6370,7 +6470,7 @@
               return { isSuccess, data, status: response.status };
             });
           })
-          .then(result => {
+              .then(result => {
             console.log("result-history",result);
             if (result.isSuccess && result.data.ok === 1) {
               // 成功获取数据
@@ -6397,7 +6497,7 @@
             } else if (result.status === 401) {
               // 如果是401认证问题，尝试自动刷新登录
               refreshTokenAndRetry(() => fetchQuizHistory(page, pageSize, subject, gradeLevel));
-            } else {
+                } else {
               // 处理API错误
               let errorMessage = result.data.message || "Failed to fetch history records";
               
