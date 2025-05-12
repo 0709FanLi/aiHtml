@@ -1,42 +1,42 @@
 /**
- * 修改密码功能实现
- * 包含表单验证、MD5加密和API调用
+ * Change Password functionality
+ * Including form validation, MD5 encryption, and API calls
  */
 
 document.addEventListener("DOMContentLoaded", function () {
   const passwordForm = document.getElementById("password-form");
 
   if (passwordForm) {
-    // 密码强度监听
+    // Password strength monitoring
     const newPasswordInput = document.getElementById("new-password");
     if (newPasswordInput) {
       newPasswordInput.addEventListener("input", updatePasswordStrength);
     }
 
-    // 表单提交监听
+    // Form submission listener
     passwordForm.addEventListener("submit", handlePasswordUpdate);
   }
 });
 
 /**
- * 处理密码更新
- * @param {Event} e - 表单提交事件
+ * Handle password update
+ * @param {Event} e - Form submission event
  */
 function handlePasswordUpdate(e) {
   e.preventDefault();
 
-  // 获取表单值
+  // Get form values
   const currentPassword = document.getElementById("current-password").value;
   const newPassword = document.getElementById("new-password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
 
-  // 表单验证
+  // Form validation
   if (!currentPassword || !newPassword || !confirmPassword) {
     showNotification("error", "Form Error", "All password fields are required");
     return;
   }
 
-  // 密码长度验证
+  // Password length validation
   if (newPassword.length < 8) {
     showNotification(
       "error",
@@ -46,7 +46,7 @@ function handlePasswordUpdate(e) {
     return;
   }
 
-  // 密码复杂度验证 (至少包含一个大写字母、一个数字和一个特殊字符)
+  // Password complexity validation (at least one uppercase letter, one number, and one special character)
   const passwordStrength = calculatePasswordStrength(newPassword);
   if (passwordStrength.score < 3) {
     showNotification(
@@ -57,7 +57,7 @@ function handlePasswordUpdate(e) {
     return;
   }
 
-  // 新密码与确认密码匹配验证
+  // New password and confirmation match validation
   if (newPassword !== confirmPassword) {
     showNotification(
       "error",
@@ -67,14 +67,14 @@ function handlePasswordUpdate(e) {
     return;
   }
 
-  // 准备提交数据 (使用MD5加密密码)
+  // Prepare submission data (using MD5 encryption for password)
   const passwordData = {
     current_password: md5(currentPassword),
     new_password: md5(newPassword),
     password_confirm: md5(confirmPassword),
   };
 
-  // 更新按钮状态
+  // Update button state
   const submitButton = document.querySelector(
     '#password-form button[type="submit"]'
   );
@@ -83,7 +83,7 @@ function handlePasswordUpdate(e) {
   submitButton.innerHTML =
     '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
 
-  // 调用API更新密码
+  // Call API to update password
   fetch("http://web.practicesnow.com/api/v1/user/change-password", {
     method: "POST",
     credentials: "omit",
@@ -140,19 +140,23 @@ function handlePasswordUpdate(e) {
       }
     })
     .catch((error) => {
-      console.error("密码更新错误:", error);
-      showNotification("error", "密码更新失败", "网络错误或服务器无响应");
+      console.error("Password update error:", error);
+      showNotification(
+        "error",
+        "Password Update Failed",
+        "Network error or server not responding"
+      );
     })
     .finally(() => {
-      // 恢复按钮状态
+      // Restore button state
       submitButton.disabled = false;
       submitButton.innerHTML = originalButtonText;
     });
 }
 
 /**
- * 更新密码强度指示器
- * @param {Event} e - 输入事件
+ * Update password strength indicator
+ * @param {Event} e - Input event
  */
 function updatePasswordStrength(e) {
   const password = e.target.value;
@@ -162,10 +166,10 @@ function updatePasswordStrength(e) {
 
   if (!progressBar || !feedback) return;
 
-  // 更新进度条
+  // Update progress bar
   progressBar.style.width = `${strength.score * 25}%`;
 
-  // 设置适当的颜色
+  // Set appropriate color
   progressBar.className = "progress-bar";
   if (strength.score <= 1) {
     progressBar.classList.add("bg-danger");
@@ -177,14 +181,14 @@ function updatePasswordStrength(e) {
     progressBar.classList.add("bg-success");
   }
 
-  // 更新反馈文本
+  // Update feedback text
   feedback.textContent = strength.feedback;
 }
 
 /**
- * 计算密码强度
- * @param {string} password - 密码
- * @returns {{score: number, feedback: string}} - 密码强度评分和反馈
+ * Calculate password strength
+ * @param {string} password - Password
+ * @returns {{score: number, feedback: string}} - Password strength score and feedback
  */
 function calculatePasswordStrength(password) {
   let score = 0;
@@ -192,15 +196,15 @@ function calculatePasswordStrength(password) {
 
   if (!password) return { score, feedback };
 
-  // 长度检查
+  // Length check
   if (password.length >= 8) score++;
 
-  // 复杂度检查
+  // Complexity check
   if (password.match(/[A-Z]/)) score++;
   if (password.match(/[0-9]/)) score++;
   if (password.match(/[^A-Za-z0-9]/)) score++;
 
-  // 设置反馈
+  // Set feedback
   if (score === 1) feedback = "Password is weak";
   else if (score === 2) feedback = "Password is moderate";
   else if (score === 3) feedback = "Password is strong";
@@ -210,18 +214,18 @@ function calculatePasswordStrength(password) {
 }
 
 /**
- * 获取用户认证令牌
- * @returns {string|null} - JWT令牌或null
+ * Get user authentication token
+ * @returns {string|null} - JWT token or null
  */
 function getToken() {
-  // 直接从localStorage获取accessToken
+  // Directly get accessToken from localStorage
   const accessToken = localStorage.getItem("accessToken");
   return accessToken || null;
 }
 
 /**
- * 获取认证头信息
- * @returns {string} - 认证头字符串
+ * Get authentication header information
+ * @returns {string} - Authentication header string
  */
 function getAuthHeader() {
   const token = getToken();
@@ -229,8 +233,8 @@ function getAuthHeader() {
 }
 
 /**
- * 从存储中获取当前用户
- * @returns {Object|null} - 用户对象或null
+ * Get current user from storage
+ * @returns {Object|null} - User object or null
  */
 function getUserFromStorage() {
   const userFromLocal = localStorage.getItem("currentUser");
@@ -240,14 +244,14 @@ function getUserFromStorage() {
     try {
       return JSON.parse(userFromLocal);
     } catch (e) {
-      console.error("解析用户数据错误:", e);
+      console.error("Parsing user data error:", e);
       return null;
     }
   } else if (userFromSession) {
     try {
       return JSON.parse(userFromSession);
     } catch (e) {
-      console.error("解析用户数据错误:", e);
+      console.error("Parsing user data error:", e);
       return null;
     }
   }
@@ -256,8 +260,8 @@ function getUserFromStorage() {
 }
 
 /**
- * 更新存储中的用户信息
- * @param {Object} user - 用户对象
+ * Update user information in storage
+ * @param {Object} user - User object
  */
 function updateUserInStorage(user) {
   if (localStorage.getItem("currentUser")) {
@@ -268,19 +272,19 @@ function updateUserInStorage(user) {
 }
 
 /**
- * 显示通知
- * @param {string} type - 通知类型 (success, error, warning, info)
- * @param {string} title - 通知标题
- * @param {string} message - 通知消息
+ * Show notification
+ * @param {string} type - Notification type (success, error, warning, info)
+ * @param {string} title - Notification title
+ * @param {string} message - Notification message
  */
 function showNotification(type, title, message) {
   if (typeof showToast === "function") {
-    // 如果有现成的通知函数，使用它
+    // If there's an existing notification function, use it
     showToast(message, type);
     return;
   }
 
-  // 创建自定义通知
+  // Create custom notification
   const notification = document.createElement("div");
   notification.className = `notification notification-${type} show`;
 
@@ -294,7 +298,7 @@ function showNotification(type, title, message) {
 
   document.body.appendChild(notification);
 
-  // 关闭按钮事件
+  // Close button event
   const closeButton = notification.querySelector(".notification-close");
   closeButton.addEventListener("click", () => {
     notification.classList.remove("show");
@@ -303,7 +307,7 @@ function showNotification(type, title, message) {
     }, 300);
   });
 
-  // 自动关闭通知
+  // Auto close notification
   setTimeout(() => {
     notification.classList.remove("show");
     setTimeout(() => {
