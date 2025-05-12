@@ -3087,23 +3087,9 @@
                                   class="form-control"
                                   id="profile-email"
                                   value="john.doe@example.com"
+                                  readonly
                                 />
-                              </div>
-                              <div class="mb-3">
-                                <label for="profile-role" class="form-label"
-                                  >Role</label
-                                >
-                                <select class="form-select" id="profile-role">
-                                  <option value="teacher" selected>
-                                    Teacher
-                                  </option>
-                                  <option value="student">Student</option>
-                                  <option value="parent">Parent</option>
-                                  <option value="administrator">
-                                    Administrator
-                                  </option>
-                                  <option value="other">Other</option>
-                                </select>
+                                <small class="text-muted">Email address cannot be changed</small>
                               </div>
                               <button type="submit" class="btn btn-primary">
                                 Update Profile
@@ -3160,113 +3146,6 @@
                               </div>
                               <button type="submit" class="btn btn-primary">
                                 Change Password
-                              </button>
-                            </form>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6 mb-4">
-                        <div class="card">
-                          <div class="card-body">
-                            <h5 class="card-title mb-3">
-                              Subscription Details
-                            </h5>
-                            <div class="mb-3">
-                              <p class="mb-1">
-                                <strong>Current Plan:</strong>
-                                <span class="text-primary">Premium</span>
-                              </p>
-                              <p class="mb-1">
-                                <strong>Billing Cycle:</strong> One-time
-                                purchase
-                              </p>
-                              <p class="mb-1">
-                                <strong>Purchase Date:</strong> August 5, 2023
-                              </p>
-                              <p class="mb-1">
-                                <strong>Generations:</strong> 18/30 remaining
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              class="btn btn-outline-primary"
-                              id="view-plans-btn"
-                            >
-                              View Plans
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6 mb-4">
-                        <div class="card">
-                          <div class="card-body">
-                            <h5 class="card-title mb-3">Preferences</h5>
-                            <form id="preferences-form">
-                              <div class="mb-3">
-                                <label class="form-label d-block"
-                                  >Email Notifications</label
-                                >
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="notification-updates"
-                                    checked
-                                  />
-                                  <label
-                                    class="form-check-label"
-                                    for="notification-updates"
-                                  >
-                                    Product updates and announcements
-                                  </label>
-                                </div>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="notification-tips"
-                                    checked
-                                  />
-                                  <label
-                                    class="form-check-label"
-                                    for="notification-tips"
-                                  >
-                                    Educational tips and resources
-                                  </label>
-                                </div>
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="notification-special"
-                                  />
-                                  <label
-                                    class="form-check-label"
-                                    for="notification-special"
-                                  >
-                                    Special offers and promotions
-                                  </label>
-                                </div>
-                              </div>
-                              <div class="mb-3">
-                                <label
-                                  for="default-difficulty"
-                                  class="form-label"
-                                  >Default Difficulty</label
-                                >
-                                <select
-                                  class="form-select"
-                                  id="default-difficulty"
-                                >
-                                  <option value="easy">Easy</option>
-                                  <option value="medium" selected>
-                                    Medium
-                                  </option>
-                                  <option value="hard">Hard</option>
-                                </select>
-                              </div>
-                              <button type="submit" class="btn btn-primary">
-                                Save Preferences
                               </button>
                             </form>
                           </div>
@@ -4615,6 +4494,11 @@
               document.querySelector('.nav-link[data-tab="dashboard-overview"]').click();
               // 加载Recent Activity数据
               updateRecentActivity();
+              
+              // 如果直接访问account-settings页面，加载用户资料
+              if (window.location.hash.includes("account-settings")) {
+                loadUserProfile();
+              }
             } else {
               // 如果未登录但尝试访问dashboard，重定向到首页
               window.location.hash = "home";
@@ -4791,15 +4675,7 @@
             .getElementById("password-form")
             .addEventListener("submit", handlePasswordUpdate);
           document
-            .getElementById("preferences-form")
-            .addEventListener("submit", handlePreferencesUpdate);
-          document
             .getElementById("upgrade-btn")
-            .addEventListener("click", function () {
-              navigateTo("pricing");
-            });
-          document
-            .getElementById("view-plans-btn")
             .addEventListener("click", function () {
               navigateTo("pricing");
             });
@@ -4917,6 +4793,37 @@
             // 默认加载第一页数据
             fetchFavorites(1);
           }
+          
+          // 如果切换到账户设置标签页，加载用户个人资料
+          if (tabId === "account-settings") {
+            // 从localStorage加载用户资料到表单
+            loadUserProfile();
+          }
+        }
+
+        // 从localStorage加载用户资料到表单
+        function loadUserProfile() {
+          // 检查是否已登录
+          if (!isLoggedIn || !currentUser) {
+            showNotification(
+              "error",
+              "Authentication Failed",
+              "Please login to view your profile settings."
+            );
+            return;
+          }
+          
+          // 加载用户名到表单
+          if (currentUser.name) {
+            document.getElementById("profile-name").value = currentUser.name;
+          }
+          
+          // 加载邮箱到表单（只读）
+          if (currentUser.email) {
+            document.getElementById("profile-email").value = currentUser.email;
+          }
+          
+          console.log("User profile loaded from localStorage:", currentUser);
         }
 
         function updatePasswordStrength(e) {
@@ -6228,48 +6135,112 @@
           
           // Get form values
           const name = document.getElementById("profile-name").value.trim();
-          const email = document.getElementById("profile-email").value.trim();
           
           // Basic validation
-          if (!name || !email) {
+          if (!name) {
             showNotification(
               "error",
               "Update Failed",
-              "Please fill in all required fields."
+              "Please fill in your name."
             );
             return;
           }
           
-          if (!isValidEmail(email)) {
+          // 更新按钮状态
+          const updateButton = document.querySelector("#profile-form button[type='submit']");
+          const originalButtonText = updateButton.textContent;
+          updateButton.disabled = true;
+          updateButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Updating...';
+          
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          
+          // 检查是否已登录和是否有访问令牌
+          if (!accessToken || !isLoggedIn) {
             showNotification(
               "error",
-              "Update Failed",
-              "Please enter a valid email address."
+              "Authentication Failed",
+              "No valid login credentials found. Please login again."
             );
+            updateButton.disabled = false;
+            updateButton.innerHTML = originalButtonText;
             return;
           }
           
-          // Update user profile
-          currentUser.name = name;
-          currentUser.email = email;
+          // 准备API请求数据
+          const requestData = {
+            name: name
+          };
           
-          // Update storage
-          if (localStorage.getItem("currentUser")) {
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
-          } else if (sessionStorage.getItem("currentUser")) {
-            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-          }
-          
-          // Update UI
-          document.getElementById("navbar-username").textContent = name;
-          document.getElementById("sidebar-username").textContent = name;
-          
-          // Show success notification
-          showNotification(
-            "success",
-            "Profile Updated",
-            "Your profile has been successfully updated."
-          );
+          // 发送更新请求
+          fetch('http://web.practicesnow.com/api/v1/user/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(requestData)
+          })
+          .then(response => {
+            console.log('update-user-response', response);
+            // 显式检查HTTP响应状态码
+            const isSuccess = response.status >= 200 && response.status < 300;
+            // 解析JSON响应
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            console.log('update-user-result', result);
+            if (result.isSuccess && result.data.ok === 1) {
+              // 更新成功，处理API返回的数据
+              const userData = result.data.data.user || result.data.data;
+              
+              // 更新当前用户信息
+              currentUser.name = userData.name || name;
+              
+              // 更新本地存储
+              if (localStorage.getItem("currentUser")) {
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+              } else if (sessionStorage.getItem("currentUser")) {
+                sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+              }
+              
+              // 更新UI
+              document.getElementById("navbar-username").textContent = currentUser.name;
+              document.getElementById("sidebar-username").textContent = currentUser.name;
+              
+              // 显示成功通知
+              showNotification(
+                "success",
+                "Profile Updated",
+                "Your profile has been successfully updated."
+              );
+            } else if (result.status === 401) {
+              // 如果是401认证问题，尝试自动刷新登录
+              refreshTokenAndRetry(() => handleProfileUpdate(e));
+            } else {
+              // 处理API错误
+              throw new Error(result.data.message || `更新失败，状态码: ${result.status}`);
+            }
+          })
+          .catch(error => {
+            // 更新失败 - 显示错误消息
+            console.error("Update error:", error);
+            
+            // 显示通知
+            showNotification(
+              "error",
+              "Update Failed",
+              error.message || "An error occurred while updating your profile."
+            );
+          })
+          .finally(() => {
+            // 恢复按钮状态
+            updateButton.disabled = false;
+            updateButton.innerHTML = originalButtonText;
+          });
         }
         
         function handlePasswordUpdate(e) {
@@ -6328,43 +6299,6 @@
             "success",
             "Password Updated",
             "Your password has been successfully updated."
-          );
-        }
-        
-        function handlePreferencesUpdate(e) {
-          e.preventDefault();
-          
-          // Get form values
-          const theme = document.querySelector('input[name="theme-preference"]:checked').value;
-          const notifications = document.getElementById("notification-preference").checked;
-          const language = document.getElementById("language-preference").value;
-          
-          // Update user preferences
-          currentUser.preferences = {
-            theme,
-            notifications,
-            language
-          };
-          
-          // Update storage
-          if (localStorage.getItem("currentUser")) {
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
-          } else if (sessionStorage.getItem("currentUser")) {
-            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-          }
-          
-          // Apply theme if changed
-          if (theme === "dark") {
-            document.body.classList.add("dark-theme");
-          } else {
-            document.body.classList.remove("dark-theme");
-          }
-          
-          // Show success notification
-          showNotification(
-            "success",
-            "Preferences Updated",
-            "Your preferences have been successfully updated."
           );
         }
 
