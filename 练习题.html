@@ -4576,9 +4576,11 @@
           // Initialize UI
           setupEventListeners();
           handleScroll();
+          
+          // 先检查登录状态，确保所有依赖登录的功能都在登录状态验证之后执行
           checkLoginStatus();
 
-          // 添加：首先处理当前页面状态，确保在页面初始加载时正确隐藏How It Works部分
+          // 初始化页面路由和状态
           const initialHash = window.location.hash.substring(1) || "home";
           if (initialHash === "home" || initialHash === "pricing") {
             // 在页面最初加载时就隐藏How It Works部分
@@ -4589,14 +4591,25 @@
             }
           }
 
-          // Setup SPA functionality
-          setupRouting();
+          // 如果初始化页面是dashboard相关页面，确保登录状态检查完成后再加载
+          if (initialHash === "dashboard") {
+            if (isLoggedIn) {
+              setupRouting();
+              // 默认显示dashboard overview标签
+              document.querySelector('.nav-link[data-tab="dashboard-overview"]').click();
+            } else {
+              // 如果未登录但尝试访问dashboard，重定向到首页
+              window.location.hash = "home";
+              setupRouting();
+            }
+          } else {
+            // 设置路由
+            setupRouting();
+          }
           
           // 手动添加模态框事件监听器，确保它们在页面加载后正确初始化
           document.getElementById("terms-link").addEventListener("click", openTermsModal);
-          
           document.getElementById("privacy-link").addEventListener("click", openPrivacyModal);
-          
           document.getElementById("cookie-link").addEventListener("click", openCookieModal);
         });
 
@@ -4946,17 +4959,80 @@
 
         // ===== AUTH FUNCTIONS =====
         function checkLoginStatus() {
-          // 检查localStorage和sessionStorage中的用户信息
+          // 检查localStorage和sessionStorage中的用户信息和令牌
           const savedUser = localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser");
-
-          if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            isLoggedIn = true;
-            updateUIForLoggedInUser();
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+          
+          if (savedUser && accessToken) {
+            // 解析用户数据
+            try {
+              currentUser = JSON.parse(savedUser);
+              isLoggedIn = true;
+              
+              // 更新UI显示已登录状态
+              updateUIForLoggedInUser();
+              
+              // 验证令牌有效性（可选，如果需要立即验证令牌）
+              validateToken();
+            } catch (e) {
+              console.error("Error parsing user data:", e);
+              // 数据解析错误，清除存储并保持未登录状态
+              localStorage.removeItem("currentUser");
+              sessionStorage.removeItem("currentUser");
+              localStorage.removeItem("accessToken");
+              sessionStorage.removeItem("accessToken");
+            }
+          } else {
+            // 令牌或用户数据不完整，清除存储
+            if (savedUser || accessToken) {
+              localStorage.removeItem("currentUser");
+              sessionStorage.removeItem("currentUser");
+              localStorage.removeItem("accessToken");
+              sessionStorage.removeItem("accessToken");
+            }
+            isLoggedIn = false;
           }
         }
 
+        function validateToken() {
+          // 获取访问令牌
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
+          
+          if (!accessToken) return;
+          
+          // 调用验证API，例如获取用户信息或执行简单验证
+          fetch('http://web.practicesnow.com/api/v1/auth/validate', {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            }
+          })
+          .then(response => {
+            if (response.status === 401) {
+              // 令牌无效，尝试刷新
+              const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
+              if (refreshToken) {
+                refreshTokenAndRetry();
+              } else {
+                // 无法刷新，需要重新登录
+                handleSessionExpired();
+              }
+            }
+          })
+          .catch(error => {
+            console.warn("Token validation failed:", error);
+            // 仅记录错误，不强制登出，避免网络问题导致误登出
+          });
+        }
+
         function updateUIForLoggedInUser() {
+          // 确保用户确实已登录
+          if (!isLoggedIn || !currentUser) {
+            console.error("Attempted to update UI for logged in user, but user is not logged in");
+            return;
+          }
+
           // Update navigation
           document.getElementById("auth-buttons").style.display = "none";
           document.getElementById("user-info").style.display = "flex";
@@ -4972,32 +5048,29 @@
           }
 
           // Update user info in navbar
-          document.getElementById("navbar-username").textContent =
-            currentUser.name;
-          document.getElementById(
-            "navbar-credits"
-          ).textContent = `${currentUser.remainingGenerations} credits`;
+          document.getElementById("navbar-username").textContent = currentUser.name;
+          
+          // 检查和显示用户积分
+          // 格式化积分显示，确保不会换行
+          const creditsSpan = document.getElementById("navbar-credits");
+          creditsSpan.textContent = `${currentUser.remainingGenerations || 5} credits`;
+          creditsSpan.style.whiteSpace = "nowrap"; // 防止换行
 
           // Update dashboard info
-          document.getElementById("sidebar-username").textContent =
-            currentUser.name;
-          document.getElementById("sidebar-plan").textContent = `${
-            mockPlans[currentUser.plan].name
-          } Plan`;
-          document.getElementById("remaining-generations").textContent =
-            currentUser.remainingGenerations;
-          document.getElementById("total-generations").textContent =
-            currentUser.totalGenerations;
+          document.getElementById("sidebar-username").textContent = currentUser.name;
+          document.getElementById("sidebar-plan").textContent = 
+            `${currentUser.plan ? mockPlans[currentUser.plan]?.name || "Free" : "Free"} Plan`;
+          
+          // 更新剩余生成次数
+          const remainingGens = currentUser.remainingGenerations || 5;
+          const totalGens = currentUser.totalGenerations || 10;
+          document.getElementById("remaining-generations").textContent = remainingGens;
+          document.getElementById("total-generations").textContent = totalGens;
 
           // Update progress bar
-          const progressPercent =
-            (currentUser.remainingGenerations / currentUser.totalGenerations) *
-            100;
-          document.querySelector(
-            ".progress-bar"
-          ).style.width = `${progressPercent}%`;
+          const progressPercent = (remainingGens / totalGens) * 100;
+          document.querySelector(".progress-bar").style.width = `${progressPercent}%`;
         }
-
 
         function handleLogin(e) {
           e.preventDefault();
@@ -6256,10 +6329,11 @@
           if (subject) requestData.subject = subject;
           if (gradeLevel) requestData.grade_level = gradeLevel;
           
-          // 获取访问令牌
+          // 获取访问令牌 - 确保从localStorage和sessionStorage都尝试获取
           const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
           
-          if (!accessToken) {
+          // 检查令牌是否有效并且用户是否登录
+          if (!accessToken || !isLoggedIn) {
             showNotification(
               "error",
               "Authentication Failed",
@@ -6313,20 +6387,15 @@
                 // 添加创建新测验按钮的事件监听
                 document.getElementById('create-new-quiz-from-history').addEventListener('click', goToGenerator);
               }
+            } else if (result.status === 401) {
+              // 如果是401认证问题，尝试自动刷新登录
+              refreshTokenAndRetry(() => fetchQuizHistory(page, pageSize, subject, gradeLevel));
             } else {
               // 处理API错误
               let errorMessage = result.data.message || "Failed to fetch history records";
               
-              // 如果是认证问题，提示重新登录
-              if (result.status === 401) {
-                errorMessage = "Session expired. Please login again.";
-                
-                // 显示登录按钮
-                historyList.innerHTML = '<div class="text-center py-5"><i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 2.5rem"></i><p>Session expired. Please login again.</p><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal">Login</button></div>';
-              } else {
-                // 其他错误
-                historyList.innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>${errorMessage}</p><button class="btn btn-outline-primary" onclick="fetchQuizHistory(1)">Retry</button></div>`;
-              }
+              // 其他错误
+              historyList.innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>${errorMessage}</p><button class="btn btn-outline-primary" onclick="fetchQuizHistory(1)">Retry</button></div>`;
               
               showNotification(
                 "error",
@@ -7028,7 +7097,8 @@
           // 获取访问令牌
           const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
           
-          if (!accessToken) {
+          // 检查令牌是否有效并且用户是否登录
+          if (!accessToken || !isLoggedIn) {
             showNotification(
               "error",
               "Authentication Failed",
@@ -7085,20 +7155,15 @@
                   document.querySelector('.nav-link[data-tab="generation-history"]').click();
                 });
               }
+            } else if (result.status === 401) {
+              // 如果是401认证问题，尝试自动刷新登录
+              refreshTokenAndRetry(() => fetchFavorites(page, pageSize, searchTerm));
             } else {
               // 处理API错误
               let errorMessage = result.data.message || "Failed to fetch favorites";
               
-              // 如果是认证问题，提示重新登录
-              if (result.status === 401) {
-                errorMessage = "Session expired. Please login again.";
-                
-                // 显示登录按钮
-                favoritesList.innerHTML = '<div class="text-center py-5"><i class="fas fa-exclamation-circle text-warning mb-3" style="font-size: 2.5rem"></i><p>Session expired. Please login again.</p><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal">Login</button></div>';
-              } else {
-                // 其他错误
-                favoritesList.innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>${errorMessage}</p><button class="btn btn-outline-primary" onclick="fetchFavorites(1)">Retry</button></div>`;
-              }
+              // 其他错误
+              favoritesList.innerHTML = `<div class="text-center py-5"><i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 2.5rem"></i><p>${errorMessage}</p><button class="btn btn-outline-primary" onclick="fetchFavorites(1)">Retry</button></div>`;
               
               showNotification(
                 "error",
@@ -7429,6 +7494,89 @@
             });
           }
         });
+
+        // 添加令牌刷新函数
+        function refreshTokenAndRetry(callback) {
+          // 尝试获取刷新令牌
+          const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken") || "";
+          
+          if (!refreshToken) {
+            // 如果没有刷新令牌，需要重新登录
+            handleSessionExpired();
+            return;
+          }
+          
+          // 调用刷新令牌API
+          fetch('http://web.practicesnow.com/api/v1/auth/refresh', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: refreshToken })
+          })
+          .then(response => {
+            const isSuccess = response.status >= 200 && response.status < 300;
+            return response.json().then(data => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then(result => {
+            if (result.isSuccess && result.data.ok === 1) {
+              // 成功刷新令牌
+              const data = result.data.data;
+              
+              // 保存新令牌
+              if (localStorage.getItem("accessToken")) {
+                localStorage.setItem("accessToken", data.access_token);
+                localStorage.setItem("refreshToken", data.refresh_token);
+              } else {
+                sessionStorage.setItem("accessToken", data.access_token);
+                sessionStorage.setItem("refreshToken", data.refresh_token);
+              }
+              
+              // 重试原始请求
+              if (typeof callback === 'function') {
+                callback();
+              }
+            } else {
+              // 刷新令牌失败，需要重新登录
+              handleSessionExpired();
+            }
+          })
+          .catch(error => {
+            console.error("Token refresh failed:", error);
+            handleSessionExpired();
+          });
+        }
+
+        // 处理会话过期
+        function handleSessionExpired() {
+          // 清除用户数据
+          isLoggedIn = false;
+          currentUser = null;
+          
+          // 清除本地存储的令牌
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          sessionStorage.removeItem("accessToken");
+          sessionStorage.removeItem("refreshToken");
+          
+          // 显示通知
+          showNotification(
+            "warning",
+            "Session Expired",
+            "Your session has expired. Please login again."
+          );
+          
+          // 更新UI
+          document.getElementById("auth-buttons").style.display = "flex";
+          document.getElementById("user-info").style.display = "none";
+          
+          // 显示登录模态框
+          const authModal = new bootstrap.Modal(document.getElementById("authModal"));
+          authModal.show();
+        }
       </script>
       
       <!-- 添加删除确认模态框 -->
