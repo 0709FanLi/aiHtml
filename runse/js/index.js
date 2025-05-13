@@ -481,11 +481,12 @@ function updateUIAfterLogin(userData) {
   document.getElementById("badgeCredits").textContent = userData.user.credits;
   document.getElementById("creditsBadge").style.display = "flex";
 
-  // 更新头像
+  // 更新头像 - 只在有有效头像URL时才更新src
   const userAvatar = userProfile.querySelector("img");
-  if (userData.user.avatar_url) {
+  if (userData.user.avatar_url && userData.user.avatar_url.trim() !== "") {
     userAvatar.src = userData.user.avatar_url;
   }
+  // 否则保持默认的Base64头像
 
   // 关闭登录模态框
   authModal.style.display = "none";
