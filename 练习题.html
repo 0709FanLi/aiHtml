@@ -7857,6 +7857,76 @@
             if (exportDiv2) exportDiv2.remove();
           }
         });
+
+        document.getElementById("download-word").addEventListener("click", function () {
+          const previewContent = document.getElementById("preview-content");
+          if (!previewContent || previewContent.style.display === "none") {
+            showNotification("warning", "导出失败", "请先生成测验内容");
+            return;
+          }
+
+          // 标题和日期
+          const title = document.getElementById("preview-title")?.textContent || "Quiz";
+          const date = document.getElementById("preview-date")?.textContent || "";
+
+          // 题目部分
+          const questions = previewContent.querySelector(".generated-questions");
+          // 答案部分
+          const answer = previewContent.querySelector(".question-answer");
+
+          // 构建Word内容
+          let wordHtml = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office'
+                  xmlns:w='urn:schemas-microsoft-com:office:word'
+                  xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+              <meta charset='utf-8'>
+              <title>${title}</title>
+              <style>
+                body { font-family: "Open Sans", Arial, sans-serif; color: #222; line-height: 1.6; }
+                .word-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+                .word-date { text-align: center; font-size: 1rem; color: #666; margin-bottom: 24px; }
+                .word-questions { margin-bottom: 32px; }
+                .word-answer-title { page-break-before: always; text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
+                .word-answer { }
+              </style>
+            </head>
+            <body>
+              <div class="word-title">${title}</div>
+              <div class="word-date">Generated on ${date}</div>
+              <div class="word-questions">
+                ${questions ? questions.innerHTML : ""}
+              </div>
+          `;
+
+          // 答案区
+          if (showingAnswers && answer) {
+            wordHtml += `
+              <div class="word-answer-title">Answer Key</div>
+              <div class="word-answer">
+                ${answer.innerHTML}
+              </div>
+            `;
+          }
+
+          wordHtml += `
+            </body>
+            </html>
+          `;
+
+          // 创建Blob并下载
+          const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${title}.doc`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        });
       </script>
       
       <!-- 添加删除确认模态框 -->
