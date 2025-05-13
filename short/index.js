@@ -440,6 +440,11 @@ function handleAuth(e) {
     }
     // 新增：注册接口调用
     const password_confirm = password;
+
+    // 对密码进行MD5加密
+    const md5Password = md5(password);
+    const md5PasswordConfirm = md5(password_confirm);
+
     fetch("http://web.colstory.com/api/v1/auth/register", {
       method: "POST",
       headers: {
@@ -448,8 +453,8 @@ function handleAuth(e) {
       body: JSON.stringify({
         email,
         name,
-        password,
-        password_confirm,
+        password: md5Password,
+        password_confirm: md5PasswordConfirm,
       }),
     })
       .then(async (res) => {
