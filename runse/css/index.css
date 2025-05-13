@@ -1722,3 +1722,28 @@ footer::before {
   color: var(--accent-color);
   text-decoration: underline;
 }
+
+/* 验证码输入框样式 */
+.verification-group .verification-container {
+  display: flex;
+  gap: 10px;
+}
+
+.verification-container input {
+  flex: 3;
+  min-width: 150px;
+}
+
+.get-code-btn {
+  flex: 1;
+  padding: 8px 10px;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  min-width: 110px;
+  max-width: 120px;
+}
+
+.get-code-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

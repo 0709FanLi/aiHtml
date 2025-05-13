@@ -160,6 +160,21 @@ function resetAllForms() {
 
   // Reset forgot password form
   document.getElementById("resetEmail").value = "";
+  document.getElementById("resetVerificationCode").value = "";
+  document.getElementById("resetNewPassword").value = "";
+  document.getElementById("resetConfirmPassword").value = "";
+
+  // Reset verification code button state
+  if (getVerificationBtn) {
+    getVerificationBtn.textContent = "Get Code";
+    getVerificationBtn.disabled = false;
+    getVerificationBtn.classList.remove("disabled");
+
+    // Clear countdown timer
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+    }
+  }
 
   // Reset UI state - ensure login form is shown by default
   document.getElementById("forgotPasswordContent").style.display = "none";
@@ -292,6 +307,7 @@ logoutBtn.addEventListener("click", () => {
 const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 const backToLoginLink = document.getElementById("backToLoginLink");
 const resetSubmitBtn = document.getElementById("resetSubmitBtn");
+const getVerificationBtn = document.getElementById("getVerificationBtn");
 const forgotPasswordContent = document.getElementById("forgotPasswordContent");
 
 forgotPasswordLink.addEventListener("click", (e) => {
@@ -304,9 +320,62 @@ backToLoginLink.addEventListener("click", (e) => {
   e.preventDefault();
   forgotPasswordContent.style.display = "none";
   loginContent.style.display = "block";
+  // 重置密码表单
+  document.getElementById("resetEmail").value = "";
+  document.getElementById("resetVerificationCode").value = "";
+  document.getElementById("resetNewPassword").value = "";
+  document.getElementById("resetConfirmPassword").value = "";
+  // 重置获取验证码按钮状态
+  getVerificationBtn.textContent = "Get Code";
+  getVerificationBtn.disabled = false;
+  getVerificationBtn.classList.remove("disabled");
 });
 
-resetSubmitBtn.addEventListener("click", () => {
+// 获取验证码倒计时
+let countdownTimer;
+function startVerificationCountdown() {
+  let seconds = 60;
+  getVerificationBtn.disabled = true;
+  getVerificationBtn.classList.add("disabled");
+  getVerificationBtn.textContent = `${seconds}s`;
+
+  countdownTimer = setInterval(() => {
+    seconds -= 1;
+    getVerificationBtn.textContent = `${seconds}s`;
+
+    if (seconds <= 0) {
+      clearInterval(countdownTimer);
+      getVerificationBtn.textContent = "Get Code";
+      getVerificationBtn.disabled = false;
+      getVerificationBtn.classList.remove("disabled");
+    }
+  }, 1000);
+}
+
+// 自定义邮箱验证规则
+function validateEmail(email) {
+  // 基本邮箱格式验证
+  const basicFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!basicFormat.test(email)) {
+    return false;
+  }
+
+  // 额外验证规则 - 域名至少有2个字符
+  const domainParts = email.split("@")[1].split(".");
+  if (domainParts.some((part) => part.length < 2)) {
+    return false;
+  }
+
+  // 验证邮箱长度
+  if (email.length < 6 || email.length > 100) {
+    return false;
+  }
+
+  return true;
+}
+
+// 获取验证码按钮事件
+getVerificationBtn.addEventListener("click", () => {
   const resetEmail = document.getElementById("resetEmail").value;
 
   if (!resetEmail) {
@@ -314,30 +383,131 @@ resetSubmitBtn.addEventListener("click", () => {
     return;
   }
 
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(resetEmail)) {
+  // 使用自定义邮箱验证规则
+  if (!validateEmail(resetEmail)) {
     showToast("Please enter a valid email address", "error");
     return;
   }
 
-  // Show loading overlay
+  // 显示加载状态
   loadingOverlay.style.display = "flex";
   document.getElementsByClassName("loading-text")[0].textContent =
-    "Sending reset link...";
+    "Sending verification code...";
 
-  // Simulate sending reset link
-  setTimeout(() => {
-    loadingOverlay.style.display = "none";
-    showToast("Password reset link has been sent to your email", "success");
+  // 调用获取验证码API
+  fetch("http://web.novelbeautify.com/api/v1/auth/send-code", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: resetEmail,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingOverlay.style.display = "none";
 
-    // Return to login screen after 2 seconds
-    setTimeout(() => {
-      forgotPasswordContent.style.display = "none";
-      loginContent.style.display = "block";
-      document.getElementById("resetEmail").value = "";
-    }, 2000);
-  }, 1500);
+      if (data.ok === 1) {
+        showToast("Verification code has been sent to your email", "success");
+        startVerificationCountdown();
+      } else {
+        showToast(data.message || "Failed to send verification code", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      loadingOverlay.style.display = "none";
+      showToast(
+        "Failed to send verification code. Please try again later",
+        "error"
+      );
+    });
+});
+
+resetSubmitBtn.addEventListener("click", () => {
+  const resetEmail = document.getElementById("resetEmail").value;
+  const verificationCode = document.getElementById(
+    "resetVerificationCode"
+  ).value;
+  const newPassword = document.getElementById("resetNewPassword").value;
+  const confirmPassword = document.getElementById("resetConfirmPassword").value;
+
+  if (!resetEmail || !verificationCode || !newPassword || !confirmPassword) {
+    showToast("Please fill in all fields", "error");
+    return;
+  }
+
+  // 使用自定义邮箱验证规则
+  if (!validateEmail(resetEmail)) {
+    showToast("Please enter a valid email address", "error");
+    return;
+  }
+
+  // 验证密码匹配
+  if (newPassword !== confirmPassword) {
+    showToast("Passwords do not match", "error");
+    return;
+  }
+
+  // 显示加载状态
+  loadingOverlay.style.display = "flex";
+  document.getElementsByClassName("loading-text")[0].textContent =
+    "Resetting password...";
+
+  // 使用MD5加密密码
+  const md5Password = md5(newPassword);
+  const md5ConfirmPassword = md5(confirmPassword);
+
+  // 调用重置密码API
+  fetch("http://web.novelbeautify.com/api/v1/auth/reset-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: resetEmail,
+      code: verificationCode,
+      password: md5Password,
+      password_confirmation: md5ConfirmPassword,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingOverlay.style.display = "none";
+
+      if (data.ok === 1) {
+        showToast(
+          "Password reset successful. Please login with your new password",
+          "success"
+        );
+
+        // 清除倒计时
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+        }
+
+        // 返回登录界面并清空输入
+        setTimeout(() => {
+          forgotPasswordContent.style.display = "none";
+          loginContent.style.display = "block";
+          document.getElementById("resetEmail").value = "";
+          document.getElementById("resetVerificationCode").value = "";
+          document.getElementById("resetNewPassword").value = "";
+          document.getElementById("resetConfirmPassword").value = "";
+          getVerificationBtn.textContent = "Get Code";
+          getVerificationBtn.disabled = false;
+          getVerificationBtn.classList.remove("disabled");
+        }, 1500);
+      } else {
+        showToast(data.message || "Failed to reset password", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      loadingOverlay.style.display = "none";
+      showToast("Failed to reset password. Please try again later", "error");
+    });
 });
 
 closePurchaseModal.addEventListener("click", hidePurchaseModal);
