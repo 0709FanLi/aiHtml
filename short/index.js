@@ -438,14 +438,78 @@ function handleAuth(e) {
       showToast("Please enter your name", "error");
       return;
     }
+    // 新增：注册接口调用
+    const password_confirm = password;
+    fetch("http://web.colstory.com/api/v1/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        name,
+        password,
+        password_confirm,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        // 扩大成功条件判断，处理更多接口响应情况
+        if (
+          res.ok ||
+          data.success ||
+          data.status === "success" ||
+          (data.message &&
+            (data.message.includes("success") ||
+              data.message.toLowerCase().includes("成功")))
+        ) {
+          // 1. 显示注册成功提示
+          showToast("Registration successful! Please login.", "success");
 
-    // Simulate registration
-    state.user = {
-      id: generateId(),
-      name,
-      email,
-      credits: 5,
-    };
+          // 2. 清空表单内容
+          document.getElementById("email").value = "";
+          document.getElementById("password").value = "";
+          document.getElementById("agreeTerms").checked = false;
+          if (document.getElementById("name")) {
+            document.getElementById("name").value = "";
+          }
+
+          // 3. 切换回登录表单
+          elements.authTitle.textContent = "Login";
+          elements.authForm.querySelector('button[type="submit"]').textContent =
+            "Login";
+          elements.authSwitch.innerHTML =
+            'Don\'t have an account? <a href="#" id="switchAuthMode">Register</a>';
+          elements.nameGroup.style.display = "none";
+          document.querySelector(".forgot-password-link").style.display =
+            "block";
+
+          // 4. 重新绑定事件
+          document
+            .getElementById("switchAuthMode")
+            .addEventListener("click", switchAuthMode);
+          document
+            .getElementById("termsLink")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              toggleTermsOfServiceModal();
+            });
+          document
+            .getElementById("privacyLink")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              togglePrivacyPolicyModal();
+            });
+
+          return;
+        } else {
+          showToast(data.message || "Registration failed", "error");
+        }
+      })
+      .catch(() => {
+        showToast("Network error, registration failed", "error");
+      });
+    return;
   } else {
     // Simulate login
     state.user = {
