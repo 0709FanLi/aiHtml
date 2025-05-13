@@ -248,23 +248,14 @@ function attachEventListeners() {
   // Hero
   elements.startWritingBtn.addEventListener("click", scrollToGenerator);
 
-  // Forgot Password - 删除这些事件监听，我们现在使用HTML属性直接绑定
-  /*
+  // 修改忘记密码相关事件绑定
+  // 忘记密码相关事件绑定 - 移除原有的直接绑定方式，改为更安全的方式
   if (elements.forgotPasswordLink) {
-    elements.forgotPasswordLink.addEventListener("click", toggleForgotPasswordModal);
-  } else {
-    console.error("忘记密码链接不存在");
-  }
-  
-  if (elements.forgotPasswordForm) {
-    elements.forgotPasswordForm.addEventListener("submit", handleForgotPassword);
-  } else {
-    console.error("忘记密码表单不存在");
-  }
-  */
-
-  // 只保留链接点击和关闭按钮的事件
-  if (elements.forgotPasswordLink) {
+    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
+    elements.forgotPasswordLink.removeEventListener(
+      "click",
+      toggleForgotPasswordModal
+    );
     elements.forgotPasswordLink.addEventListener(
       "click",
       toggleForgotPasswordModal
@@ -272,20 +263,22 @@ function attachEventListeners() {
   }
 
   if (elements.forgotPasswordClose) {
+    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
+    elements.forgotPasswordClose.removeEventListener("click", function () {});
     elements.forgotPasswordClose.addEventListener("click", function (e) {
       e.preventDefault();
       elements.forgotPasswordModal.style.display = "none";
-      // 直接操作DOM元素清空表单
-      document.getElementById("resetEmail").value = "";
-      document.getElementById("verificationCode").value = "";
-      document.getElementById("newPassword").value = "";
-      document.getElementById("confirmPassword").value = "";
-      document.getElementById("resetMessage").style.display = "none";
+      resetForgotPasswordForm(); // 使用函数重置表单，而不是直接操作DOM
     });
   }
 
-  // 恢复对忘记密码表单和验证码按钮的事件绑定
+  // 忘记密码表单提交事件
   if (elements.forgotPasswordForm) {
+    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
+    elements.forgotPasswordForm.removeEventListener(
+      "submit",
+      handleForgotPassword
+    );
     elements.forgotPasswordForm.addEventListener(
       "submit",
       handleForgotPassword
@@ -294,9 +287,13 @@ function attachEventListeners() {
     console.error("忘记密码表单不存在");
   }
 
+  // 获取验证码按钮点击事件
   const getVerificationBtn = document.getElementById("getVerificationBtn");
   if (getVerificationBtn) {
+    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
+    getVerificationBtn.removeEventListener("click", handleGetVerificationCode);
     getVerificationBtn.addEventListener("click", handleGetVerificationCode);
+    console.log("验证码按钮事件绑定成功");
   } else {
     console.error("获取验证码按钮不存在");
   }
@@ -310,7 +307,11 @@ function checkLoginStatus() {
   if (savedUser && savedToken) {
     try {
       state.user = JSON.parse(savedUser);
-      state.user.token = savedToken; // 确保token被加载
+
+      // 确保token被正确加载，同时支持access_token和token
+      state.user.token = savedToken;
+      state.user.access_token = savedToken; // 同时保存在access_token字段
+
       state.isLoggedIn = true;
       state.credits = state.user.credits || 0;
 
@@ -632,13 +633,23 @@ function handleAuth(e) {
           // 保存用户信息和token
           const userData = data.data || {};
 
+          // 获取token (可能是access_token或token字段)
+          const authToken =
+            userData.access_token ||
+            data.access_token ||
+            userData.token ||
+            data.token ||
+            "";
+          console.log("获取到的token:", authToken);
+
           // 构建用户对象
           state.user = {
             id: userData.id || generateId(),
             name: userData.name || email.split("@")[0],
             email: email,
             credits: userData.credits || 5,
-            token: userData.token || data.token || "",
+            token: authToken, // 保存在token字段
+            access_token: authToken, // 同时保存在access_token字段，确保兼容性
             // 保存其他需要的用户信息
             avatar: userData.avatar || "",
             role: userData.role || "user",
@@ -650,7 +661,7 @@ function handleAuth(e) {
 
           // 保存到localStorage
           localStorage.setItem("user", JSON.stringify(state.user));
-          localStorage.setItem("token", state.user.token); // 额外单独保存token方便使用
+          localStorage.setItem("token", authToken); // 额外单独保存token方便使用
 
           // 生成历史记录
           generateFakeHistory();
@@ -679,14 +690,90 @@ function handleAuth(e) {
 
 // Logout function
 function logout() {
-  state.isLoggedIn = false;
-  state.user = null;
-  state.credits = 0;
-  state.storyHistory = [];
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-  updateUIForLoggedOutUser();
-  showToast("Login out successfully", "success");
+  // 防止重复调用
+  if (window.isLoggingOut) {
+    console.log("登出请求已在处理中，避免重复请求");
+    return;
+  }
+
+  // 用户已经登录的情况下，调用登出接口
+  if (state.isLoggedIn && state.user) {
+    // 获取token，可能存储在access_token或token字段中
+    const userToken =
+      state.user.access_token ||
+      state.user.token ||
+      localStorage.getItem("token");
+
+    if (userToken) {
+      // 设置登出状态标记
+      window.isLoggingOut = true;
+
+      // 先显示"登出中"提示
+      showToast("Logging out...", "info");
+      console.log("开始登出流程，准备调用登出API");
+
+      // 保存当前token，避免在请求过程中被清除
+      const currentToken = userToken;
+
+      // 调用登出API
+      fetch("http://web.colstory.com/api/v1/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+      })
+        .then(async (res) => {
+          console.log("登出API响应状态:", res.status);
+
+          try {
+            const data = await res.json();
+            console.log("登出API响应数据:", data);
+
+            // 清除用户数据
+            finishLogout("API响应成功");
+          } catch (error) {
+            console.error("解析登出响应错误:", error);
+            // 即使API返回解析出错，也清除本地状态
+            finishLogout("API响应解析错误");
+          }
+        })
+        .catch((error) => {
+          console.error("登出请求网络错误:", error);
+          // 即使API请求失败，也清除本地状态
+          finishLogout("请求网络错误");
+        });
+    } else {
+      console.log("用户已登录但无token，直接清除本地数据");
+      finishLogout("无可用token");
+    }
+  } else {
+    // 用户未登录或没有token的情况
+    console.log("用户未登录，直接清除本地数据");
+    finishLogout("未登录状态");
+  }
+
+  // 统一处理登出完成流程
+  function finishLogout(reason) {
+    console.log(`完成登出流程，原因: ${reason}`);
+
+    // 清除用户数据
+    state.isLoggedIn = false;
+    state.user = null;
+    state.credits = 0;
+    state.storyHistory = [];
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    // 更新UI
+    updateUIForLoggedOutUser();
+
+    // 显示成功提示
+    showToast("Logged out successfully", "success");
+
+    // 重置登出状态标记
+    window.isLoggingOut = false;
+  }
 }
 
 // Show dashboard
