@@ -689,9 +689,10 @@ fileInput.addEventListener("change", (e) => {
 // Text processing functions
 function processText(type) {
   const text = novelText.value.trim();
+  const uploadedFile = fileInput.files.length > 0 ? fileInput.files[0] : null;
 
-  if (!text) {
-    showToast("Please enter or upload some text first", "error");
+  if (!text && !uploadedFile) {
+    showToast("Please enter some text or upload a file", "error");
     return;
   }
 
@@ -705,7 +706,8 @@ function processText(type) {
     return;
   }
 
-  if (isLoggedIn && usageCredits <= 0) {
+  const userData = getUserData();
+  if (isLoggedIn && userData && userData.user.credits <= 0) {
     showToast(
       "You have no credits left. Please purchase more to continue.",
       "info"
@@ -716,64 +718,131 @@ function processText(type) {
 
   // Show loading overlay
   loadingOverlay.style.display = "flex";
-  document.getElementsByClassName("loading-text")[0].textContent = `${
+  document
+    .getElementById("loadingOverlay")
+    .querySelector(".loading-text").textContent = `${
     type.charAt(0).toUpperCase() + type.slice(1)
   }ing your text...`;
 
-  // Simulate processing delay
-  setTimeout(() => {
-    // Generate enhanced text based on the type
-    let processedText = "";
-
-    if (type === "polish") {
-      processedText = polishText(text);
-    } else if (type === "expand") {
-      processedText = expandText(text);
-    } else if (type === "condense") {
-      processedText = condenseText(text);
+  // 准备API调用需要的数据
+  const apiCall = (requestData) => {
+    // 确保有token
+    const userData = getUserData();
+    if (!userData || !userData.access_token) {
+      loadingOverlay.style.display = "none";
+      showToast("Authentication error. Please login again.", "error");
+      return;
     }
 
-    // Display results
-    originalText.textContent = text;
-    enhancedText.innerHTML = processedText;
+    // 调用API
+    fetch("http://web.novelbeautify.com/api/v1/novel/optimize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${userData.token_type} ${userData.access_token}`,
+      },
+      body: JSON.stringify(requestData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // 隐藏加载遮罩
+        loadingOverlay.style.display = "none";
 
-    // Show result section
-    resultSection.style.display = "block";
-    resultSection.scrollIntoView({ behavior: "smooth" });
+        if (data.ok === 1) {
+          // 显示结果
+          originalText.textContent = data.data.original_text;
+          enhancedText.innerHTML = data.data.optimized_text;
 
-    // Hide loading overlay
-    loadingOverlay.style.display = "none";
+          // Show result section
+          resultSection.style.display = "block";
+          resultSection.scrollIntoView({ behavior: "smooth" });
 
-    // Update credits if logged in
-    if (isLoggedIn) {
-      usageCredits--;
-      creditCount.textContent = usageCredits;
-      badgeCredits.textContent = usageCredits;
+          // 更新积分
+          if (isLoggedIn && userData) {
+            userData.user.credits -= 1;
+            localStorage.setItem("user", JSON.stringify(userData.user));
+            document.getElementById("creditCount").textContent =
+              userData.user.credits;
+            document.getElementById("badgeCredits").textContent =
+              userData.user.credits;
+          } else {
+            freeUsageUsed = true;
+          }
 
-      // Add to history
-      const newHistoryItem = {
-        id: Date.now(),
-        title: `Document ${userHistory.length + 1}`,
-        type: type,
-        date: new Date().toLocaleString("en-US", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        originalText: text,
-        enhancedText: processedText,
+          // 添加到历史记录
+          if (isLoggedIn) {
+            const newHistoryItem = {
+              id: Date.now(),
+              title: uploadedFile
+                ? uploadedFile.name
+                : `Document ${userHistory.length + 1}`,
+              type: type,
+              date: new Date().toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              originalText: data.data.original_text,
+              enhancedText: data.data.optimized_text,
+            };
+
+            userHistory.unshift(newHistoryItem);
+            renderHistoryItems();
+          }
+
+          showToast(data.message || `Text successfully ${type}ed!`, "success");
+        } else {
+          showToast(data.message || "Failed to process text", "error");
+        }
+      })
+      .catch((error) => {
+        loadingOverlay.style.display = "none";
+        console.error("API Error:", error);
+        showToast("Error processing your text. Please try again.", "error");
+      });
+  };
+
+  // 如果是文件上传处理
+  if (uploadedFile) {
+    // 检查文件大小限制 (3MB)
+    if (uploadedFile.size > 3 * 1024 * 1024) {
+      loadingOverlay.style.display = "none";
+      showToast("File too large. Maximum size is 3MB.", "error");
+      return;
+    }
+
+    // 将文件转换为Base64
+    const reader = new FileReader();
+    reader.readAsDataURL(uploadedFile);
+    reader.onload = function () {
+      // 获取base64编码（去掉Data URL前缀）
+      const base64Content = reader.result.split(",")[1];
+
+      // 准备API请求数据
+      const requestData = {
+        operation: type,
+        file_content: base64Content,
       };
 
-      userHistory.unshift(newHistoryItem);
-      renderHistoryItems();
-    } else {
-      freeUsageUsed = true;
-    }
+      // 调用API
+      apiCall(requestData);
+    };
+    reader.onerror = function () {
+      loadingOverlay.style.display = "none";
+      showToast("Error reading file. Please try again.", "error");
+    };
+  } else {
+    // 处理文本输入
+    const requestData = {
+      operation: type,
+      text: text,
+    };
 
-    showToast(`Text successfully ${type}ed!`, "success");
-  }, 3000);
+    // 调用API
+    apiCall(requestData);
+  }
 }
 
 // Text processing algorithms (simulated)
