@@ -3069,18 +3069,65 @@
           return;
         }
 
-        // Simulate registration
+        // Show loading overlay
         loadingOverlay.style.display = "flex";
+        document.getElementsByClassName("loading-text")[0].textContent =
+          "Registering...";
 
-        setTimeout(() => {
-          loadingOverlay.style.display = "none";
-          isLoggedIn = true;
-          usageCredits = 5; // Welcome credits for new users
-          document.getElementById("userName").textContent = name;
-          updateUIAfterLogin();
-          hideAuthModal();
-          showToast("Account created successfully!", "success");
-        }, 1500);
+        // Prepare API request data
+        const userData = {
+          email: email,
+          name: name,
+          password: password,
+          password_confirm: confirmPassword,
+        };
+
+        // Call API
+        fetch("http://web.novelbeautify.com/api/v1/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(userData),
+        })
+          .then((response) => {
+            // Check response status
+            const isSuccess = response.status >= 200 && response.status < 300;
+            // Parse JSON response
+            return response.json().then((data) => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then((result) => {
+            if (result.isSuccess) {
+              // Registration successful
+              isLoggedIn = true;
+              usageCredits = 5; // Welcome credits for new users
+              document.getElementById("userName").textContent = name;
+              updateUIAfterLogin();
+              hideAuthModal();
+              showToast("Account created successfully!", "success");
+            } else {
+              // Registration failed
+              throw new Error(
+                result.data.error ||
+                  `Registration failed, status code: ${result.status}`
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Registration error:", error);
+            showToast(
+              error.message ||
+                "An error occurred during registration, please try again",
+              "error"
+            );
+          })
+          .finally(() => {
+            // Hide loading overlay
+            loadingOverlay.style.display = "none";
+          });
       });
 
       // Update UI after login
