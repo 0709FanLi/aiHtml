@@ -81,7 +81,7 @@ function updateRecentActivity() {
 
         // 添加最多3条近期活动
         if (quizItems && quizItems.length > 0) {
-          quizItems.forEach((item) => {
+          quizItems.slice(0, 3).forEach((item) => {
             // 格式化创建时间
             const createdDate = new Date(item.created_at);
             const timeAgo = formatTimeAgo(createdDate);
