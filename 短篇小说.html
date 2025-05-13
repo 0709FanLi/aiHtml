@@ -707,12 +707,32 @@
           </div>
 
           <div class="dashboard-section">
-            <div class="dashboard-header">
-              <h3>Your Story History</h3>
-              <p>View and manage your previously generated stories</p>
-            </div>
-            <div class="dashboard-cards" id="historyCards">
-              <!-- History cards will be dynamically added here -->
+            <div class="history-list-container">
+              <div class="history-list-header">
+                <h3>Your Story History</h3>
+                <div class="history-list-count">
+                  Total: <span id="historyTotal">0</span> stories
+                </div>
+              </div>
+
+              <table class="history-table" id="historyTable">
+                <tbody id="historyTableBody">
+                  <!-- History rows will be dynamically added here -->
+                </tbody>
+              </table>
+
+              <div class="pagination-container">
+                <div class="pagination-info">
+                  Showing <span id="paginationStart">1</span>-<span
+                    id="paginationEnd"
+                    >10</span
+                  >
+                  of <span id="paginationTotal">0</span> stories
+                </div>
+                <div class="pagination-controls" id="paginationControls">
+                  <!-- Pagination buttons will be dynamically added here -->
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -876,5 +896,25 @@
       </div>
     </footer>
     <script src="./short/index.js"></script>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="confirmDeleteModal">
+      <div class="modal confirm-modal">
+        <div class="modal-header">
+          <h3>Confirm Delete</h3>
+          <button class="modal-close" id="confirmDeleteClose">&times;</button>
+        </div>
+        <div class="modal-content">
+          <p>
+            Are you sure you want to delete this story? This action cannot be
+            undone.
+          </p>
+          <div class="btn-group">
+            <button class="btn cancel-btn" id="cancelDeleteBtn">Cancel</button>
+            <button class="btn delete-btn" id="confirmDeleteBtn">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
