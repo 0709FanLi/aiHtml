@@ -2789,7 +2789,7 @@
                               style="font-size: 2rem"
                             ></i>
                             <h5>Total Quizzes</h5>
-                            <h3>12</h3>
+                            <h3 id="dashboard-total-quizzes">12</h3>
                           </div>
                         </div>
                       </div>
@@ -2801,7 +2801,7 @@
                               style="font-size: 2rem"
                             ></i>
                             <h5>Last Activity</h5>
-                            <h3>2 days ago</h3>
+                            <h3 id="dashboard-last-activity">2 days ago</h3>
                           </div>
                         </div>
                       </div>
@@ -2813,7 +2813,7 @@
                               style="font-size: 2rem"
                             ></i>
                             <h5>Favorites</h5>
-                            <h3>5</h3>
+                            <h3 id="dashboard-favorites">5</h3>
                           </div>
                         </div>
                       </div>
@@ -6916,25 +6916,21 @@
             });
             const result = await response.json();
             if (result.ok === 1 && result.data) {
-              const cards = document.querySelectorAll('.dashboard-content .row.mb-4 .card');
-              if (cards.length >= 3) {
-                // Total Quizzes
-                cards[0].querySelector('h3').textContent = result.data.total_quizzes;
-                // Last Activity（只显示年月日）
-                let lastActivity = result.data.latest_quiz_time;
-                if (!lastActivity || lastActivity === 0) {
-                  lastActivity = "No activity";
-                } else {
-                  const date = new Date(lastActivity * 1000);
-                  const y = date.getFullYear();
-                  const m = String(date.getMonth() + 1).padStart(2, '0');
-                  const d = String(date.getDate()).padStart(2, '0');
-                  lastActivity = `${y}/${m}/${d}`;
-                }
-                cards[1].querySelector('h3').textContent = lastActivity;
-                // Favorites
-                cards[2].querySelector('h3').textContent = result.data.total_favorites;
+              document.getElementById("dashboard-total-quizzes").textContent = result.data.total_quizzes;
+              
+              let lastActivity = result.data.latest_quiz_time;
+              if (!lastActivity || lastActivity === 0) {
+                lastActivity = "No activity";
+              } else {
+                const date = new Date(lastActivity * 1000);
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                lastActivity = `${y}/${m}/${d}`;
               }
+              document.getElementById("dashboard-last-activity").textContent = lastActivity;
+              
+              document.getElementById("dashboard-favorites").textContent = result.data.total_favorites;
             }
           } catch (e) {
             console.error("Failed to fetch dashboard stats", e);

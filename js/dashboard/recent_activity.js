@@ -46,29 +46,32 @@ function updateRecentActivity() {
 
         // 更新Dashboard的统计卡片
         // 总测验数量
-        document.querySelector(
-          "#dashboard-overview .card:nth-child(1) h3"
-        ).textContent = responseData.total || 0;
+        var totalQuizzesElem = document.getElementById(
+          "dashboard-total-quizzes"
+        );
+        if (totalQuizzesElem)
+          totalQuizzesElem.textContent = responseData.total || 0;
 
         // 上次活动时间
         if (quizItems && quizItems.length > 0) {
           const lastActivity = formatTimeAgo(new Date(quizItems[0].created_at));
-          document.querySelector(
-            "#dashboard-overview .card:nth-child(2) h3"
-          ).textContent = lastActivity;
+          var lastActivityElem = document.getElementById(
+            "dashboard-last-activity"
+          );
+          if (lastActivityElem) lastActivityElem.textContent = lastActivity;
         } else {
-          document.querySelector(
-            "#dashboard-overview .card:nth-child(2) h3"
-          ).textContent = "No activity";
+          var lastActivityElem = document.getElementById(
+            "dashboard-last-activity"
+          );
+          if (lastActivityElem) lastActivityElem.textContent = "No activity";
         }
 
         // 收藏数量（统计is_favorite为true的项目）
         const favoriteCount = quizItems.filter(
           (item) => item.is_favorite
         ).length;
-        document.querySelector(
-          "#dashboard-overview .card:nth-child(3) h3"
-        ).textContent = favoriteCount;
+        var favoritesElem = document.getElementById("dashboard-favorites");
+        if (favoritesElem) favoritesElem.textContent = favoriteCount;
 
         // 更新Recent Activity列表
         const recentActivityList = document.querySelector(
@@ -194,23 +197,23 @@ function formatTimeAgo(date) {
 
 // 提取HTML内容中的纯文本预览
 function extractPreview(html, maxLength = 100) {
-  if (!html) return '';
-  
+  if (!html) return "";
+
   // 创建临时元素并设置HTML内容
-  const tempDiv = document.createElement('div');
+  const tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
-  
+
   // 提取纯文本
-  let text = tempDiv.textContent || tempDiv.innerText || '';
-  
+  let text = tempDiv.textContent || tempDiv.innerText || "";
+
   // 移除多余空格和换行
-  text = text.replace(/\s+/g, ' ').trim();
-  
+  text = text.replace(/\s+/g, " ").trim();
+
   // 截断长文本
   if (text.length > maxLength) {
-    text = text.substring(0, maxLength) + '...';
+    text = text.substring(0, maxLength) + "...";
   }
-  
+
   return text;
 }
 
