@@ -5225,8 +5225,8 @@
                 // 登录失败，直接用showNotification提示中文原因
                 showNotification(
                   "error",
-                  "登录失败",
-                  responseData.message || "邮箱或密码不正确，请重试。"
+                  "Login Failed",
+                  responseData.message || "Incorrect email or password. Please try again."
                 );
                 // 恢复按钮状态
                 loginSubmitButton.disabled = false;
@@ -5290,8 +5290,8 @@
               // 显示成功通知
               showNotification(
                 "success",
-                "登录成功",
-                "欢迎回来，" + currentUser.name + "!"
+                "Login Successful",
+                "Welcome back, " + currentUser.name + "!"
               );
               
               // 登录成功后导航到generator页面
@@ -5302,8 +5302,8 @@
               // 登录失败，直接用showNotification提示中文原因
               showNotification(
                 "error",
-                "登录失败",
-                result.data.error || "邮箱或密码不正确，请重试。"
+                "Login Failed",
+                result.data.error || "Incorrect email or password. Please try again."
               );
               // 恢复按钮状态
               loginSubmitButton.disabled = false;
@@ -5326,13 +5326,13 @@
             }
             
             // 设置错误信息
-            errorMessageElement.textContent = error.message || "邮箱或密码不正确，请重试。";
+            errorMessageElement.textContent = error.message || "Incorrect email or password. Please try again.";
             
             // 显示通知
             showNotification(
               "error",
-              "登录失败",
-              error.message || "邮箱或密码不正确，请重试。"
+              "Login Failed",
+              error.message || "Incorrect email or password. Please try again."
             );
           })
           .finally(() => {
@@ -7823,7 +7823,7 @@
         document.getElementById("download-pdf").addEventListener("click", async function () {
           const previewContent = document.getElementById("preview-content");
           if (!previewContent || previewContent.style.display === "none") {
-            showNotification("warning", "导出失败", "请先生成测验内容");
+            showNotification("warning", "Export Failed", "Please generate quiz content first");
             return;
           }
 
@@ -7962,7 +7962,7 @@
 
             pdf.save(`${title}.pdf`);
           } catch (err) {
-            showNotification("error", "导出失败", "PDF生成失败，请重试");
+            showNotification("error", "Export Failed", "PDF generation failed, please try again");
           } finally {
             exportDiv1.remove();
             if (exportDiv2) exportDiv2.remove();
@@ -7972,7 +7972,7 @@
         document.getElementById("download-word").addEventListener("click", function () {
           const previewContent = document.getElementById("preview-content");
           if (!previewContent || previewContent.style.display === "none") {
-            showNotification("warning", "导出失败", "请先生成测验内容");
+            showNotification("warning", "Export Failed", "Please generate quiz content first");
             return;
           }
 
@@ -8050,7 +8050,7 @@
             quizData = allFavoriteItems.find(item => item.id == quizId);
           }
           if (!quizData) {
-            showNotification("error", "未找到数据", "无法找到该测验记录。");
+            showNotification("error", "Data Not Found", "Unable to find the quiz record.");
             return;
           }
 
@@ -8080,16 +8080,16 @@
           let answerVisible = false;
           const answerDiv = document.getElementById("quiz-detail-answer");
           const toggleBtn = document.getElementById("quiz-detail-toggle-answer");
-          toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> 显示答案`;
+          toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> Show Answer`;
 
           toggleBtn.onclick = function() {
             answerVisible = !answerVisible;
             if (answerVisible) {
               answerDiv.style.display = "block";
-              toggleBtn.innerHTML = `<i class="fas fa-eye-slash me-1"></i> 隐藏答案`;
+              toggleBtn.innerHTML = `<i class="fas fa-eye-slash me-1"></i> Hide Answer`;
             } else {
               answerDiv.style.display = "none";
-              toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> 显示答案`;
+              toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> Show Answer`;
             }
           };
 
