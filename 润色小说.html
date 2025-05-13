@@ -3142,12 +3142,16 @@
         document.getElementsByClassName("loading-text")[0].textContent =
           "Registering...";
 
+        // Encrypt passwords with MD5
+        const md5Password = md5(password);
+        const md5ConfirmPassword = md5(confirmPassword);
+
         // Prepare API request data
         const userData = {
           email: email,
           name: name,
-          password: password,
-          password_confirm: confirmPassword,
+          password: md5Password,
+          password_confirm: md5ConfirmPassword,
         };
 
         // Call API
