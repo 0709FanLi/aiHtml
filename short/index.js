@@ -305,12 +305,52 @@ function attachEventListeners() {
 // Check login status (simulated)
 function checkLoginStatus() {
   const savedUser = localStorage.getItem("user");
-  if (savedUser) {
-    state.isLoggedIn = true;
-    state.user = JSON.parse(savedUser);
-    state.credits = state.user.credits;
-    updateUIForLoggedInUser();
+  const savedToken = localStorage.getItem("token");
+
+  if (savedUser && savedToken) {
+    try {
+      state.user = JSON.parse(savedUser);
+      state.user.token = savedToken; // 确保token被加载
+      state.isLoggedIn = true;
+      state.credits = state.user.credits || 0;
+
+      console.log("恢复登录状态成功，用户:", state.user.name);
+
+      // 根据需要，可以在此处验证token有效性
+      // 比如向服务器发送一个请求验证token是否过期
+
+      /*
+      // 如果需要验证token有效性，可以取消注释以下代码
+      fetch("http://web.colstory.com/api/v1/auth/validate-token", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${savedToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          // token无效，登出
+          logout();
+          return;
+        }
+        // token有效，更新UI
+        updateUIForLoggedInUser();
+      })
+      .catch(error => {
+        console.error("验证token失败:", error);
+        // 发生错误时保持用户登录状态，避免网络问题导致用户被登出
+        updateUIForLoggedInUser();
+      });
+      */
+
+      // 更新UI
+      updateUIForLoggedInUser();
+    } catch (error) {
+      console.error("恢复用户状态出错:", error);
+      logout(); // 出错时清除登录状态
+    }
   } else {
+    console.log("用户未登录");
     updateUIForLoggedOutUser();
   }
 }
@@ -564,34 +604,77 @@ function handleAuth(e) {
       });
     return;
   } else {
-    // Simulate login
-    state.user = {
-      id: generateId(),
-      name: "John Doe",
-      email,
-      credits: 5,
-    };
+    // 实际登录API调用
+    console.log("开始登录请求...");
+
+    // 对密码进行MD5加密
+    const md5Password = md5(password);
+
+    // 发送登录请求
+    fetch("http://web.colstory.com/api/v1/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: md5Password,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        console.log("登录响应:", data);
+
+        if (res.ok || data.success || data.status === "success") {
+          // 登录成功
+          showToast("Login successful!", "success");
+
+          // 保存用户信息和token
+          const userData = data.data || {};
+
+          // 构建用户对象
+          state.user = {
+            id: userData.id || generateId(),
+            name: userData.name || email.split("@")[0],
+            email: email,
+            credits: userData.credits || 5,
+            token: userData.token || data.token || "",
+            // 保存其他需要的用户信息
+            avatar: userData.avatar || "",
+            role: userData.role || "user",
+          };
+
+          // 更新状态和UI
+          state.isLoggedIn = true;
+          state.credits = state.user.credits;
+
+          // 保存到localStorage
+          localStorage.setItem("user", JSON.stringify(state.user));
+          localStorage.setItem("token", state.user.token); // 额外单独保存token方便使用
+
+          // 生成历史记录
+          generateFakeHistory();
+
+          // 更新UI
+          updateUIForLoggedInUser();
+          toggleAuthModal();
+        } else {
+          // 登录失败
+          showToast(
+            data.message || "Login failed. Please check your credentials.",
+            "error"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("登录请求错误:", error);
+        showToast("Network error, please try again later", "error");
+      });
+
+    return; // 阻止代码继续执行
   }
 
-  // Update state and UI
-  state.isLoggedIn = true;
-  state.credits = state.user.credits;
-
-  // Save to localStorage
-  localStorage.setItem("user", JSON.stringify(state.user));
-
-  // Generate fake history
-  generateFakeHistory();
-
-  // Update UI
-  updateUIForLoggedInUser();
-  toggleAuthModal();
-
-  // Only show one toast message
-  showToast(
-    isLogin ? "Login successful!" : "Registration successful!",
-    "success"
-  );
+  // 此代码不会再执行，因为我们在上面的else分支中已经处理了所有逻辑并返回
 }
 
 // Logout function
@@ -601,6 +684,7 @@ function logout() {
   state.credits = 0;
   state.storyHistory = [];
   localStorage.removeItem("user");
+  localStorage.removeItem("token");
   updateUIForLoggedOutUser();
   showToast("Login out successfully", "success");
 }
@@ -675,38 +759,110 @@ function generateStory(e) {
   // Show loading overlay
   elements.loadingOverlay.style.display = "flex";
 
-  // Simulate AI generation with a delay
-  setTimeout(() => {
-    // Generate story based on selections
-    const story = generateFakeStory(storyType, timePeriod, background);
+  // 真实API调用的话可以替换为：
+  if (false && state.isLoggedIn) {
+    // 设置为true来启用API调用，目前保持false使用本地生成
+    // 使用授权token调用API
+    const requestData = {
+      story_type: storyType,
+      time_period: timePeriod,
+      background: background,
+    };
 
-    // Update state
-    state.currentStory = story;
+    fetch("http://web.colstory.com/api/v1/stories/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.user.token}`,
+      },
+      body: JSON.stringify(requestData),
+    })
+      .then(async (res) => {
+        const data = await res.json();
 
-    if (state.isLoggedIn) {
-      state.credits--;
-      state.user.credits = state.credits;
-      localStorage.setItem("user", JSON.stringify(state.user));
-      elements.userCredits.textContent = `Credits: ${state.credits}`;
-      elements.dashboardCredits.textContent = state.credits;
+        // 隐藏加载覆盖层
+        elements.loadingOverlay.style.display = "none";
 
-      // Add to history
-      state.storyHistory.unshift(story);
-    } else {
-      state.freeUsage = false;
-    }
+        if (res.ok || data.success || data.status === "success") {
+          // 解析故事数据
+          const storyData = data.data || {};
+          const story = {
+            id: storyData.id || generateId(),
+            title: storyData.title || "Generated Story",
+            type: storyType,
+            period: timePeriod,
+            background: background,
+            content: storyData.content || "Content could not be loaded.",
+            date: new Date().toISOString(),
+          };
 
-    // Update UI
-    elements.outputTitle.textContent = story.title;
-    elements.storyContent.textContent = story.content;
-    elements.storyOutput.style.display = "block";
+          // 更新状态
+          state.currentStory = story;
 
-    // Hide loading overlay
-    elements.loadingOverlay.style.display = "none";
+          // 扣除积分
+          state.credits--;
+          state.user.credits = state.credits;
+          localStorage.setItem("user", JSON.stringify(state.user));
+          elements.userCredits.textContent = `Credits: ${state.credits}`;
+          elements.dashboardCredits.textContent = state.credits;
 
-    // Scroll to the output
-    elements.storyOutput.scrollIntoView({ behavior: "smooth" });
-  }, 2000);
+          // 添加到历史记录
+          state.storyHistory.unshift(story);
+
+          // 更新UI
+          elements.outputTitle.textContent = story.title;
+          elements.storyContent.textContent = story.content;
+          elements.storyOutput.style.display = "block";
+
+          // 滚动到输出区域
+          elements.storyOutput.scrollIntoView({ behavior: "smooth" });
+        } else {
+          showToast(
+            data.message || "Failed to generate story. Please try again.",
+            "error"
+          );
+        }
+      })
+      .catch((error) => {
+        // 隐藏加载覆盖层
+        elements.loadingOverlay.style.display = "none";
+        console.error("生成故事错误:", error);
+        showToast("Network error. Please try again later.", "error");
+      });
+  } else {
+    // 本地生成故事（现有代码）
+    setTimeout(() => {
+      // Generate story based on selections
+      const story = generateFakeStory(storyType, timePeriod, background);
+
+      // Update state
+      state.currentStory = story;
+
+      if (state.isLoggedIn) {
+        state.credits--;
+        state.user.credits = state.credits;
+        localStorage.setItem("user", JSON.stringify(state.user));
+        elements.userCredits.textContent = `Credits: ${state.credits}`;
+        elements.dashboardCredits.textContent = state.credits;
+
+        // Add to history
+        state.storyHistory.unshift(story);
+      } else {
+        state.freeUsage = false;
+      }
+
+      // Update UI
+      elements.outputTitle.textContent = story.title;
+      elements.storyContent.textContent = story.content;
+      elements.storyOutput.style.display = "block";
+
+      // Hide loading overlay
+      elements.loadingOverlay.style.display = "none";
+
+      // Scroll to the output
+      elements.storyOutput.scrollIntoView({ behavior: "smooth" });
+    }, 2000);
+  }
 }
 
 // Generate a fake story based on user selections
