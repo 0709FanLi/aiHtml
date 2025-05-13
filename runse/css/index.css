@@ -1747,3 +1747,66 @@ footer::before {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* 分页控件样式 */
+.history-pagination {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pagination-btn {
+  background: rgba(128, 90, 213, 0.1);
+  border: 1px solid rgba(128, 90, 213, 0.3);
+  color: var(--accent-color);
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(128, 90, 213, 0.2);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* 响应式调整 */
+@media (max-width: 600px) {
+  .pagination-controls {
+    flex-wrap: wrap;
+  }
+
+  .pagination-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}

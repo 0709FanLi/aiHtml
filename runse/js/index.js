@@ -82,7 +82,7 @@ const mobileHistoryLink = document.querySelector(".mobile-history-link");
 // State Variables
 let isLoggedIn = false;
 let usageCredits = 0;
-let userHistory = [...sampleHistoryData];
+let userHistory = []; // 初始化为空数组，将在登录后从API获取
 let freeUsageUsed = false;
 
 // Function to show toast notifications
@@ -743,51 +743,89 @@ function updateUIAfterLogin(userData) {
   showToast("Login successful", "success");
 }
 
-// History related functions
-historyLink.addEventListener("click", (e) => {
-  e.preventDefault();
-
-  if (!isLoggedIn) {
-    showToast("Please login to view your history", "info");
-    showAuthModal();
+// 获取用户历史记录
+function fetchUserHistory(page = 1, pageSize = 10) {
+  const userData = getUserData();
+  if (!userData || !userData.access_token) {
+    console.error("No valid token found for fetching history");
     return;
   }
 
-  showSection("history");
-});
+  loadingOverlay.style.display = "flex";
+  document.getElementsByClassName("loading-text")[0].textContent =
+    "Loading your history...";
 
-mobileHistoryLink.addEventListener("click", (e) => {
-  e.preventDefault();
+  // 调用获取历史记录API - 使用POST方法
+  fetch(`http://web.novelbeautify.com/api/v1/polish/records`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `${userData.token_type} ${userData.access_token}`,
+    },
+    body: JSON.stringify({
+      page: page,
+      page_size: pageSize,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingOverlay.style.display = "none";
 
-  if (!isLoggedIn) {
-    showToast("Please login to view your history", "info");
-    showAuthModal();
-    return;
-  }
+      if (data.ok === 1 && data.data && Array.isArray(data.data.items)) {
+        // 保存总条数
+        const totalRecords = data.data.total || 0;
+        const hasMore = data.data.has_more || false;
 
-  showSection("history");
-  closeMobileMenu();
-});
+        // 转换API返回的数据格式为我们使用的格式
+        userHistory = data.data.items.map((item) => ({
+          id: item.id,
+          title: `Document ${item.id}`,
+          type: item.operation || "polish",
+          date: new Date(item.created_at).toLocaleString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          originalText: item.input || "",
+          enhancedText: item.output || "",
+        }));
 
-function toggleHistorySection() {
-  if (historySection.style.display === "block") {
-    historySection.style.display = "none";
-    resultSection.style.display = "none";
-  } else {
-    historySection.style.display = "block";
-    resultSection.style.display = "none";
-  }
+        // 显示历史记录
+        renderHistoryItems(totalRecords, page, pageSize, hasMore);
+      } else {
+        console.error("Failed to load history or invalid data format:", data);
+        userHistory = []; // 重置为空数组
+        renderHistoryItems(0, page, pageSize, false);
+      }
+    })
+    .catch((error) => {
+      loadingOverlay.style.display = "none";
+      console.error("Error fetching history:", error);
+      showToast(
+        "Failed to load your history. Please try again later.",
+        "error"
+      );
+      userHistory = []; // 重置为空数组
+      renderHistoryItems(0, page, pageSize, false);
+    });
 }
 
-function renderHistoryItems() {
+function renderHistoryItems(
+  totalRecords = 0,
+  currentPage = 1,
+  pageSize = 10,
+  hasMore = false
+) {
   historyList.innerHTML = "";
 
   if (userHistory.length === 0) {
     historyList.innerHTML = `
-                    <div class="history-item">
-                        <p>No history items yet. Start enhancing your texts!</p>
-                    </div>
-                `;
+      <div class="history-item">
+        <p>No history items yet. Start enhancing your texts!</p>
+      </div>
+    `;
     return;
   }
 
@@ -797,16 +835,16 @@ function renderHistoryItems() {
     historyItem.dataset.id = item.id;
 
     historyItem.innerHTML = `
-                    <div class="history-content">
-                        <h4>${item.title} <span class="history-type ${
-      item.type
-    }">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span></h4>
-                        <div class="history-date">${item.date}</div>
-                    </div>
-                    <div>
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                `;
+      <div class="history-content">
+        <h4>${item.title} <span class="history-type ${item.type}">${
+      item.type.charAt(0).toUpperCase() + item.type.slice(1)
+    }</span></h4>
+        <div class="history-date">${item.date}</div>
+      </div>
+      <div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    `;
 
     historyItem.addEventListener("click", () => {
       loadHistoryItem(item);
@@ -814,6 +852,55 @@ function renderHistoryItems() {
 
     historyList.appendChild(historyItem);
   });
+
+  // 添加分页控件
+  if (totalRecords > 0) {
+    const paginationDiv = document.createElement("div");
+    paginationDiv.className = "history-pagination";
+
+    // 显示总条数
+    const totalInfo = document.createElement("div");
+    totalInfo.className = "pagination-info";
+    totalInfo.textContent = `Total: ${totalRecords} records`;
+    paginationDiv.appendChild(totalInfo);
+
+    // 分页控制按钮
+    const paginationControls = document.createElement("div");
+    paginationControls.className = "pagination-controls";
+
+    // 上一页按钮
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "pagination-btn";
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+    prevBtn.disabled = currentPage <= 1;
+    if (currentPage > 1) {
+      prevBtn.addEventListener("click", () => {
+        fetchUserHistory(currentPage - 1, pageSize);
+      });
+    }
+    paginationControls.appendChild(prevBtn);
+
+    // 页码信息
+    const pageInfo = document.createElement("span");
+    pageInfo.className = "page-info";
+    pageInfo.textContent = `Page ${currentPage}`;
+    paginationControls.appendChild(pageInfo);
+
+    // 下一页按钮
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "pagination-btn";
+    nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+    nextBtn.disabled = !hasMore;
+    if (hasMore) {
+      nextBtn.addEventListener("click", () => {
+        fetchUserHistory(currentPage + 1, pageSize);
+      });
+    }
+    paginationControls.appendChild(nextBtn);
+
+    paginationDiv.appendChild(paginationControls);
+    historyList.appendChild(paginationDiv);
+  }
 }
 
 function loadHistoryItem(item) {
@@ -1518,9 +1605,6 @@ function initializeUI() {
       "none";
     document.querySelector(".mobile-signup-btn").parentElement.style.display =
       "none";
-
-    // Generate history items if logged in
-    renderHistoryItems();
   } else {
     // User is not logged in
     console.log("User not logged in, hiding profile");
@@ -1627,5 +1711,51 @@ document.addEventListener("DOMContentLoaded", function () {
     // 设置全局积分变量
     usageCredits = userData.user.credits;
     updateUIAfterLogin(userData);
+
+    // 如果当前在历史记录页面，则显示历史记录部分并获取历史数据
+    if (window.location.hash === "#history") {
+      fetchUserHistory();
+      showSection("history");
+    }
   }
 });
+
+// History related functions
+historyLink.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  if (!isLoggedIn) {
+    showToast("Please login to view your history", "info");
+    showAuthModal();
+    return;
+  }
+
+  // 每次点击历史记录链接时重新获取最新数据
+  fetchUserHistory();
+  showSection("history");
+});
+
+mobileHistoryLink.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  if (!isLoggedIn) {
+    showToast("Please login to view your history", "info");
+    showAuthModal();
+    return;
+  }
+
+  // 每次点击历史记录链接时重新获取最新数据
+  fetchUserHistory();
+  showSection("history");
+  closeMobileMenu();
+});
+
+function toggleHistorySection() {
+  if (historySection.style.display === "block") {
+    historySection.style.display = "none";
+    resultSection.style.display = "none";
+  } else {
+    historySection.style.display = "block";
+    resultSection.style.display = "none";
+  }
+}
