@@ -5294,9 +5294,9 @@
                 "Welcome back, " + currentUser.name + "!"
               );
               
-              // 登录成功后导航到generator页面
+              // 登录成功后导航到home页面，效果与点击Home导航一致
               setTimeout(() => {
-                navigateTo('generator');
+                navigateTo('home');
               }, 1000);
             } else {
               // 登录失败，直接用showNotification提示中文原因
@@ -6401,7 +6401,7 @@
               refreshTokenAndRetry(() => handleProfileUpdate(e));
             } else {
               // 处理API错误
-              throw new Error(result.data.message || `更新失败，状态码: ${result.status}`);
+              throw new Error(result.data.message || `Update failed, status code: ${result.status}`);
             }
           })
           .catch(error => {
