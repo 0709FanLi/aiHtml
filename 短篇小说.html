@@ -490,28 +490,60 @@
     <div class="modal-overlay" id="forgotPasswordModal">
       <div class="modal">
         <div class="modal-header">
-          <h3>Forgot Password</h3>
+          <h3>Reset Password</h3>
           <button class="modal-close" id="forgotPasswordClose">&times;</button>
         </div>
         <div class="modal-body">
           <div class="forgot-password-content">
-            <p>
-              Please enter your email address. We will send you a link to reset
-              your password.
-            </p>
+            <p>Please complete the form below to reset your password.</p>
             <form id="forgotPasswordForm">
               <div class="form-group">
                 <label for="resetEmail">Email</label>
                 <input
-                  type="email"
+                  type="text"
                   id="resetEmail"
                   class="form-control"
-                  placeholder="Your email"
-                  required
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div class="form-group verification-code">
+                <label for="verificationCode">Verification Code</label>
+                <div class="verification-flex">
+                  <input
+                    type="text"
+                    id="verificationCode"
+                    class="form-control"
+                    placeholder="Enter verification code"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="getVerificationBtn"
+                  >
+                    Get Code
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  class="form-control"
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  class="form-control"
+                  placeholder="Confirm new password"
                 />
               </div>
               <button type="submit" class="btn btn-primary" style="width: 100%">
-                Send Reset Link
+                Reset Password
               </button>
             </form>
             <div
@@ -523,7 +555,7 @@
                 class="fas fa-check-circle"
                 style="color: var(--success-color); font-size: 2rem"
               ></i>
-              <p>Password reset link has been sent to your email.</p>
+              <p>Your password has been reset successfully.</p>
             </div>
           </div>
         </div>

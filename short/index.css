@@ -987,3 +987,22 @@ footer {
 .contact-form .btn {
   width: 100%;
 }
+
+/* 验证码样式 */
+.verification-code {
+  margin-bottom: 1.5rem;
+}
+
+.verification-flex {
+  display: flex;
+  gap: 10px;
+}
+
+.verification-flex .form-control {
+  flex: 1;
+}
+
+.verification-flex .btn {
+  white-space: nowrap;
+  padding: 8px 12px;
+}

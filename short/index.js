@@ -100,10 +100,20 @@ const elements = {
   forgotPasswordForm: document.getElementById("forgotPasswordForm"),
   resetEmail: document.getElementById("resetEmail"),
   resetMessage: document.getElementById("resetMessage"),
+  verificationCode: document.getElementById("verificationCode"),
+  getVerificationBtn: document.getElementById("getVerificationBtn"),
+  newPassword: document.getElementById("newPassword"),
+  confirmPassword: document.getElementById("confirmPassword"),
 };
 
 // Initialize the application
 function init() {
+  // 确保先获取所有忘记密码相关的DOM元素
+  elements.getVerificationBtn = document.getElementById("getVerificationBtn");
+  elements.verificationCode = document.getElementById("verificationCode");
+  elements.newPassword = document.getElementById("newPassword");
+  elements.confirmPassword = document.getElementById("confirmPassword");
+
   // Attach event listeners
   attachEventListeners();
 
@@ -115,6 +125,10 @@ function init() {
     generateFakeHistory();
     renderHistoryCards();
   }
+
+  // 调试输出，确认元素是否存在
+  console.log("验证码按钮:", elements.getVerificationBtn);
+  console.log("忘记密码表单:", elements.forgotPasswordForm);
 }
 
 // Event Listeners
@@ -234,24 +248,58 @@ function attachEventListeners() {
   // Hero
   elements.startWritingBtn.addEventListener("click", scrollToGenerator);
 
-  // Forgot Password
-  elements.forgotPasswordLink.addEventListener(
-    "click",
-    toggleForgotPasswordModal
-  );
-  elements.forgotPasswordForm.addEventListener("submit", handleForgotPassword);
-  elements.forgotPasswordClose.addEventListener("click", function (e) {
-    e.preventDefault();
+  // Forgot Password - 删除这些事件监听，我们现在使用HTML属性直接绑定
+  /*
+  if (elements.forgotPasswordLink) {
+    elements.forgotPasswordLink.addEventListener("click", toggleForgotPasswordModal);
+  } else {
+    console.error("忘记密码链接不存在");
+  }
+  
+  if (elements.forgotPasswordForm) {
+    elements.forgotPasswordForm.addEventListener("submit", handleForgotPassword);
+  } else {
+    console.error("忘记密码表单不存在");
+  }
+  */
 
-    // Close the modal
-    elements.forgotPasswordModal.style.display = "none";
+  // 只保留链接点击和关闭按钮的事件
+  if (elements.forgotPasswordLink) {
+    elements.forgotPasswordLink.addEventListener(
+      "click",
+      toggleForgotPasswordModal
+    );
+  }
 
-    // Clear the email field
-    elements.resetEmail.value = "";
+  if (elements.forgotPasswordClose) {
+    elements.forgotPasswordClose.addEventListener("click", function (e) {
+      e.preventDefault();
+      elements.forgotPasswordModal.style.display = "none";
+      // 直接操作DOM元素清空表单
+      document.getElementById("resetEmail").value = "";
+      document.getElementById("verificationCode").value = "";
+      document.getElementById("newPassword").value = "";
+      document.getElementById("confirmPassword").value = "";
+      document.getElementById("resetMessage").style.display = "none";
+    });
+  }
 
-    // Hide success message if it was shown
-    elements.resetMessage.style.display = "none";
-  });
+  // 恢复对忘记密码表单和验证码按钮的事件绑定
+  if (elements.forgotPasswordForm) {
+    elements.forgotPasswordForm.addEventListener(
+      "submit",
+      handleForgotPassword
+    );
+  } else {
+    console.error("忘记密码表单不存在");
+  }
+
+  const getVerificationBtn = document.getElementById("getVerificationBtn");
+  if (getVerificationBtn) {
+    getVerificationBtn.addEventListener("click", handleGetVerificationCode);
+  } else {
+    console.error("获取验证码按钮不存在");
+  }
 }
 
 // Check login status (simulated)
@@ -1033,37 +1081,184 @@ function toggleForgotPasswordModal(e) {
     ? "none"
     : "block";
 
-  // Clear the email field when opening or closing
-  elements.resetEmail.value = "";
-
-  // Hide success message if it was shown
-  elements.resetMessage.style.display = "none";
+  // 清空表单
+  if (!isCurrentlyVisible) {
+    resetForgotPasswordForm();
+  }
 }
 
-// Handle forgot password form submission
-function handleForgotPassword(e) {
+// 重置忘记密码表单
+function resetForgotPasswordForm() {
+  elements.resetEmail.value = "";
+  elements.verificationCode.value = "";
+  elements.newPassword.value = "";
+  elements.confirmPassword.value = "";
+  elements.resetMessage.style.display = "none";
+  elements.resetEmail.style.borderColor = "";
+}
+
+// 自定义邮箱验证函数
+function validateEmail(email) {
+  // 基本邮箱正则
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// 处理获取验证码
+function handleGetVerificationCode(e) {
   e.preventDefault();
-  const email = elements.resetEmail.value;
-  if (!email) {
-    showToast("Please enter your email", "error");
+  console.log("获取验证码...");
+
+  const email = document.getElementById("resetEmail").value.trim();
+
+  // 自定义邮箱验证
+  if (!validateEmail(email)) {
+    document.getElementById("resetEmail").style.borderColor =
+      "var(--error-color)";
+    showToast("Please enter a valid email address", "error");
     return;
   }
-  // Simulate sending reset link
-  showToast("Reset link sent to your email", "success");
-  // Display success message
-  elements.resetMessage.style.display = "block";
+
+  // 重置边框样式
+  document.getElementById("resetEmail").style.borderColor = "";
+
+  // 发送获取验证码请求
+  fetch("http://web.colstory.com/api/v1/auth/email-verification", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: email,
+    }),
+  })
+    .then(async (res) => {
+      const data = await res.json();
+      console.log("验证码响应:", data);
+
+      if (
+        res.ok ||
+        data.success ||
+        data.status === "success" ||
+        (data.message &&
+          (data.message.includes("success") ||
+            data.message.toLowerCase().includes("成功")))
+      ) {
+        showToast("Verification code sent successfully", "success");
+
+        // 禁用按钮30秒
+        const btn = document.getElementById("getVerificationBtn");
+        btn.disabled = true;
+        let countdown = 30;
+        btn.textContent = `Resend (${countdown})`;
+
+        const timer = setInterval(() => {
+          countdown--;
+          btn.textContent = `Resend (${countdown})`;
+
+          if (countdown <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = "Get Code";
+          }
+        }, 1000);
+      } else {
+        showToast(data.message || "Failed to send verification code", "error");
+      }
+    })
+    .catch((err) => {
+      console.error("获取验证码错误:", err);
+      showToast("Network error, please try again", "error");
+    });
 }
 
-// Elements for forgot password
-elements.forgotPasswordClose.addEventListener("click", function (e) {
+// 处理忘记密码表单提交
+function handleForgotPassword(e) {
   e.preventDefault();
+  console.log("提交忘记密码表单...");
 
-  // Close the modal
-  elements.forgotPasswordModal.style.display = "none";
+  const email = document.getElementById("resetEmail").value.trim();
+  const code = document.getElementById("verificationCode").value.trim();
+  const newPassword = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
 
-  // Clear the email field
-  elements.resetEmail.value = "";
+  // 验证表单
+  if (!validateEmail(email)) {
+    document.getElementById("resetEmail").style.borderColor =
+      "var(--error-color)";
+    showToast("Please enter a valid email address", "error");
+    return;
+  }
 
-  // Hide success message if it was shown
-  elements.resetMessage.style.display = "none";
-});
+  if (!code) {
+    showToast("Please enter verification code", "error");
+    return;
+  }
+
+  if (!newPassword) {
+    showToast("Please enter new password", "error");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast("Passwords do not match", "error");
+    return;
+  }
+
+  // 加密密码
+  const md5Password = md5(newPassword);
+  const md5PasswordConfirm = md5(confirmPassword);
+
+  console.log("发送重置密码请求", {
+    email,
+    code,
+    md5Password: "已加密",
+    md5PasswordConfirm: "已加密",
+  });
+
+  // 发送重置密码请求
+  fetch("http://web.colstory.com/api/v1/auth/forgot-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: email,
+      verification_code: code,
+      password: md5Password,
+      password_confirm: md5PasswordConfirm,
+    }),
+  })
+    .then(async (res) => {
+      const data = await res.json();
+      console.log("重置密码响应:", data);
+
+      if (
+        res.ok ||
+        data.success ||
+        data.status === "success" ||
+        (data.message &&
+          (data.message.includes("success") ||
+            data.message.toLowerCase().includes("成功")))
+      ) {
+        showToast("Password reset successful", "success");
+        document.getElementById("resetMessage").style.display = "block";
+
+        // 3秒后关闭弹窗
+        setTimeout(() => {
+          document.getElementById("forgotPasswordModal").style.display = "none";
+          document.getElementById("resetEmail").value = "";
+          document.getElementById("verificationCode").value = "";
+          document.getElementById("newPassword").value = "";
+          document.getElementById("confirmPassword").value = "";
+          document.getElementById("resetMessage").style.display = "none";
+        }, 3000);
+      } else {
+        showToast(data.message || "Failed to reset password", "error");
+      }
+    })
+    .catch((err) => {
+      console.error("重置密码错误:", err);
+      showToast("Network error, please try again", "error");
+    });
+}
