@@ -201,28 +201,17 @@ closeAuthModal.addEventListener("click", hideAuthModal);
 // Logout functionality
 const logoutBtn = document.getElementById("logoutBtn");
 logoutBtn.addEventListener("click", () => {
-  // Reset user state
-  isLoggedIn = false;
-  usageCredits = 0;
-  userHistory = [...sampleHistoryData]; // Reset to sample data
+  // Clear user data from localStorage
+  clearUserData();
 
-  // Update UI
+  // Reset UI
   userProfile.style.display = "none";
   loginBtn.style.display = "block";
   signupBtn.style.display = "block";
-  creditsBadge.style.display = "none";
+  document.getElementById("creditsBadge").style.display = "none";
 
-  // Show login/signup buttons in mobile menu
-  document.querySelector(".mobile-login-btn").parentElement.style.display =
-    "block";
-  document.querySelector(".mobile-signup-btn").parentElement.style.display =
-    "block";
-
-  // Hide history section if it's open
-  historySection.style.display = "none";
-
-  // Show toast notification
-  showToast("You have been logged out successfully", "info");
+  // Show toast message
+  showToast("Logged out successfully", "info");
 });
 
 // Forgot Password Event Listeners
@@ -361,73 +350,40 @@ loginSubmitBtn.addEventListener("click", () => {
   document.getElementsByClassName("loading-text")[0].textContent =
     "Logging in...";
 
-  // Encrypt the password with MD5
+  // Use MD5 to encrypt the password
   const md5Password = md5(password);
 
-  // Prepare login data
-  const loginData = {
-    email: email,
-    password: md5Password,
-  };
-
-  // Call login API
+  // Call the login API
   fetch("http://web.novelbeautify.com/api/v1/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
     },
-    body: JSON.stringify(loginData),
+    body: JSON.stringify({
+      email: email,
+      password: md5Password,
+    }),
   })
-    .then((response) => {
-      // Check response status
-      const isSuccess = response.status >= 200 && response.status < 300;
-      // Parse JSON response
-      return response.json().then((data) => {
-        return { isSuccess, data, status: response.status };
-      });
-    })
-    .then((result) => {
-      if (result.isSuccess) {
-        // Login successful
-        const responseData = result.data;
+    .then((response) => response.json())
+    .then((data) => {
+      // Hide loading overlay
+      loadingOverlay.style.display = "none";
 
-        // Check if API returned success
-        if (responseData.ok !== 1) {
-          throw new Error(responseData.message || "Login failed");
-        }
+      if (data.ok === 1) {
+        // Save user data in localStorage
+        saveUserData(data.data);
 
-        // Get user data from response
-        const data = responseData.data;
-        const userData = data.user;
-
-        // Set login state and credits
-        isLoggedIn = true;
-        usageCredits = 30; // Can be adjusted based on API response
-
-        // Update user name display
-        document.getElementById("userName").textContent = userData.name;
-
-        // Store tokens if needed
-        // localStorage.setItem("accessToken", data.access_token);
-
-        updateUIAfterLogin();
-        hideAuthModal();
-        showToast("Successfully logged in!", "success");
+        // Update the UI
+        updateUIAfterLogin(data.data);
       } else {
-        // Login failed
-        throw new Error(
-          result.data.error || `Login failed, status code: ${result.status}`
-        );
+        showToast(data.message || "Login failed", "error");
       }
     })
     .catch((error) => {
-      console.error("Login error:", error);
-      showToast(error.message || "Email or password is incorrect", "error");
-    })
-    .finally(() => {
       // Hide loading overlay
       loadingOverlay.style.display = "none";
+      console.error("Error:", error);
+      showToast("Login failed. Please try again.", "error");
     });
 });
 
@@ -461,86 +417,80 @@ registerSubmitBtn.addEventListener("click", () => {
 
   // Show loading overlay
   loadingOverlay.style.display = "flex";
-  document.getElementsByClassName("loading-text")[0].textContent =
-    "Registering...";
+  document
+    .getElementById("loadingOverlay")
+    .querySelector(".loading-text").textContent = "Creating your account...";
 
   // Encrypt passwords with MD5
   const md5Password = md5(password);
   const md5ConfirmPassword = md5(confirmPassword);
 
-  // Prepare API request data
-  const userData = {
-    email: email,
-    name: name,
-    password: md5Password,
-    password_confirm: md5ConfirmPassword,
-  };
-
-  // Call API
+  // Call the register API
   fetch("http://web.novelbeautify.com/api/v1/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Accept: "application/json",
     },
-    body: JSON.stringify(userData),
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      password: md5Password,
+      password_confirmation: md5ConfirmPassword,
+    }),
   })
-    .then((response) => {
-      // Check response status
-      const isSuccess = response.status >= 200 && response.status < 300;
-      // Parse JSON response
-      return response.json().then((data) => {
-        return { isSuccess, data, status: response.status };
-      });
-    })
-    .then((result) => {
-      if (result.isSuccess) {
-        // Registration successful
-        isLoggedIn = true;
-        usageCredits = 5; // Welcome credits for new users
-        document.getElementById("userName").textContent = name;
-        updateUIAfterLogin();
-        hideAuthModal();
+    .then((response) => response.json())
+    .then((data) => {
+      // Hide loading overlay
+      loadingOverlay.style.display = "none";
+
+      if (data.ok === 1) {
+        // Save user data in localStorage
+        saveUserData(data.data);
+
+        // Update the UI
+        updateUIAfterLogin(data.data);
+
+        // Show success message
         showToast("Account created successfully!", "success");
       } else {
-        // Registration failed
-        throw new Error(
-          result.data.error ||
-            `Registration failed, status code: ${result.status}`
-        );
+        showToast(data.message || "Registration failed", "error");
       }
     })
     .catch((error) => {
-      console.error("Registration error:", error);
-      showToast(
-        error.message ||
-          "An error occurred during registration, please try again",
-        "error"
-      );
-    })
-    .finally(() => {
       // Hide loading overlay
       loadingOverlay.style.display = "none";
+      console.error("Error:", error);
+      showToast("Registration failed. Please try again.", "error");
     });
 });
 
 // Update UI after login
-function updateUIAfterLogin() {
+function updateUIAfterLogin(userData) {
+  // 隐藏登录和注册按钮
   loginBtn.style.display = "none";
   signupBtn.style.display = "none";
+
+  // 显示用户信息
   userProfile.style.display = "flex";
-  creditCount.textContent = usageCredits;
-  badgeCredits.textContent = usageCredits;
-  creditsBadge.style.display = "flex";
 
-  // Hide login/signup in mobile menu
-  document.querySelector(".mobile-login-btn").parentElement.style.display =
-    "none";
-  document.querySelector(".mobile-signup-btn").parentElement.style.display =
-    "none";
+  // 更新用户名和积分
+  document.getElementById("userName").textContent = userData.user.name;
+  document.getElementById("creditCount").textContent = userData.user.credits;
 
-  // Generate history items
-  renderHistoryItems();
+  // 更新悬浮的积分显示
+  document.getElementById("badgeCredits").textContent = userData.user.credits;
+  document.getElementById("creditsBadge").style.display = "flex";
+
+  // 更新头像
+  const userAvatar = userProfile.querySelector("img");
+  if (userData.user.avatar_url) {
+    userAvatar.src = userData.user.avatar_url;
+  }
+
+  // 关闭登录模态框
+  authModal.style.display = "none";
+
+  showToast("Login successful", "success");
 }
 
 // History related functions
@@ -1300,4 +1250,122 @@ document.addEventListener("DOMContentLoaded", function () {
       showTermsModal();
     });
   });
+});
+
+// 添加登录状态持久化相关函数
+
+// 存储用户登录信息到localStorage
+function saveUserData(userData) {
+  localStorage.setItem("user", JSON.stringify(userData.user));
+  localStorage.setItem("access_token", userData.access_token);
+  localStorage.setItem("refresh_token", userData.refresh_token);
+  localStorage.setItem("access_token_expires", userData.access_token_expires);
+  localStorage.setItem("refresh_token_expires", userData.refresh_token_expires);
+  localStorage.setItem("token_type", userData.token_type);
+}
+
+// 从localStorage获取用户信息
+function getUserData() {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const access_token = localStorage.getItem("access_token");
+
+  if (user && access_token) {
+    return {
+      user,
+      access_token,
+      refresh_token: localStorage.getItem("refresh_token"),
+      access_token_expires: localStorage.getItem("access_token_expires"),
+      refresh_token_expires: localStorage.getItem("refresh_token_expires"),
+      token_type: localStorage.getItem("token_type"),
+    };
+  }
+
+  return null;
+}
+
+// 清除用户登录信息
+function clearUserData() {
+  localStorage.removeItem("user");
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("access_token_expires");
+  localStorage.removeItem("refresh_token_expires");
+  localStorage.removeItem("token_type");
+}
+
+// 检查token是否需要刷新
+function checkAndRefreshToken() {
+  const userData = getUserData();
+  if (!userData) return;
+
+  // 验证access_token是否临近过期（小于24小时）
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = userData.access_token_expires - now;
+
+  // 如果token还有不到24小时过期，刷新token
+  if (expiresIn < 86400) {
+    // 24小时 = 86400秒
+    refreshToken(userData.refresh_token);
+  }
+}
+
+// 刷新token
+function refreshToken(refreshToken) {
+  fetch("http://web.novelbeautify.com/api/v1/auth/refresh", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      refresh_token: refreshToken,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.ok === 1) {
+        // 更新存储的token信息
+        const userData = getUserData();
+        const updatedUserData = {
+          ...userData,
+          access_token: data.data.access_token,
+          refresh_token: data.data.refresh_token,
+          access_token_expires: data.data.access_token_expires,
+          refresh_token_expires: data.data.refresh_token_expires,
+        };
+
+        // 保存更新后的数据
+        saveUserData(updatedUserData);
+        console.log("Token refreshed successfully");
+      } else {
+        console.error("Failed to refresh token:", data.message);
+        // 如果刷新失败，可能需要重新登录
+        if (data.message.includes("Invalid refresh token")) {
+          clearUserData();
+          // 可选：重定向到登录页面或显示需要重新登录的提示
+          showToast("Your session has expired. Please login again.", "info");
+          // 重置UI
+          userProfile.style.display = "none";
+          loginBtn.style.display = "block";
+          signupBtn.style.display = "block";
+          document.getElementById("creditsBadge").style.display = "none";
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error refreshing token:", error);
+    });
+}
+
+// 页面加载时检查登录状态
+document.addEventListener("DOMContentLoaded", function () {
+  // 检查是否有保存的登录信息
+  const userData = getUserData();
+  if (userData) {
+    updateUIAfterLogin(userData);
+    // 检查并刷新token
+    checkAndRefreshToken();
+  }
+
+  // 定期检查token是否需要刷新（每小时检查一次）
+  setInterval(checkAndRefreshToken, 3600000); // 3600000毫秒 = 1小时
 });
