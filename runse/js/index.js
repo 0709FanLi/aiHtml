@@ -201,21 +201,91 @@ closeAuthModal.addEventListener("click", hideAuthModal);
 // Logout functionality
 const logoutBtn = document.getElementById("logoutBtn");
 logoutBtn.addEventListener("click", () => {
-  // 重置登录状态变量
-  isLoggedIn = false;
-  usageCredits = 0;
+  // 显示加载中状态
+  loadingOverlay.style.display = "flex";
+  document.getElementsByClassName("loading-text")[0].textContent = "登出中...";
 
-  // Clear user data from localStorage
-  clearUserData();
+  // 获取用户token
+  const userData = getUserData();
+  if (userData && userData.access_token) {
+    // 调用登出API
+    fetch("http://web.novelbeautify.com/api/v1/auth/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${userData.token_type} ${userData.access_token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // 隐藏加载状态
+        loadingOverlay.style.display = "none";
 
-  // Reset UI
-  userProfile.style.display = "none";
-  loginBtn.style.display = "block";
-  signupBtn.style.display = "block";
-  document.getElementById("creditsBadge").style.display = "none";
+        // 重置登录状态变量
+        isLoggedIn = false;
+        usageCredits = 0;
 
-  // Show toast message
-  showToast("Logged out successfully", "info");
+        // 清空文本区域和文件上传
+        novelText.value = "";
+        fileInput.value = "";
+        fileName.textContent = "";
+
+        // 隐藏结果和历史区域
+        resultSection.style.display = "none";
+        historySection.style.display = "none";
+
+        // 返回首页状态
+        showSection("home");
+
+        // 清除用户数据
+        clearUserData();
+
+        // 重置UI
+        userProfile.style.display = "none";
+        loginBtn.style.display = "block";
+        signupBtn.style.display = "block";
+        document.getElementById("creditsBadge").style.display = "none";
+
+        // 显示提示消息
+        showToast("已成功登出", "info");
+      })
+      .catch((error) => {
+        console.error("登出错误:", error);
+        loadingOverlay.style.display = "none";
+        showToast("登出失败，请稍后再试", "error");
+      });
+  } else {
+    // 没有token的情况下，直接清除本地状态
+    loadingOverlay.style.display = "none";
+
+    // 重置登录状态变量
+    isLoggedIn = false;
+    usageCredits = 0;
+
+    // 清空文本区域和文件上传
+    novelText.value = "";
+    fileInput.value = "";
+    fileName.textContent = "";
+
+    // 隐藏结果和历史区域
+    resultSection.style.display = "none";
+    historySection.style.display = "none";
+
+    // 返回首页状态
+    showSection("home");
+
+    // 清除用户数据
+    clearUserData();
+
+    // 重置UI
+    userProfile.style.display = "none";
+    loginBtn.style.display = "block";
+    signupBtn.style.display = "block";
+    document.getElementById("creditsBadge").style.display = "none";
+
+    // 显示提示消息
+    showToast("已成功登出", "info");
+  }
 });
 
 // Forgot Password Event Listeners
