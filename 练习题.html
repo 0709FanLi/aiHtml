@@ -7931,6 +7931,61 @@
             URL.revokeObjectURL(url);
           }, 100);
         });
+
+        function viewQuiz(quizId) {
+          // 1. 在本地历史和收藏数组中查找
+          let quizData = allHistoryItems.find(item => item.id == quizId);
+          if (!quizData) {
+            quizData = allFavoriteItems.find(item => item.id == quizId);
+          }
+          if (!quizData) {
+            showNotification("error", "未找到数据", "无法找到该测验记录。");
+            return;
+          }
+
+          // 2. 构建内容
+          const title = `${quizData.grade_level} ${quizData.subject} ${quizData.make_comprehensive_test ? 'Comprehensive Test' : 'Quiz'}`;
+          const date = quizData.created_at ? (new Date(quizData.created_at)).toLocaleString() : '';
+          const questionHtml = quizData.question || '';
+          const answerHtml = quizData.answer || '';
+
+          // 3. 填充模态框
+          const body = document.getElementById("quiz-detail-body");
+          body.innerHTML = `
+            <div style="text-align:center;">
+              <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">${title}</div>
+              <div style="font-size:1rem;color:#666;margin-bottom:24px;">${date}</div>
+            </div>
+            <div id="quiz-detail-question" style="margin-bottom:32px;">
+              ${questionHtml}
+            </div>
+            <div id="quiz-detail-answer" style="display:none; margin-top:24px; background:#f8f9fa; border-radius:6px; padding:20px;">
+              <div style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">Answer Key</div>
+              ${answerHtml}
+            </div>
+          `;
+
+          // 4. 答案显示/隐藏逻辑
+          let answerVisible = false;
+          const answerDiv = document.getElementById("quiz-detail-answer");
+          const toggleBtn = document.getElementById("quiz-detail-toggle-answer");
+          toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> 显示答案`;
+
+          toggleBtn.onclick = function() {
+            answerVisible = !answerVisible;
+            if (answerVisible) {
+              answerDiv.style.display = "block";
+              toggleBtn.innerHTML = `<i class="fas fa-eye-slash me-1"></i> 隐藏答案`;
+            } else {
+              answerDiv.style.display = "none";
+              toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> 显示答案`;
+            }
+          };
+
+          // 5. 打开模态框
+          const modal = new bootstrap.Modal(document.getElementById("quizDetailModal"));
+          modal.show();
+        }
       </script>
       
       <!-- 添加删除确认模态框 -->
@@ -7956,5 +8011,25 @@
   <script src="js/dashboard/change_password.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- Quiz Detail Modal -->
+<div class="modal fade" id="quizDetailModal" tabindex="-1" aria-labelledby="quizDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quizDetailModalLabel">Show Answer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="quiz-detail-body">
+        <!-- 内容由JS动态填充 -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-primary" id="quiz-detail-toggle-answer">
+          <i class="fas fa-eye me-1"></i> Show Answer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
     </body>
   </html>
