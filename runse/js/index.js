@@ -847,7 +847,8 @@ function renderHistoryItems(
     `;
 
     historyItem.addEventListener("click", () => {
-      loadHistoryItem(item);
+      // 使用ID调用详情接口，而不是直接使用本地数据
+      fetchHistoryDetail(item.id);
     });
 
     historyList.appendChild(historyItem);
@@ -903,11 +904,106 @@ function renderHistoryItems(
   }
 }
 
-function loadHistoryItem(item) {
-  originalText.innerHTML = item.originalText;
-  enhancedText.innerHTML = item.enhancedText;
+// 获取历史记录详情
+function fetchHistoryDetail(recordId) {
+  const userData = getUserData();
+  if (!userData || !userData.access_token) {
+    console.error("No valid token found for fetching history detail");
+    return;
+  }
 
-  showSection("result");
+  loadingOverlay.style.display = "flex";
+  document.getElementsByClassName("loading-text")[0].textContent =
+    "Loading record details...";
+
+  // 调用获取历史记录详情API
+  fetch(`http://web.novelbeautify.com/api/v1/polish/detail`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `${userData.token_type} ${userData.access_token}`,
+    },
+    body: JSON.stringify({
+      record_id: recordId,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingOverlay.style.display = "none";
+
+      if (data.ok === 1 && data.data) {
+        // 显示详情
+        const item = {
+          id: data.data.id,
+          title: `Document ${data.data.id}`,
+          type: data.data.operation || "polish",
+          date: new Date(data.data.created_at).toLocaleString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          originalText: data.data.input || "",
+          enhancedText: data.data.output || "",
+        };
+
+        loadHistoryItem(item);
+      } else {
+        console.error("Failed to load history detail:", data);
+        showToast("Failed to load record details", "error");
+      }
+    })
+    .catch((error) => {
+      loadingOverlay.style.display = "none";
+      console.error("Error fetching history detail:", error);
+      showToast(
+        "Failed to load record details. Please try again later.",
+        "error"
+      );
+    });
+}
+
+// 清空所有历史记录
+function clearAllHistory() {
+  const userData = getUserData();
+  if (!userData || !userData.access_token) {
+    console.error("No valid token found for clearing history");
+    return;
+  }
+
+  loadingOverlay.style.display = "flex";
+  document.getElementsByClassName("loading-text")[0].textContent =
+    "Clearing history...";
+
+  // 调用清空历史记录API
+  fetch(`http://web.novelbeautify.com/api/v1/polish/clear`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `${userData.token_type} ${userData.access_token}`,
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      loadingOverlay.style.display = "none";
+
+      if (data.ok === 1) {
+        // 清空本地历史记录数组
+        userHistory = [];
+        // 重新渲染历史记录列表（显示空状态）
+        renderHistoryItems();
+        showToast("History cleared successfully", "success");
+      } else {
+        console.error("Failed to clear history:", data);
+        showToast(data.message || "Failed to clear history", "error");
+      }
+    })
+    .catch((error) => {
+      loadingOverlay.style.display = "none";
+      console.error("Error clearing history:", error);
+      showToast("Failed to clear history. Please try again later.", "error");
+    });
 }
 
 // Create a custom confirmation modal for the page
@@ -994,14 +1090,31 @@ function showConfirmationModal(message, confirmCallback) {
   });
 }
 
-// Replace the original confirm in clearHistoryBtn event
+// 修改原有的加载历史记录项函数，增加点击时获取详情
+function loadHistoryItem(item) {
+  // 如果传入的是ID，则调用API获取详情
+  if (
+    typeof item === "number" ||
+    (typeof item === "object" && Object.keys(item).length === 1 && item.id)
+  ) {
+    const recordId = typeof item === "number" ? item : item.id;
+    fetchHistoryDetail(recordId);
+    return;
+  }
+
+  // 否则直接使用传入的完整记录信息
+  originalText.innerHTML = item.originalText;
+  enhancedText.innerHTML = item.enhancedText;
+
+  showSection("result");
+}
+
+// 替换原有的清空历史按钮事件处理
 clearHistoryBtn.addEventListener("click", () => {
   showConfirmationModal(
     "Are you sure you want to clear your history? This cannot be undone.",
     () => {
-      userHistory = [];
-      renderHistoryItems();
-      showToast("History cleared successfully", "success");
+      clearAllHistory();
     }
   );
 });
