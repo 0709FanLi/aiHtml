@@ -5222,7 +5222,16 @@
               
               // 检查API返回是否成功
               if (responseData.ok !== 1) {
-                throw new Error(responseData.message || "登录失败");
+                // 登录失败，直接用showNotification提示中文原因
+                showNotification(
+                  "error",
+                  "登录失败",
+                  responseData.message || "邮箱或密码不正确，请重试。"
+                );
+                // 恢复按钮状态
+                loginSubmitButton.disabled = false;
+                loginSubmitButton.innerHTML = originalButtonText;
+                return;
               }
               
               // 获取API返回的数据
@@ -5281,8 +5290,8 @@
               // 显示成功通知
               showNotification(
                 "success",
-                "Login Successful",
-                "Welcome back, " + currentUser.name + "!"
+                "登录成功",
+                "欢迎回来，" + currentUser.name + "!"
               );
               
               // 登录成功后导航到generator页面
@@ -5290,8 +5299,15 @@
                 navigateTo('generator');
               }, 1000);
             } else {
-              // 登录失败，抛出错误
-              throw new Error(result.data.error || `登录失败，状态码: ${result.status}`);
+              // 登录失败，直接用showNotification提示中文原因
+              showNotification(
+                "error",
+                "登录失败",
+                result.data.error || "邮箱或密码不正确，请重试。"
+              );
+              // 恢复按钮状态
+              loginSubmitButton.disabled = false;
+              loginSubmitButton.innerHTML = originalButtonText;
             }
           })
           .catch(error => {
@@ -7167,7 +7183,11 @@
                 }
               }
               
-              throw new Error(result.data.message || "Failed to delete quiz");
+              showNotification(
+                "error",
+                "Delete Failed",
+                result.data.message || "An error occurred while deleting quiz. Please try again later."
+              );
             }
           })
           .catch(error => {
