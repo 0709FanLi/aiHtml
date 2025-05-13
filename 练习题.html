@@ -7705,6 +7705,158 @@
             }
           }
         }
+
+        // ... 现有代码 ...
+
+        // PDF 导出功能
+        document.getElementById("download-pdf").addEventListener("click", async function () {
+          const previewContent = document.getElementById("preview-content");
+          if (!previewContent || previewContent.style.display === "none") {
+            showNotification("warning", "导出失败", "请先生成测验内容");
+            return;
+          }
+
+          // 标题和日期
+          const title = document.getElementById("preview-title")?.textContent || "Quiz";
+          const date = document.getElementById("preview-date")?.textContent || "";
+
+          // 题目部分
+          const questions = previewContent.querySelector(".generated-questions");
+          // 答案部分
+          const answer = previewContent.querySelector(".question-answer");
+
+          // 1. 生成题目页
+          let exportDiv1 = document.createElement("div");
+          exportDiv1.style.position = "fixed";
+          exportDiv1.style.left = "-99999px";
+          exportDiv1.style.top = "0";
+          exportDiv1.style.width = "800px";
+          exportDiv1.style.background = "#fff";
+          exportDiv1.style.padding = "48px 40px 40px 40px";
+          exportDiv1.style.fontFamily = "Open Sans, Arial, sans-serif";
+          exportDiv1.style.color = "#222";
+          exportDiv1.style.lineHeight = "1.6";
+          exportDiv1.innerHTML = `
+            <div style="text-align:center;">
+              <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">${title}</div>
+              <div style="font-size:1rem;color:#666;margin-bottom:24px;">Generated on ${date}</div>
+            </div>
+          `;
+          if (questions) {
+            const qClone = questions.cloneNode(true);
+            qClone.style.marginBottom = "32px";
+            exportDiv1.appendChild(qClone);
+          }
+          document.body.appendChild(exportDiv1);
+
+          // 2. 生成答案页（如果需要）
+          let exportDiv2 = null;
+          if (showingAnswers && answer) {
+            exportDiv2 = document.createElement("div");
+            exportDiv2.style.position = "fixed";
+            exportDiv2.style.left = "-99999px";
+            exportDiv2.style.top = "0";
+            exportDiv2.style.width = "800px";
+            exportDiv2.style.background = "#fff";
+            exportDiv2.style.padding = "48px 40px 40px 40px";
+            exportDiv2.style.fontFamily = "Open Sans, Arial, sans-serif";
+            exportDiv2.style.color = "#222";
+            exportDiv2.style.lineHeight = "1.6";
+            // 英文标题
+            exportDiv2.innerHTML = `
+              <div style="text-align:center;">
+                <div style="font-size:1.25rem;font-weight:700;margin-bottom:20px;">Answer Key</div>
+              </div>
+            `;
+            const aClone = answer.cloneNode(true);
+            aClone.style.display = "block";
+            aClone.style.background = "none";
+            aClone.style.color = "#222";
+            aClone.style.fontSize = "1rem";
+            aClone.style.padding = "0";
+            exportDiv2.appendChild(aClone);
+            document.body.appendChild(exportDiv2);
+          }
+
+          // 3. 截图并生成PDF
+          try {
+            // 题目页截图
+            const canvas1 = await html2canvas(exportDiv1, {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#fff"
+            });
+
+            // PDF参数
+            const pdf = new window.jspdf.jsPDF({
+              orientation: "p",
+              unit: "pt",
+              format: "a4"
+            });
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            // 题目分页
+            let renderedHeight = 0;
+            let pageNum = 0;
+            while (renderedHeight < canvas1.height) {
+              const pageCanvas = document.createElement("canvas");
+              pageCanvas.width = canvas1.width;
+              pageCanvas.height = Math.min(canvas1.height - renderedHeight, Math.round(pageHeight * canvas1.width / pageWidth));
+              const ctx = pageCanvas.getContext("2d");
+              ctx.fillStyle = "#fff";
+              ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+              ctx.drawImage(
+                canvas1,
+                0, renderedHeight, canvas1.width, pageCanvas.height,
+                0, 0, canvas1.width, pageCanvas.height
+              );
+              const pageData = pageCanvas.toDataURL("image/jpeg", 1.0);
+
+              if (pageNum > 0) pdf.addPage();
+              pdf.addImage(pageData, "JPEG", 0, 0, pageWidth, pageCanvas.height * (pageWidth / canvas1.width));
+              renderedHeight += pageCanvas.height;
+              pageNum++;
+            }
+
+            // 答案分页
+            if (exportDiv2) {
+              const canvas2 = await html2canvas(exportDiv2, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#fff"
+              });
+              renderedHeight = 0;
+              pageNum = 0;
+              while (renderedHeight < canvas2.height) {
+                pdf.addPage();
+                const pageCanvas = document.createElement("canvas");
+                pageCanvas.width = canvas2.width;
+                pageCanvas.height = Math.min(canvas2.height - renderedHeight, Math.round(pageHeight * canvas2.width / pageWidth));
+                const ctx = pageCanvas.getContext("2d");
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                ctx.drawImage(
+                  canvas2,
+                  0, renderedHeight, canvas2.width, pageCanvas.height,
+                  0, 0, canvas2.width, pageCanvas.height
+                );
+                const pageData = pageCanvas.toDataURL("image/jpeg", 1.0);
+
+                pdf.addImage(pageData, "JPEG", 0, 0, pageWidth, pageCanvas.height * (pageWidth / canvas2.width));
+                renderedHeight += pageCanvas.height;
+                pageNum++;
+              }
+            }
+
+            pdf.save(`${title}.pdf`);
+          } catch (err) {
+            showNotification("error", "导出失败", "PDF生成失败，请重试");
+          } finally {
+            exportDiv1.remove();
+            if (exportDiv2) exportDiv2.remove();
+          }
+        });
       </script>
       
       <!-- 添加删除确认模态框 -->
@@ -7728,5 +7880,7 @@
   <!-- Dashboard Recent Activity Script -->
   <script src="js/dashboard/recent_activity.js"></script>
   <script src="js/dashboard/change_password.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     </body>
   </html>
