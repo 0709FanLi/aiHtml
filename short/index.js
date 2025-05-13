@@ -846,36 +846,44 @@ function generateStory(e) {
   // Show loading overlay
   elements.loadingOverlay.style.display = "flex";
 
-  // 真实API调用的话可以替换为：
-  if (false && state.isLoggedIn) {
-    // 设置为true来启用API调用，目前保持false使用本地生成
-    // 使用授权token调用API
+  // 从localStorage获取token
+  const token = localStorage.getItem("token");
+
+  if (state.isLoggedIn && token) {
+    // 构造请求数据
     const requestData = {
       story_type: storyType,
       time_period: timePeriod,
-      background: background,
+      story_background: background,
     };
 
-    fetch("http://web.colstory.com/api/v1/stories/generate", {
+    console.log("发送小说生成请求:", requestData);
+    console.log("使用的Token:", token);
+
+    // 调用真实API
+    fetch("http://web.colstory.com/api/v1/story/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${state.user.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(requestData),
     })
       .then(async (res) => {
         const data = await res.json();
+        console.log("小说生成响应:", data);
 
         // 隐藏加载覆盖层
         elements.loadingOverlay.style.display = "none";
 
-        if (res.ok || data.success || data.status === "success") {
+        if (res.ok || data.ok === 1) {
           // 解析故事数据
           const storyData = data.data || {};
           const story = {
             id: storyData.id || generateId(),
-            title: storyData.title || "Generated Story",
+            title: `${capitalizeFirst(storyType)} Story: ${capitalizeFirst(
+              timePeriod
+            )} ${capitalizeFirst(background)}`,
             type: storyType,
             period: timePeriod,
             background: background,
@@ -903,6 +911,9 @@ function generateStory(e) {
 
           // 滚动到输出区域
           elements.storyOutput.scrollIntoView({ behavior: "smooth" });
+
+          // 显示成功消息
+          showToast(data.message || "Story generated successfully!", "success");
         } else {
           showToast(
             data.message || "Failed to generate story. Please try again.",
