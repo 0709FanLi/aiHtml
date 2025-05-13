@@ -201,6 +201,10 @@ closeAuthModal.addEventListener("click", hideAuthModal);
 // Logout functionality
 const logoutBtn = document.getElementById("logoutBtn");
 logoutBtn.addEventListener("click", () => {
+  // 重置登录状态变量
+  isLoggedIn = false;
+  usageCredits = 0;
+
   // Clear user data from localStorage
   clearUserData();
 
@@ -466,6 +470,11 @@ registerSubmitBtn.addEventListener("click", () => {
 
 // Update UI after login
 function updateUIAfterLogin(userData) {
+  // 设置全局登录状态为true
+  isLoggedIn = true;
+  // 更新积分数量
+  usageCredits = userData.user.credits;
+
   // 隐藏登录和注册按钮
   loginBtn.style.display = "none";
   signupBtn.style.display = "none";
@@ -1363,79 +1372,15 @@ function clearUserData() {
   localStorage.removeItem("token_type");
 }
 
-// 检查token是否需要刷新
-function checkAndRefreshToken() {
-  const userData = getUserData();
-  if (!userData) return;
-
-  // 验证access_token是否临近过期（小于24小时）
-  const now = Math.floor(Date.now() / 1000);
-  const expiresIn = userData.access_token_expires - now;
-
-  // 如果token还有不到24小时过期，刷新token
-  if (expiresIn < 86400) {
-    // 24小时 = 86400秒
-    refreshToken(userData.refresh_token);
-  }
-}
-
-// 刷新token
-function refreshToken(refreshToken) {
-  fetch("http://web.novelbeautify.com/api/v1/auth/refresh", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      refresh_token: refreshToken,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.ok === 1) {
-        // 更新存储的token信息
-        const userData = getUserData();
-        const updatedUserData = {
-          ...userData,
-          access_token: data.data.access_token,
-          refresh_token: data.data.refresh_token,
-          access_token_expires: data.data.access_token_expires,
-          refresh_token_expires: data.data.refresh_token_expires,
-        };
-
-        // 保存更新后的数据
-        saveUserData(updatedUserData);
-        console.log("Token refreshed successfully");
-      } else {
-        console.error("Failed to refresh token:", data.message);
-        // 如果刷新失败，可能需要重新登录
-        if (data.message.includes("Invalid refresh token")) {
-          clearUserData();
-          // 可选：重定向到登录页面或显示需要重新登录的提示
-          showToast("Your session has expired. Please login again.", "info");
-          // 重置UI
-          userProfile.style.display = "none";
-          loginBtn.style.display = "block";
-          signupBtn.style.display = "block";
-          document.getElementById("creditsBadge").style.display = "none";
-        }
-      }
-    })
-    .catch((error) => {
-      console.error("Error refreshing token:", error);
-    });
-}
-
 // 页面加载时检查登录状态
 document.addEventListener("DOMContentLoaded", function () {
   // 检查是否有保存的登录信息
   const userData = getUserData();
   if (userData) {
+    // 重要：设置全局登录状态为true
+    isLoggedIn = true;
+    // 设置全局积分变量
+    usageCredits = userData.user.credits;
     updateUIAfterLogin(userData);
-    // 检查并刷新token
-    checkAndRefreshToken();
   }
-
-  // 定期检查token是否需要刷新（每小时检查一次）
-  setInterval(checkAndRefreshToken, 3600000); // 3600000毫秒 = 1小时
 });
