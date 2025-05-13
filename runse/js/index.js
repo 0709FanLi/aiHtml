@@ -394,8 +394,8 @@ getVerificationBtn.addEventListener("click", () => {
   document.getElementsByClassName("loading-text")[0].textContent =
     "Sending verification code...";
 
-  // 调用获取验证码API
-  fetch("http://web.novelbeautify.com/api/v1/auth/send-code", {
+  // 调用获取验证码API - 使用正确的接口
+  fetch("http://web.novelbeautify.com/api/v1/auth/email-verification", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -460,16 +460,16 @@ resetSubmitBtn.addEventListener("click", () => {
   const md5ConfirmPassword = md5(confirmPassword);
 
   // 调用重置密码API
-  fetch("http://web.novelbeautify.com/api/v1/auth/reset-password", {
+  fetch("http://web.novelbeautify.com/api/v1/auth/forgot-password", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       email: resetEmail,
-      code: verificationCode,
+      verification_code: verificationCode,
       password: md5Password,
-      password_confirmation: md5ConfirmPassword,
+      password_confirm: md5ConfirmPassword,
     }),
   })
     .then((response) => response.json())
