@@ -1211,7 +1211,7 @@
         
         
         /* 确保只有最上层的蒙层可见 */
-        .custom-backdrop {
+        /* .custom-backdrop {
           position: fixed;
           top: 0;
           left: 0;
@@ -1219,7 +1219,7 @@
           height: 100vh;
           background-color: rgba(0, 0, 0, 0.5);
           z-index: 2000;
-        }
+        } */
         .relative {
           position: relative;
         }
@@ -6224,17 +6224,68 @@
           navigateTo("generator");
         }
 
+        // 在openTermsModal和openPrivacyModal函数中添加关闭事件监听，确保蒙层被正确移除
+
         function openTermsModal(event) {
           if (event) event.preventDefault();
-          const modal = new bootstrap.Modal(document.getElementById("termsModal"));
+          
+          // 移除可能存在的任何modal-backdrop元素
+          document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+          });
+          
+          const termsModalEl = document.getElementById("termsModal");
+          const modal = new bootstrap.Modal(termsModalEl);
+          
+          // 添加隐藏事件监听器，确保蒙层被移除
+          termsModalEl.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+              backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+          }, {once: true});
+          
           modal.show();
         }
-        
+
         function openPrivacyModal(event) {
           if (event) event.preventDefault();
-          const modal = new bootstrap.Modal(document.getElementById("privacyModal"));
+          
+          // 移除可能存在的任何modal-backdrop元素
+          document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+          });
+          
+          const privacyModalEl = document.getElementById("privacyModal");
+          const modal = new bootstrap.Modal(privacyModalEl);
+          
+          // 添加隐藏事件监听器，确保蒙层被移除
+          privacyModalEl.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+              backdrop.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+          }, {once: true});
+          
           modal.show();
         }
+
+        // 在document ready或window.onload中添加这段代码
+        window.addEventListener('load', function() {
+          // 清理可能存在的模态框蒙层
+          document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+          });
+          
+          // 重置body样式
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
         
         function openCookieModal(event) {
           if (event) event.preventDefault();
@@ -8027,13 +8078,6 @@
           modal.show();
         }
 
-        function removeAllModalBackdrops() {
-          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-          document.body.classList.remove('modal-open');
-        }
-
-        document.getElementById('termsModal').addEventListener('hidden.bs.modal', removeAllModalBackdrops);
-        document.getElementById('privacyModal').addEventListener('hidden.bs.modal', removeAllModalBackdrops);
       </script>
       
       <!-- 添加删除确认模态框 -->
