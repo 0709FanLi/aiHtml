@@ -7887,8 +7887,10 @@
                 .word-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
                 .word-date { text-align: center; font-size: 1rem; color: #666; margin-bottom: 24px; }
                 .word-questions { margin-bottom: 32px; }
-                .word-answer-title { page-break-before: always; text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
+                .word-answer-title { text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
                 .word-answer { }
+                /* 兼容性分页 */
+                .page-break { page-break-before: always; mso-break-type: section-break; }
               </style>
             </head>
             <body>
@@ -7901,7 +7903,9 @@
 
           // 答案区
           if (showingAnswers && answer) {
+            // 插入标准分页符（Word专用）
             wordHtml += `
+              <div class="page-break"></div>
               <div class="word-answer-title">Answer Key</div>
               <div class="word-answer">
                 ${answer.innerHTML}
