@@ -1209,10 +1209,6 @@
           z-index: 2050 !important;
         }
         
-        /* 移除多余的模态框背景样式 */
-        body.multiple-modals .modal-backdrop.fade.show:not(:last-child) {
-          display: none !important;
-        }
         
         /* 确保只有最上层的蒙层可见 */
         .custom-backdrop {
@@ -4484,6 +4480,8 @@
               document.querySelector('.nav-link[data-tab="dashboard-overview"]').click();
               // 加载Recent Activity数据
               updateRecentActivity();
+              // 加载Dashboard统计数据
+              fetchDashboardStatsAndUpdateUI();
               
               // 如果直接访问account-settings页面，加载用户资料
               if (window.location.hash.includes("account-settings")) {
@@ -4770,6 +4768,8 @@
           if (tabId === "dashboard-overview") {
             // 加载最近活动数据
             updateRecentActivity();
+            // 加载Dashboard统计数据
+            fetchDashboardStatsAndUpdateUI();
           }
           
           // 如果切换到历史记录标签页，加载历史记录数据
@@ -6834,6 +6834,46 @@
           });
         }
 
+        async function fetchDashboardStatsAndUpdateUI() {
+          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken") || "";
+          if (!accessToken) return;
+
+          try {
+            const response = await fetch('http://web.practicesnow.com/api/v1/quiz/dashboard', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+              }
+            });
+            const result = await response.json();
+            if (result.ok === 1 && result.data) {
+              const cards = document.querySelectorAll('.dashboard-content .row.mb-4 .card');
+              if (cards.length >= 3) {
+                // Total Quizzes
+                cards[0].querySelector('h3').textContent = result.data.total_quizzes;
+                // Last Activity（只显示年月日）
+                let lastActivity = result.data.latest_quiz_time;
+                if (!lastActivity || lastActivity === 0) {
+                  lastActivity = "No activity";
+                } else {
+                  const date = new Date(lastActivity * 1000);
+                  const y = date.getFullYear();
+                  const m = String(date.getMonth() + 1).padStart(2, '0');
+                  const d = String(date.getDate()).padStart(2, '0');
+                  lastActivity = `${y}/${m}/${d}`;
+                }
+                cards[1].querySelector('h3').textContent = lastActivity;
+                // Favorites
+                cards[2].querySelector('h3').textContent = result.data.total_favorites;
+              }
+            }
+          } catch (e) {
+            console.error("Failed to fetch dashboard stats", e);
+          }
+        }
+
         // 显示历史测验内容
         function displayHistoryQuiz(quizData) {
           // 更新预览标题
@@ -7986,6 +8026,14 @@
           const modal = new bootstrap.Modal(document.getElementById("quizDetailModal"));
           modal.show();
         }
+
+        function removeAllModalBackdrops() {
+          document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+          document.body.classList.remove('modal-open');
+        }
+
+        document.getElementById('termsModal').addEventListener('hidden.bs.modal', removeAllModalBackdrops);
+        document.getElementById('privacyModal').addEventListener('hidden.bs.modal', removeAllModalBackdrops);
       </script>
       
       <!-- 添加删除确认模态框 -->
