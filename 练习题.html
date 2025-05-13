@@ -4871,8 +4871,6 @@
               // 更新UI显示已登录状态
               updateUIForLoggedInUser();
               
-              // 验证令牌有效性（可选，如果需要立即验证令牌）
-              validateToken();
             } catch (e) {
               console.error("Error parsing user data:", e);
               // 数据解析错误，清除存储并保持未登录状态
@@ -4893,39 +4891,6 @@
           }
         }
 
-        function validateToken() {
-          // 获取访问令牌
-          const accessToken = localStorage.getItem("accessToken") || sessionStorage.getItem("accessToken");
-          
-          if (!accessToken) return;
-          
-          // 调用验证API，例如获取用户信息或执行简单验证
-          fetch('http://web.practicesnow.com/api/v1/auth/validate', {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            }
-          })
-          .then(response => {
-            if (response.status === 401) {
-              // 令牌无效，尝试刷新
-              const refreshToken = localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
-              if (refreshToken) {
-                refreshTokenAndRetry();
-              } else {
-                // 无法刷新，需要重新登录
-                handleSessionExpired();
-              }
-            }
-          })
-          .catch(error => {
-            console.warn("Token validation failed:", error);
-            // 仅记录错误，不强制登出，避免网络问题导致误登出
-          });
-        }
-
-        
         document.addEventListener('DOMContentLoaded', function() {
           // 获取验证码
           const sendCodeBtn = document.getElementById('send-code-btn');
