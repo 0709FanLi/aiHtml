@@ -8,6 +8,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <!-- Add MD5 Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
     <style>
       /* Global Styles */
       :root {
@@ -3027,17 +3029,83 @@
           return;
         }
 
-        // Simulate login
+        // Show loading overlay
         loadingOverlay.style.display = "flex";
+        document.getElementsByClassName("loading-text")[0].textContent =
+          "Logging in...";
 
-        setTimeout(() => {
-          loadingOverlay.style.display = "none";
-          isLoggedIn = true;
-          usageCredits = 30; // Starting credits
-          updateUIAfterLogin();
-          hideAuthModal();
-          showToast("Successfully logged in!", "success");
-        }, 1500);
+        // Encrypt the password with MD5
+        const md5Password = md5(password);
+
+        // Prepare login data
+        const loginData = {
+          email: email,
+          password: md5Password,
+        };
+
+        // Call login API
+        fetch("http://web.novelbeautify.com/api/v1/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(loginData),
+        })
+          .then((response) => {
+            // Check response status
+            const isSuccess = response.status >= 200 && response.status < 300;
+            // Parse JSON response
+            return response.json().then((data) => {
+              return { isSuccess, data, status: response.status };
+            });
+          })
+          .then((result) => {
+            if (result.isSuccess) {
+              // Login successful
+              const responseData = result.data;
+
+              // Check if API returned success
+              if (responseData.ok !== 1) {
+                throw new Error(responseData.message || "Login failed");
+              }
+
+              // Get user data from response
+              const data = responseData.data;
+              const userData = data.user;
+
+              // Set login state and credits
+              isLoggedIn = true;
+              usageCredits = 30; // Can be adjusted based on API response
+
+              // Update user name display
+              document.getElementById("userName").textContent = userData.name;
+
+              // Store tokens if needed
+              // localStorage.setItem("accessToken", data.access_token);
+
+              updateUIAfterLogin();
+              hideAuthModal();
+              showToast("Successfully logged in!", "success");
+            } else {
+              // Login failed
+              throw new Error(
+                result.data.error ||
+                  `Login failed, status code: ${result.status}`
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Login error:", error);
+            showToast(
+              error.message || "Email or password is incorrect",
+              "error"
+            );
+          })
+          .finally(() => {
+            // Hide loading overlay
+            loadingOverlay.style.display = "none";
+          });
       });
 
       // Register Form Submission
