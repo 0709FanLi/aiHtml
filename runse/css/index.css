@@ -279,6 +279,7 @@ nav {
 .file-upload {
   display: flex;
   margin-bottom: 20px;
+  align-items: center;
 }
 
 .file-upload input[type="file"] {
@@ -309,6 +310,8 @@ nav {
   margin-left: 10px;
   font-style: italic;
   color: rgba(240, 240, 240, 0.7);
+  display: flex;
+  align-items: center;
 }
 
 .action-buttons {

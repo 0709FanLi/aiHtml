@@ -685,14 +685,19 @@ fileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     fileName.textContent = file.name;
 
-    // Simulate file reading
-    setTimeout(() => {
-      // For demo, just create some fake text based on the file name
-      const fakeText = `This is a sample text extracted from ${file.name}. In the distant kingdom of Eldoria, magic flowed through the land like rivers of liquid starlight. Wizards walked among commoners, their robes shimmering with power, their staffs adorned with crystals that pulsed in rhythm with their heartbeats. The young apprentice Thorne stared in awe at the Grand Academy of Arcane Arts, its towers spiraling impossibly high, defying both gravity and logic. Today was his first day, and his hands trembled with equal parts excitement and terror.`;
+    // 清空文本输入框
+    novelText.value = "";
+  } else {
+    fileName.textContent = "";
+  }
+});
 
-      novelText.value = fakeText;
-      showToast("File content loaded successfully", "success");
-    }, 1000);
+// 当文本输入框有输入内容时清空文件选择
+novelText.addEventListener("input", () => {
+  if (novelText.value.trim() !== "" && fileInput.files.length > 0) {
+    // 清空文件选择
+    fileInput.value = "";
+    fileName.textContent = "";
   }
 });
 
