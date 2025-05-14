@@ -23,22 +23,73 @@ function showNotification(type, title, message, duration = 3000) {
   const notification = document.getElementById("notification");
   const notificationTitle = document.getElementById("notification-title");
   const notificationMessage = document.getElementById("notification-message");
+  const notificationClose = document.getElementById("notification-close");
 
-  notification.className = "notification";
+  // 清除之前的类
+  notification.classList.remove("notification-success");
+  notification.classList.remove("notification-error");
+  notification.classList.remove("notification-info");
+  notification.classList.remove("notification-warning");
+
+  // 添加新的类和内容
   notification.classList.add(`notification-${type}`);
-  notification.classList.add("show");
-
   notificationTitle.textContent = title;
   notificationMessage.textContent = message;
 
-  setTimeout(() => {
-    notification.classList.remove("show");
+  // 显示通知
+  notification.classList.add("show-notification");
+
+  // 设置自动关闭
+  const autoCloseTimeout = setTimeout(() => {
+    notification.classList.remove("show-notification");
   }, duration);
+
+  // 添加关闭按钮事件
+  notificationClose.onclick = function () {
+    clearTimeout(autoCloseTimeout);
+    notification.classList.remove("show-notification");
+  };
 }
 
+// 格式化日期的辅助函数
 function formatDate(date = new Date()) {
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return date.toLocaleDateString("en-US", options);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+// 时间格式化辅助函数 - 从recent_activity.js复制以保证一致性
+function formatTimeAgo(date) {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "Just now";
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`;
+  }
+
+  // 超过一周显示具体日期
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function generateRandomId(length = 8) {
@@ -339,27 +390,18 @@ document.addEventListener("DOMContentLoaded", function () {
   if (initialHash === "dashboard") {
     if (isLoggedIn) {
       setupRouting();
-      // 默认显示dashboard overview标签
-      document
-        .querySelector('.nav-link[data-tab="dashboard-overview"]')
-        .click();
-      // 加载Recent Activity数据
-      updateRecentActivity();
-      // 加载Dashboard统计数据
-      fetchDashboardStatsAndUpdateUI();
-
-      // 如果直接访问account-settings页面，加载用户资料
-      if (window.location.hash.includes("account-settings")) {
-        loadUserProfile();
-      }
     } else {
-      // 如果未登录但尝试访问dashboard，重定向到首页
+      // 如果未登录且尝试访问dashboard，重定向到主页
       window.location.hash = "home";
       setupRouting();
     }
   } else {
-    // 设置路由
     setupRouting();
+  }
+
+  // 检查是否需要显示Cookie通知
+  if (!localStorage.getItem("cookieNoticeAccepted")) {
+    showCookieNotice();
   }
 
   // 手动添加Terms和Privacy点击事件
@@ -2291,11 +2333,23 @@ function navigateTo(section) {
 
   // 特殊处理：在导航到dashboard时激活默认子标签
   if (section === "dashboard" && isLoggedIn) {
-    // 默认选中dashboard overview标签
-    const dashboardOverviewLink = document.querySelector(
-      '.nav-link[data-tab="dashboard-overview"]'
+    // 检查是否有子标签指定（如dashboard#account-settings）
+    const subSection = window.location.hash.split("#")[1] || "";
+
+    // 默认选中dashboard overview标签或指定的子标签
+    let tabToActivate = "dashboard-overview";
+
+    if (subSection === "account-settings") {
+      tabToActivate = "account-settings";
+      // 加载用户资料
+      loadUserProfile();
+    }
+
+    const dashboardTabLink = document.querySelector(
+      `.nav-link[data-tab="${tabToActivate}"]`
     );
-    if (dashboardOverviewLink) {
+
+    if (dashboardTabLink) {
       // 移除所有dashboard标签的active类
       document
         .querySelectorAll(".dashboard-sidebar .nav-link")
@@ -2303,26 +2357,24 @@ function navigateTo(section) {
           link.classList.remove("active");
         });
 
-      // 为dashboard overview添加active类
-      dashboardOverviewLink.classList.add("active");
+      // 为选定标签添加active类
+      dashboardTabLink.classList.add("active");
 
       // 隐藏所有dashboard内容
       document.querySelectorAll(".dashboard-tab").forEach((tab) => {
         tab.style.display = "none";
       });
 
-      // 显示dashboard overview内容
-      const dashboardOverviewTab =
-        document.getElementById("dashboard-overview");
-      if (dashboardOverviewTab) {
-        dashboardOverviewTab.style.display = "block";
+      // 显示选定标签内容
+      const dashboardTabContent = document.getElementById(tabToActivate);
+      if (dashboardTabContent) {
+        dashboardTabContent.style.display = "block";
       }
 
-      // 更新最近活动列表
-      updateRecentActivity();
-
-      // 更新Dashboard统计数据
-      fetchDashboardStatsAndUpdateUI();
+      // 如果选择的是dashboard overview，则更新最近活动列表
+      if (tabToActivate === "dashboard-overview") {
+        updateRecentActivity();
+      }
     }
   }
 }
@@ -3085,16 +3137,12 @@ async function fetchDashboardStatsAndUpdateUI() {
           totalQuizzes;
       }
 
-      // 更新最后活动时间
-      if (result.data.latest_quiz_time) {
+      // 更新最后活动时间 - 使用相对时间格式化而不是日期
+      if (result.data.latest_quiz_time && result.data.latest_quiz_time !== 0) {
         const timestamp = result.data.latest_quiz_time;
-        if (timestamp && timestamp !== 0) {
-          const date = new Date(timestamp * 1000);
-          const y = date.getFullYear();
-          const m = String(date.getMonth() + 1).padStart(2, "0");
-          const d = String(date.getDate()).padStart(2, "0");
-          lastActivity = `${y}/${m}/${d}`;
-        }
+        const date = new Date(timestamp * 1000);
+        // 使用formatTimeAgo函数格式化时间
+        lastActivity = formatTimeAgo(date);
         document.getElementById("dashboard-last-activity").textContent =
           lastActivity;
       }

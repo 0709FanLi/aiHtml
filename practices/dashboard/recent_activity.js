@@ -15,6 +15,9 @@ function updateRecentActivity() {
     return;
   }
 
+  // 更新Dashboard统计数据
+  fetchDashboardStatsAndUpdateUI();
+
   // 构建请求参数（使用和历史记录相同的接口，但只取前3条）
   const requestData = {
     page: 1,
@@ -43,35 +46,6 @@ function updateRecentActivity() {
         // 成功获取数据
         const responseData = result.data.data;
         const quizItems = responseData.items;
-
-        // 更新Dashboard的统计卡片
-        // 总测验数量
-        var totalQuizzesElem = document.getElementById(
-          "dashboard-total-quizzes"
-        );
-        if (totalQuizzesElem)
-          totalQuizzesElem.textContent = responseData.total || 0;
-
-        // 上次活动时间
-        if (quizItems && quizItems.length > 0) {
-          const lastActivity = formatTimeAgo(new Date(quizItems[0].created_at));
-          var lastActivityElem = document.getElementById(
-            "dashboard-last-activity"
-          );
-          if (lastActivityElem) lastActivityElem.textContent = lastActivity;
-        } else {
-          var lastActivityElem = document.getElementById(
-            "dashboard-last-activity"
-          );
-          if (lastActivityElem) lastActivityElem.textContent = "No activity";
-        }
-
-        // 收藏数量（统计is_favorite为true的项目）
-        const favoriteCount = quizItems.filter(
-          (item) => item.is_favorite
-        ).length;
-        var favoritesElem = document.getElementById("dashboard-favorites");
-        if (favoritesElem) favoritesElem.textContent = favoriteCount;
 
         // 更新Recent Activity列表
         const recentActivityList = document.querySelector(
