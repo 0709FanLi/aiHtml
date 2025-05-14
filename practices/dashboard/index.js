@@ -400,9 +400,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // 检查是否需要显示Cookie通知
-  if (!localStorage.getItem("cookieNoticeAccepted")) {
-    showCookieNotice();
-  }
+  // if (!localStorage.getItem("cookieNoticeAccepted")) {
+  //   showCookieNotice();
+  // }
 
   // 手动添加Terms和Privacy点击事件
   document
@@ -427,39 +427,50 @@ document.addEventListener("DOMContentLoaded", function () {
   const authModal = document.getElementById("authModal");
   if (authModal) {
     authModal.addEventListener("hidden.bs.modal", function () {
-      // 只有在未设置data-reset-form='false'时才重置表单
-      if (authModal.getAttribute("data-reset-form") !== "false") {
-        resetAuthForms();
-      }
-      // 重置控制属性，确保下次正常重置
+      // 始终重置表单，不考虑data-reset-form属性
+      resetAuthForms();
+      // 重置控制属性
       authModal.removeAttribute("data-reset-form");
+      // 清除data-keep-email属性
+      authModal.removeAttribute("data-keep-email");
     });
   }
 
-  // 添加重置重置密码弹窗的功能
+  // 添加重置密码弹窗的功能
   const resetPasswordModal = document.getElementById("resetPasswordModal");
   if (resetPasswordModal) {
     resetPasswordModal.addEventListener("hidden.bs.modal", function () {
       resetPasswordForm();
     });
   }
+
+  // 添加登录弹窗监听器
+  const loginButton = document.getElementById("login-button");
+  if (loginButton) {
+    loginButton.addEventListener("click", function () {
+      // 设置data-keep-email属性为true，表示需要保持填充邮箱
+      const authModal = document.getElementById("authModal");
+      authModal.setAttribute("data-keep-email", "true");
+    });
+  }
+
+  // 添加注册弹窗监听器
+  const registerButton = document.getElementById("register-button");
+  if (registerButton) {
+    registerButton.addEventListener("click", function () {
+      // 设置data-keep-email属性为true，表示需要保持填充邮箱
+      const authModal = document.getElementById("authModal");
+      authModal.setAttribute("data-keep-email", "true");
+    });
+  }
 });
 
 // 重置认证表单（登录和注册）
 function resetAuthForms() {
-  // 检查是否有记住的邮箱
-  const rememberedEmail = localStorage.getItem("rememberedEmail");
-
   // 重置登录表单
   const loginForm = document.getElementById("login-form-element");
   if (loginForm) {
     loginForm.reset();
-
-    // 如果有记住的邮箱，填充邮箱字段并勾选"记住我"选项
-    if (rememberedEmail) {
-      document.getElementById("login-email").value = rememberedEmail;
-      document.getElementById("remember-me").checked = true;
-    }
 
     // 移除可能的错误提示
     const loginErrorMessage = loginForm.querySelector(".alert");
@@ -1163,6 +1174,13 @@ function handleLogin(e) {
   const password = document.getElementById("login-password").value;
   const rememberMe = document.getElementById("remember-me").checked;
 
+  // 根据remember me选项处理邮箱存储
+  if (rememberMe) {
+    localStorage.setItem("rememberedEmail", email);
+  } else {
+    localStorage.removeItem("rememberedEmail");
+  }
+
   // 检查是否同意条款
   const agreeTerms = document.getElementById("login-agree-terms").checked;
   if (!agreeTerms) {
@@ -1322,8 +1340,7 @@ function handleLogin(e) {
 
         // 关闭登录模态框
         const authModal = document.getElementById("authModal");
-        // 设置属性，指示关闭时不要重置表单
-        authModal.setAttribute("data-reset-form", "false");
+        // 不需要设置data-reset-form属性，让弹窗关闭后始终重置
         const authModalInstance = bootstrap.Modal.getInstance(authModal);
         authModalInstance.hide();
 
@@ -4545,4 +4562,25 @@ function checkGenerateButton() {
     btn.disabled = false;
     btn.innerText = "Generate";
   }
+}
+
+// 确保忘记密码弹窗也能重置
+const forgotPassword = document.getElementById("forgot-password");
+if (forgotPassword) {
+  forgotPassword.addEventListener("click", function () {
+    // 关闭登录模态框
+    const authModalInstance = bootstrap.Modal.getInstance(authModal);
+    if (authModalInstance) {
+      authModalInstance.hide();
+    }
+
+    // 打开重置密码模态框前确保表单重置
+    resetPasswordForm();
+
+    // 短暂延迟后打开重置密码模态框
+    setTimeout(() => {
+      const resetModal = new bootstrap.Modal(resetPasswordModal);
+      resetModal.show();
+    }, 500);
+  });
 }
