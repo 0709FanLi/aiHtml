@@ -4795,56 +4795,108 @@ function viewQuiz(quizId) {
 
   wordBtn &&
     (wordBtn.onclick = function () {
-      const title = `${quizData.grade_level} ${quizData.subject} ${
-        quizData.make_comprehensive_test ? "Comprehensive Test" : "Quiz"
-      }`;
-      const date = quizData.created_at
-        ? new Date(quizData.created_at).toLocaleString()
-        : "";
-      const questionsDiv = document.getElementById("quiz-detail-question");
-      const answerDiv = document.getElementById("quiz-detail-answer");
-      const answerVisible = answerDiv && answerDiv.style.display !== "none";
-      let wordHtml = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office'
-          xmlns:w='urn:schemas-microsoft-com:office:word'
-          xmlns='http://www.w3.org/TR/REC-html40'>
-    <head>
-      <meta charset='utf-8'>
-      <title>${title}</title>
-      <style>
-        body { font-family: "Open Sans", Arial, sans-serif; color: #222; line-height: 1.6; }
-        .word-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
-        .word-date { text-align: center; font-size: 1rem; color: #666; margin-bottom: 24px; }
-        .word-questions { margin-bottom: 32px; }
-        .word-answer-title { text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
-        .word-answer { }
-        .page-break { page-break-before: always; mso-break-type: section-break; }
-      </style>
-    </head>
-    <body>
-      <div class="word-title">${title}</div>
-      <div class="word-date">${date}</div>
-      <div class="word-questions">
-        ${questionsDiv ? questionsDiv.innerHTML : ""}
-      </div>
-  `;
-      if (answerVisible && answerDiv) {
-        wordHtml += `
-      <div class="page-break"></div>
-      <div class="word-answer-title">Answer Key</div>
-      <div class="word-answer">
-        ${cleanAnswerKeyHtml(answerDiv.innerHTML)}
-      </div>
-    `;
+      // 优先在详情弹窗中查找quiz-detail-question，否则查找generator主页面questions-container
+      let questionsDiv = document.getElementById("quiz-detail-question");
+      let answerDiv = document.getElementById("quiz-detail-answer");
+      let isDetailModal = true;
+      if (!questionsDiv) {
+        // 不是详情弹窗，查找主页面
+        isDetailModal = false;
+        const mainQuestions = document.getElementById("questions-container");
+        if (mainQuestions) {
+          questionsDiv = mainQuestions.querySelector(".generated-questions");
+          answerDiv = mainQuestions.querySelector(".question-answer");
+        }
       }
-      wordHtml += `</body></html>`;
+      if (!questionsDiv) {
+        showNotification(
+          "warning",
+          "Export Failed",
+          "No quiz content to export"
+        );
+        return;
+      }
+      // 解析主标题
+      let mainTitle = "Quiz";
+      let dateStr = new Date().toLocaleDateString();
+      const firstTitle = questionsDiv.querySelector(
+        "h1, h2, .quiz-title, .main-title"
+      );
+      if (firstTitle) mainTitle = firstTitle.textContent.trim();
+      // 题目内容结构化处理
+      let questionsHtml = "";
+      const questionItems = questionsDiv.querySelectorAll(".question-item");
+      if (questionItems.length > 0) {
+        questionItems.forEach((item, idx) => {
+          questionsHtml += `<div class='question-number'>${idx + 1}.</div>`;
+          const qText = item.querySelector(".question-text");
+          if (qText) {
+            questionsHtml += `<div class='question-text'>${qText.innerHTML}</div>`;
+          }
+          const qOptions = item.querySelector(".question-options");
+          if (qOptions) {
+            questionsHtml += `<div class='question-options'>${qOptions.innerHTML}</div>`;
+          }
+        });
+      } else {
+        questionsHtml = questionsDiv.innerHTML;
+      }
+      // 判断答案区是否显示，决定是否导出答案
+      let answerHtml = "";
+      if (answerDiv && answerDiv.style.display !== "none") {
+        // 清理多余的Answer Key标题
+        function cleanAnswerKeyHtml(html) {
+          return html
+            .replace(/<div[^>]*>\s*Answer Key\s*<\/div>/i, "")
+            .replace(/<h[1-6][^>]*>\s*Answer Key\s*<\/h[1-6]>/i, "");
+        }
+        answerHtml = `
+          <div class="page-break"></div>
+          <div class="word-answer-title">Answer Key</div>
+          <div class="word-answer">
+            ${cleanAnswerKeyHtml(answerDiv.innerHTML)}
+          </div>
+        `;
+      }
+      // 组装Word内容
+      let wordHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office'
+              xmlns:w='urn:schemas-microsoft-com:office:word'
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>${mainTitle}</title>
+          <style>
+            body { font-family: "Open Sans", Arial, sans-serif; color: #222; line-height: 1.6; }
+            .word-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+            .word-date { text-align: center; font-size: 1rem; color: #666; margin-bottom: 24px; }
+            .word-questions { margin-bottom: 32px; }
+            .question-number { font-weight: bold; margin-top: 18px; }
+            .question-text { margin-left: 8px; margin-bottom: 6px; }
+            .question-options { margin-left: 24px; margin-bottom: 8px; }
+            .word-answer-title { text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
+            .word-answer { }
+            .page-break { page-break-before: always; mso-break-type: section-break; }
+          </style>
+        </head>
+        <body>
+          <div class="word-title">${mainTitle}</div>
+          <div class="word-date">Generated on ${dateStr}</div>
+          <div class="word-questions">
+            ${questionsHtml}
+          </div>
+          ${answerHtml}
+        </body>
+        </html>
+      `;
+      // 创建Blob并下载
       const blob = new Blob(["\ufeff", wordHtml], {
         type: "application/msword",
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${title}.doc`;
+      a.download = `${mainTitle}.doc`;
       document.body.appendChild(a);
       a.click();
       setTimeout(() => {
