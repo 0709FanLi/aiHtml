@@ -258,14 +258,17 @@ header {
   box-shadow: 0 0 0 2px rgba(106, 48, 147, 0.2);
 }
 
-.generator-actions {
-  text-align: center;
-  margin-top: 1.5rem;
+/* 让生成按钮在表单下方跨三列居中 */
+.generator-form .generator-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
 }
 
-.generator-button {
-  padding: 12px 24px;
-  font-size: 1.1rem;
+.generator-actions .generator-button {
+  min-width: 200px;
 }
 
 /* Story Output */
@@ -1150,33 +1153,76 @@ footer {
 
 /* Confirm Delete Modal */
 .confirm-modal {
-  max-width: 400px;
+  max-width: 480px;
+  width: 90%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+.confirm-modal .modal-header {
+  padding: 15px 20px;
+  background: var(--primary-gradient);
+  border-bottom: none;
+}
+
+.confirm-modal .modal-header h3 {
+  font-size: 1.4rem;
+  margin: 0;
 }
 
 .confirm-modal .modal-content {
+  padding: 25px;
   text-align: center;
 }
 
 .confirm-modal p {
-  margin-bottom: 1.5rem;
+  margin-bottom: 25px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #f5f5f5;
 }
 
 .confirm-modal .btn-group {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.confirm-modal .btn {
+  min-width: 110px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
 }
 
 .confirm-modal .cancel-btn {
   background-color: transparent;
   border: 1px solid #aaa;
-  color: #aaa;
+  color: #ddd;
+}
+
+.confirm-modal .cancel-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+  color: #fff;
 }
 
 .confirm-modal .delete-btn {
   background-color: var(--error-color);
+  font-weight: 500;
 }
 
 .confirm-modal .delete-btn:hover {
   background-color: #ff3545;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
 }

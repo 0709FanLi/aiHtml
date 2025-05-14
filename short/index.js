@@ -1692,13 +1692,61 @@ function handleGetVerificationCode(e) {
     });
 }
 
+// Initialize DOM elements that might be added later
+function ensureElementsLoaded() {
+  // 重新获取可能在页面加载后才添加的元素
+  if (!elements.confirmDeleteModal) {
+    elements.confirmDeleteModal = document.getElementById("confirmDeleteModal");
+    console.log("重新获取confirmDeleteModal:", elements.confirmDeleteModal);
+  }
+  if (!elements.confirmDeleteBtn) {
+    elements.confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    elements.cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+    elements.confirmDeleteClose = document.getElementById("confirmDeleteClose");
+  }
+}
+
 // Show confirm delete modal
 function showConfirmDeleteModal(story) {
+  // 检查 story 参数是否有效
+  if (!story || !story.id) {
+    console.error("无法删除：故事对象或故事ID为空", story);
+    showToast("Cannot delete this story. Story data is missing.", "error");
+    return;
+  }
+
+  // 确保模态框元素已加载
+  ensureElementsLoaded();
+
+  // 检查 confirmDeleteModal 元素是否存在
+  if (!elements.confirmDeleteModal) {
+    console.error("confirmDeleteModal 元素不存在");
+    showToast("System error. Please refresh and try again.", "error");
+    return;
+  }
+
   // 保存要删除的故事ID
   elements.confirmDeleteModal.dataset.storyId = story.id;
 
   // 显示模态框
   elements.confirmDeleteModal.style.display = "block";
+
+  // 绑定事件（以防事件监听丢失）
+  if (elements.confirmDeleteClose) {
+    elements.confirmDeleteClose.addEventListener(
+      "click",
+      toggleConfirmDeleteModal
+    );
+  }
+  if (elements.cancelDeleteBtn) {
+    elements.cancelDeleteBtn.addEventListener(
+      "click",
+      toggleConfirmDeleteModal
+    );
+  }
+  if (elements.confirmDeleteBtn) {
+    elements.confirmDeleteBtn.addEventListener("click", handleDeleteStory);
+  }
 }
 
 // Toggle confirm delete modal
@@ -1729,12 +1777,14 @@ function handleDeleteStory() {
   // 显示加载状态
   elements.loadingOverlay.style.display = "flex";
 
-  // 调用删除接口
-  fetch(`http://web.colstory.com/api/v1/story/${storyId}`, {
-    method: "DELETE",
+  // 调用删除接口（POST方式，带token和storyId）
+  fetch("http://web.colstory.com/api/v1/story/delete", {
+    method: "POST",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
+    body: JSON.stringify({ id: storyId }),
   })
     .then(async (res) => {
       try {
