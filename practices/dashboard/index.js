@@ -846,6 +846,12 @@ function switchDashboardTab(e) {
     // 从localStorage加载用户资料到表单
     loadUserProfile();
   }
+
+  // 如果切换到购买记录标签页，加载购买记录数据
+  if (tabId === "purchase-history") {
+    // 加载购买记录数据
+    fetchPurchaseHistory(1);
+  }
 }
 
 // 从localStorage加载用户资料到表单
@@ -4610,4 +4616,117 @@ if (forgotPassword) {
       resetModal.show();
     }, 500);
   });
+}
+
+// 获取购买记录数据
+function fetchPurchaseHistory(page = 1, pageSize = 10, searchTerm = null) {
+  // 获取购买记录列表容器
+  const purchaseHistoryList = document.querySelector(".purchase-history-list");
+
+  // 显示加载中
+  purchaseHistoryList.innerHTML = `
+    <div class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading purchase history...</p>
+    </div>
+  `;
+
+  // 模拟API调用延迟
+  setTimeout(() => {
+    // 显示空记录状态
+    purchaseHistoryList.innerHTML = `
+      <div class="text-center my-5">
+        <i class="fas fa-receipt text-muted mb-3" style="font-size: 3rem;"></i>
+        <h5>No Purchase Records Found</h5>
+        <p class="text-muted">You haven't made any purchases yet</p>
+      </div>
+    `;
+
+    // 添加搜索功能
+    const searchInput = document.getElementById("purchase-history-search");
+    if (searchInput) {
+      // 移除现有的事件监听器（如果有）
+      searchInput.removeEventListener("input", searchInputHandler);
+
+      function searchInputHandler() {
+        fetchPurchaseHistory(1, pageSize, searchInput.value.trim());
+      }
+
+      // 添加新的事件监听器
+      searchInput.addEventListener("input", searchInputHandler);
+
+      // 如果有搜索词，填充到搜索框
+      if (searchTerm) {
+        searchInput.value = searchTerm;
+      }
+    }
+  }, 800); // 模拟加载延迟
+}
+
+// 渲染购买记录列表项
+function renderPurchaseHistoryItems(items) {
+  const purchaseHistoryList = document.querySelector(".purchase-history-list");
+
+  if (!items || items.length === 0) {
+    purchaseHistoryList.innerHTML = `
+      <div class="text-center my-5">
+        <i class="fas fa-receipt text-muted mb-3" style="font-size: 3rem;"></i>
+        <h5>No Purchase Records Found</h5>
+        <p class="text-muted">You haven't made any purchases yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
+
+  items.forEach((item) => {
+    const statusClass =
+      item.status === "success"
+        ? "bg-success"
+        : item.status === "pending"
+        ? "bg-warning"
+        : "bg-danger";
+    const statusText =
+      item.status === "success"
+        ? "Payment Successful"
+        : item.status === "pending"
+        ? "Processing"
+        : "Payment Failed";
+
+    // 格式化日期
+    const formattedDate = new Date(item.date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    html += `
+      <div class="purchase-history-item">
+        <div class="purchase-history-header">
+          <h5 class="purchase-history-title">
+            ${item.planName}
+          </h5>
+          <div class="purchase-history-date">
+            ${formattedDate}
+          </div>
+        </div>
+        <div class="purchase-history-meta">
+          <span class="badge ${statusClass}">${statusText}</span>
+          <span class="purchase-history-amount">$${item.amount.toFixed(
+            2
+          )}</span>
+        </div>
+        <div class="purchase-history-details">
+          <p><strong>Order Number:</strong> ${item.orderNumber}</p>
+          <p><strong>Purchase Details:</strong> ${item.details}</p>
+          <p><strong>Payment Method:</strong> ${item.paymentMethod}</p>
+        </div>
+      </div>
+    `;
+  });
+
+  purchaseHistoryList.innerHTML = html;
 }

@@ -23,6 +23,69 @@
     />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="./practices/css/index.css">
+    
+    <!-- 购买记录页面样式 -->
+    <style>
+      .purchase-history-item {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      
+      .purchase-history-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .purchase-history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      
+      .purchase-history-title {
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #2563eb;
+      }
+      
+      .purchase-history-date {
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+      
+      .purchase-history-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      .purchase-history-amount {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #111827;
+      }
+      
+      .purchase-history-details {
+        margin-bottom: 1rem;
+      }
+      
+      .purchase-history-details p {
+        margin-bottom: 0.5rem;
+        color: #4b5563;
+      }
+      
+      .purchase-history-details strong {
+        color: #1f2937;
+      }
+    </style>
   </head>
   <body>
     <!-- Header -->
@@ -1482,6 +1545,9 @@
                   <a class="nav-link" href="#favorites" data-tab="favorites">
                     <i class="fas fa-star"></i> My Favorites
                   </a>
+                  <a class="nav-link" href="#purchase-history" data-tab="purchase-history">
+                    <i class="fas fa-shopping-cart"></i> Purchase History
+                  </a>
                   <a
                     class="nav-link"
                     href="#account-settings"
@@ -1758,6 +1824,34 @@
                       <!-- 分页控件将通过JavaScript动态填充 -->
                     </ul>
                   </nav>
+                </div>
+
+                <!-- Purchase History Tab -->
+                <div
+                  class="dashboard-tab"
+                  id="purchase-history"
+                  style="display: none"
+                >
+                  <div class="dashboard-header">
+                    <h3>Purchase History</h3>
+                    <div>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Search history..."
+                        id="purchase-history-search"
+                      />
+                    </div>
+                  </div>
+                  <div class="purchase-history-list">
+                    <!-- Purchase history items will be dynamically added here -->
+                    <div class="text-center my-5">
+                      <i class="fas fa-receipt text-muted mb-3" style="font-size: 3rem;"></i>
+                      <h5>No Purchase Records Found</h5>
+                      <p class="text-muted">You haven't made any purchases yet</p>
+                    </div>
+                  </div>
+                  <!-- 移除分页控件 -->
                 </div>
 
                 <!-- Account Settings Tab -->
