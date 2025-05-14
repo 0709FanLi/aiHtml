@@ -131,10 +131,8 @@ function init() {
   // 显示首页
   showGenerator();
 
-  // 如果用户已登录，加载历史记录
-  if (state.isLoggedIn) {
-    renderHistoryCards();
-  }
+  // 注意：移除了这里的历史记录加载，
+  // 改为在显示Dashboard时才加载
 }
 
 // Event Listeners
@@ -780,6 +778,8 @@ function showDashboard(e) {
   elements.dashboardSection.style.display = "block";
   elements.generatorSection.style.display = "none";
   elements.aboutSection.style.display = "none";
+
+  // 只在显示Dashboard页面时加载历史记录
   renderHistoryCards();
 }
 
