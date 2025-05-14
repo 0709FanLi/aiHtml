@@ -380,6 +380,16 @@ document.addEventListener("DOMContentLoaded", function () {
   if (loginPrivacyLink) {
     loginPrivacyLink.addEventListener("click", openPrivacyModal);
   }
+
+  // 优化Profile邮箱输入框
+  const profileEmail = document.getElementById("profile-email");
+  if (profileEmail) {
+    profileEmail.readOnly = true;
+    profileEmail.style.cursor = "not-allowed";
+    profileEmail.addEventListener("mousedown", function (e) {
+      e.preventDefault();
+    });
+  }
 });
 
 // ===== EVENT LISTENERS =====
@@ -1156,33 +1166,19 @@ function handleLogin(e) {
         // 更新UI
         updateUIForLoggedInUser();
 
-        // 显示成功通知
-        showNotification(
-          "success",
-          "Login Successful",
-          "Welcome back, " + currentUser.name + "!"
-        );
-
         // 登录成功后导航到home页面，效果与点击Home导航一致
         setTimeout(() => {
           navigateTo("home");
         }, 1000);
       } else {
-        // 登录失败，直接用showNotification提示中文原因
-        showNotification(
-          "error",
-          "Login Failed",
-          result.data.error || "Incorrect email or password. Please try again."
-        );
+        // 登录失败，不再弹窗提示
         // 恢复按钮状态
         loginSubmitButton.disabled = false;
         loginSubmitButton.innerHTML = originalButtonText;
       }
     })
     .catch((error) => {
-      // 登录失败 - 显示错误消息
-      console.error("Login error:", error);
-
+      // 登录失败 - 不再弹窗提示
       // 创建错误提示（如果不存在）
       let errorMessageElement = loginForm.querySelector(".alert");
       if (!errorMessageElement) {
@@ -1196,17 +1192,10 @@ function handleLogin(e) {
       } else {
         errorMessageElement.classList.remove("d-none");
       }
-
       // 设置错误信息
       errorMessageElement.textContent =
         error.message || "Incorrect email or password. Please try again.";
-
-      // 显示通知
-      showNotification(
-        "error",
-        "Login Failed",
-        error.message || "Incorrect email or password. Please try again."
-      );
+      // 不再showNotification
     })
     .finally(() => {
       // 重置登录按钮状态
@@ -1464,6 +1453,61 @@ function handleLogout(e) {
       sessionStorage.removeItem("refreshToken");
       sessionStorage.removeItem("tokenType");
 
+      // 1. 清空Dashboard相关全局变量
+      allHistoryItems = [];
+      currentHistoryPage = 1;
+      totalHistoryPages = 1;
+      totalHistoryItems = 0;
+      allFavoriteItems = [];
+      currentFavoritePage = 1;
+      totalFavoritePages = 1;
+      totalFavoriteItems = 0;
+
+      // 2. 清空Dashboard页面内容
+      // 概览卡片
+      const totalQuizzesElem = document.getElementById(
+        "dashboard-total-quizzes"
+      );
+      if (totalQuizzesElem) totalQuizzesElem.textContent = "0";
+      const lastActivityElem = document.getElementById(
+        "dashboard-last-activity"
+      );
+      if (lastActivityElem) lastActivityElem.textContent = "No activity";
+      const favoritesElem = document.getElementById("dashboard-favorites");
+      if (favoritesElem) favoritesElem.textContent = "0";
+      // 进度条和剩余次数
+      const remainingElem = document.getElementById("remaining-generations");
+      if (remainingElem) remainingElem.textContent = "0";
+      const totalElem = document.getElementById("total-generations");
+      if (totalElem) totalElem.textContent = "0";
+      const progressBar = document.querySelector(".progress-bar");
+      if (progressBar) progressBar.style.width = "0%";
+      // 历史记录和收藏列表
+      const historyList = document.querySelector(".generation-history-list");
+      if (historyList) historyList.innerHTML = "";
+      const favoritesList = document.querySelector(".favorites-list");
+      if (favoritesList) favoritesList.innerHTML = "";
+
+      // 3. 隐藏Dashboard相关section，跳转到首页
+      const dashboardSection = document.getElementById("dashboard-section");
+      if (dashboardSection) dashboardSection.style.display = "none";
+      // 还原所有tab内容为隐藏
+      document
+        .querySelectorAll(".dashboard-tab")
+        .forEach((tab) => (tab.style.display = "none"));
+      // 跳转到首页
+      navigateTo("home");
+
+      // 4. 可选：重置生成器预览区
+      const previewPlaceholder = document.getElementById("preview-placeholder");
+      const previewContent = document.getElementById("preview-content");
+      const loadingIndicator = document.getElementById("loading-indicator");
+      if (previewPlaceholder) previewPlaceholder.style.display = "flex";
+      if (previewContent) previewContent.style.display = "none";
+      if (loadingIndicator) loadingIndicator.style.display = "none";
+      const questionsContainer = document.getElementById("questions-container");
+      if (questionsContainer) questionsContainer.innerHTML = "";
+
       // 更新UI - 显示登录/注册按钮区域
       document.getElementById("auth-buttons").style.display = "flex";
       document.getElementById("user-info").style.display = "none";
@@ -1481,9 +1525,6 @@ function handleLogout(e) {
       // 重置登出按钮状态
       logoutButton.disabled = false;
       logoutButton.textContent = originalButtonText;
-
-      // 导航到首页
-      navigateTo("home");
 
       // 显示通知
       showNotification(
@@ -2124,6 +2165,27 @@ function navigateTo(section) {
     if (targetSection) {
       targetSection.classList.add("active");
       targetSection.style.display = "block"; // Ensure visible
+    }
+    // 新增：如果是dashboard，默认切换到overview tab并加载
+    if (section === "dashboard") {
+      // 切换tab
+      document
+        .querySelectorAll(".dashboard-tab")
+        .forEach((tab) => (tab.style.display = "none"));
+      const overviewTab = document.getElementById("dashboard-overview");
+      if (overviewTab) overviewTab.style.display = "block";
+      // 激活tab链接
+      document
+        .querySelectorAll(".dashboard-sidebar .nav-link")
+        .forEach((link) => link.classList.remove("active"));
+      const overviewLink = document.querySelector(
+        '.dashboard-sidebar .nav-link[data-tab="dashboard-overview"]'
+      );
+      if (overviewLink) overviewLink.classList.add("active");
+      // 加载数据
+      if (typeof updateRecentActivity === "function") updateRecentActivity();
+      if (typeof fetchDashboardStatsAndUpdateUI === "function")
+        fetchDashboardStatsAndUpdateUI();
     }
   }
 
