@@ -380,16 +380,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (loginPrivacyLink) {
     loginPrivacyLink.addEventListener("click", openPrivacyModal);
   }
-
-  // 优化Profile邮箱输入框
-  const profileEmail = document.getElementById("profile-email");
-  if (profileEmail) {
-    profileEmail.readOnly = true;
-    profileEmail.style.cursor = "not-allowed";
-    profileEmail.addEventListener("mousedown", function (e) {
-      e.preventDefault();
-    });
-  }
 });
 
 // ===== EVENT LISTENERS =====
@@ -1166,19 +1156,33 @@ function handleLogin(e) {
         // 更新UI
         updateUIForLoggedInUser();
 
+        // 显示成功通知
+        showNotification(
+          "success",
+          "Login Successful",
+          "Welcome back, " + currentUser.name + "!"
+        );
+
         // 登录成功后导航到home页面，效果与点击Home导航一致
         setTimeout(() => {
           navigateTo("home");
         }, 1000);
       } else {
-        // 登录失败，不再弹窗提示
+        // 登录失败，直接用showNotification提示中文原因
+        showNotification(
+          "error",
+          "Login Failed",
+          result.data.error || "Incorrect email or password. Please try again."
+        );
         // 恢复按钮状态
         loginSubmitButton.disabled = false;
         loginSubmitButton.innerHTML = originalButtonText;
       }
     })
     .catch((error) => {
-      // 登录失败 - 不再弹窗提示
+      // 登录失败 - 显示错误消息
+      console.error("Login error:", error);
+
       // 创建错误提示（如果不存在）
       let errorMessageElement = loginForm.querySelector(".alert");
       if (!errorMessageElement) {
@@ -1192,10 +1196,17 @@ function handleLogin(e) {
       } else {
         errorMessageElement.classList.remove("d-none");
       }
+
       // 设置错误信息
       errorMessageElement.textContent =
         error.message || "Incorrect email or password. Please try again.";
-      // 不再showNotification
+
+      // 显示通知
+      showNotification(
+        "error",
+        "Login Failed",
+        error.message || "Incorrect email or password. Please try again."
+      );
     })
     .finally(() => {
       // 重置登录按钮状态
@@ -2165,27 +2176,6 @@ function navigateTo(section) {
     if (targetSection) {
       targetSection.classList.add("active");
       targetSection.style.display = "block"; // Ensure visible
-    }
-    // 新增：如果是dashboard，默认切换到overview tab并加载
-    if (section === "dashboard") {
-      // 切换tab
-      document
-        .querySelectorAll(".dashboard-tab")
-        .forEach((tab) => (tab.style.display = "none"));
-      const overviewTab = document.getElementById("dashboard-overview");
-      if (overviewTab) overviewTab.style.display = "block";
-      // 激活tab链接
-      document
-        .querySelectorAll(".dashboard-sidebar .nav-link")
-        .forEach((link) => link.classList.remove("active"));
-      const overviewLink = document.querySelector(
-        '.dashboard-sidebar .nav-link[data-tab="dashboard-overview"]'
-      );
-      if (overviewLink) overviewLink.classList.add("active");
-      // 加载数据
-      if (typeof updateRecentActivity === "function") updateRecentActivity();
-      if (typeof fetchDashboardStatsAndUpdateUI === "function")
-        fetchDashboardStatsAndUpdateUI();
     }
   }
 
