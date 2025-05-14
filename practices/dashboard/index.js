@@ -1383,9 +1383,24 @@ function handleLogin(e) {
           "Welcome back, " + currentUser.name + "!"
         );
 
-        // 登录成功后导航到home页面，效果与点击Home导航一致
+        // 登录成功后导航逻辑优化
+        // 判断是否因generator操作弹出登录弹窗
+        const authModalElForNav = document.getElementById("authModal");
+        let shouldGoToGenerator = false;
+        if (
+          authModalElForNav &&
+          authModalElForNav.getAttribute("data-login-source") === "generator"
+        ) {
+          shouldGoToGenerator = true;
+          // 清除标记
+          authModalElForNav.removeAttribute("data-login-source");
+        }
         setTimeout(() => {
-          navigateTo("home");
+          if (shouldGoToGenerator) {
+            navigateTo("generator");
+          } else {
+            navigateTo("home");
+          }
         }, 1000);
       } else {
         // 登录失败，直接用showNotification提示中文原因
@@ -1887,10 +1902,11 @@ function handleGenerate(e) {
       "Login Required",
       "Please log in to generate quizzes."
     );
-
     // Open login modal
-    const authModal = new bootstrap.Modal(document.getElementById("authModal"));
-    authModal.show();
+    const authModalEl = document.getElementById("authModal");
+    authModalEl.setAttribute("data-login-source", "generator");
+    const authModalInstance = new bootstrap.Modal(authModalEl);
+    authModalInstance.show();
     return;
   }
 
