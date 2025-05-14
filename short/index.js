@@ -5,7 +5,6 @@ const state = {
   currentStory: null,
   storyHistory: [],
   credits: 0,
-  freeUsage: true,
 };
 
 // DOM Elements
@@ -552,8 +551,9 @@ function handleAuth(e) {
           // 1. 显示注册成功提示
           showToast("Registration successful! Please login.", "success");
 
-          // 2. 清空表单内容
-          document.getElementById("email").value = "";
+          // 2. 清空表单内容（除了邮箱）
+          // 保存邮箱以便填充到登录表单
+          const registeredEmail = email;
           document.getElementById("password").value = "";
           document.getElementById("agreeTerms").checked = false;
           if (document.getElementById("name")) {
@@ -570,7 +570,10 @@ function handleAuth(e) {
           document.querySelector(".forgot-password-link").style.display =
             "block";
 
-          // 4. 重新绑定事件
+          // 4. 填充注册时使用的邮箱到登录表单
+          document.getElementById("email").value = registeredEmail;
+
+          // 5. 重新绑定事件
           document
             .getElementById("switchAuthMode")
             .addEventListener("click", switchAuthMode);
@@ -618,7 +621,7 @@ function handleAuth(e) {
         const data = await res.json();
         console.log("登录响应:", data);
 
-        if (data.ok === 1 || data.success || data.status === "success") {
+        if (data.ok === 1) {
           // 登录成功
           showToast("Login successful!", "success");
 
@@ -741,29 +744,6 @@ function logout() {
     console.log("用户未登录，直接清除本地数据");
     finishLogout("未登录状态");
   }
-
-  // 统一处理登出完成流程
-  function finishLogout(reason) {
-    console.log(`完成登出流程，原因: ${reason}`);
-
-    // 清除用户数据
-    state.isLoggedIn = false;
-    state.user = null;
-    state.credits = 0;
-    state.storyHistory = [];
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token");
-
-    // 更新UI
-    updateUIForLoggedOutUser();
-
-    // 显示成功提示
-    showToast("Logged out successfully", "success");
-
-    // 重置登出状态标记
-    window.isLoggingOut = false;
-  }
 }
 
 // Show dashboard
@@ -813,6 +793,13 @@ function scrollToGenerator(e) {
 function generateStory(e) {
   e.preventDefault();
 
+  // 首先检查登录状态，如果未登录，直接跳转到登录页面
+  if (!state.isLoggedIn) {
+    showToast("Please login to generate stories", "info");
+    toggleAuthModal();
+    return;
+  }
+
   const storyType = elements.storyType.value;
   const timePeriod = elements.timePeriod.value;
   const background = elements.storyBackground.value;
@@ -830,14 +817,8 @@ function generateStory(e) {
     return;
   }
 
-  // Check if user has credits or free usage available
-  if (!state.isLoggedIn && !state.freeUsage) {
-    showToast("Please login to generate more stories", "error");
-    toggleAuthModal();
-    return;
-  }
-
-  if (state.isLoggedIn && state.credits <= 0) {
+  // 检查用户是否有足够的积分
+  if (state.credits <= 0) {
     showToast("You have no credits left. Please purchase more.", "error");
     togglePricingModal();
     return;
@@ -849,246 +830,90 @@ function generateStory(e) {
   // 从localStorage获取token
   const token = localStorage.getItem("token");
 
-  if (state.isLoggedIn && token) {
-    // 构造请求数据
-    const requestData = {
-      story_type: storyType,
-      time_period: timePeriod,
-      story_background: background,
-    };
+  if (!token) {
+    elements.loadingOverlay.style.display = "none";
+    showToast("Authorization token not found. Please login again.", "error");
+    logout(); // 退出登录，清理状态
+    return;
+  }
 
-    console.log("发送小说生成请求:", requestData);
-    console.log("使用的Token:", token);
+  // 构造请求数据
+  const requestData = {
+    story_type: storyType,
+    time_period: timePeriod,
+    story_background: background,
+  };
 
-    // 调用真实API
-    fetch("http://web.colstory.com/api/v1/story/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(requestData),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        console.log("小说生成响应:", data);
+  console.log("发送小说生成请求:", requestData);
+  console.log("使用的Token:", token);
 
-        // 隐藏加载覆盖层
-        elements.loadingOverlay.style.display = "none";
+  // 调用真实API
+  fetch("http://web.colstory.com/api/v1/story/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(requestData),
+  })
+    .then(async (res) => {
+      const data = await res.json();
+      console.log("小说生成响应:", data);
 
-        if (res.ok || data.ok === 1) {
-          // 解析故事数据
-          const storyData = data.data || {};
-          const story = {
-            id: storyData.id || generateId(),
-            title: `${capitalizeFirst(storyType)} Story: ${capitalizeFirst(
-              timePeriod
-            )} ${capitalizeFirst(background)}`,
-            type: storyType,
-            period: timePeriod,
-            background: background,
-            content: storyData.content || "Content could not be loaded.",
-            date: new Date().toISOString(),
-          };
+      // 隐藏加载覆盖层
+      elements.loadingOverlay.style.display = "none";
 
-          // 更新状态
-          state.currentStory = story;
+      if (res.ok || data.ok === 1) {
+        // 解析故事数据
+        const storyData = data.data || {};
+        const story = {
+          id: storyData.id || generateId(),
+          title: `${capitalizeFirst(storyType)} Story: ${capitalizeFirst(
+            timePeriod
+          )} ${capitalizeFirst(background)}`,
+          type: storyType,
+          period: timePeriod,
+          background: background,
+          content: storyData.content || "Content could not be loaded.",
+          date: new Date().toISOString(),
+        };
 
-          // 扣除积分
-          state.credits--;
-          state.user.credits = state.credits;
-          localStorage.setItem("user", JSON.stringify(state.user));
-          elements.userCredits.textContent = `Credits: ${state.credits}`;
-          elements.dashboardCredits.textContent = state.credits;
+        // 更新状态
+        state.currentStory = story;
 
-          // 添加到历史记录
-          state.storyHistory.unshift(story);
-
-          // 更新UI
-          elements.outputTitle.textContent = story.title;
-          elements.storyContent.textContent = story.content;
-          elements.storyOutput.style.display = "block";
-
-          // 滚动到输出区域
-          elements.storyOutput.scrollIntoView({ behavior: "smooth" });
-
-          // 显示成功消息
-          showToast(data.message || "Story generated successfully!", "success");
-        } else {
-          showToast(
-            data.message || "Failed to generate story. Please try again.",
-            "error"
-          );
-        }
-      })
-      .catch((error) => {
-        // 隐藏加载覆盖层
-        elements.loadingOverlay.style.display = "none";
-        console.error("生成故事错误:", error);
-        showToast("Network error. Please try again later.", "error");
-      });
-  } else {
-    // 本地生成故事（现有代码）
-    setTimeout(() => {
-      // Generate story based on selections
-      const story = generateFakeStory(storyType, timePeriod, background);
-
-      // Update state
-      state.currentStory = story;
-
-      if (state.isLoggedIn) {
+        // 扣除积分
         state.credits--;
         state.user.credits = state.credits;
         localStorage.setItem("user", JSON.stringify(state.user));
         elements.userCredits.textContent = `Credits: ${state.credits}`;
         elements.dashboardCredits.textContent = state.credits;
 
-        // Add to history
+        // 添加到历史记录
         state.storyHistory.unshift(story);
+
+        // 更新UI
+        elements.outputTitle.textContent = story.title;
+        elements.storyContent.textContent = story.content;
+        elements.storyOutput.style.display = "block";
+
+        // 滚动到输出区域
+        elements.storyOutput.scrollIntoView({ behavior: "smooth" });
+
+        // 显示成功消息
+        showToast(data.message || "Story generated successfully!", "success");
       } else {
-        state.freeUsage = false;
+        showToast(
+          data.message || "Failed to generate story. Please try again.",
+          "error"
+        );
       }
-
-      // Update UI
-      elements.outputTitle.textContent = story.title;
-      elements.storyContent.textContent = story.content;
-      elements.storyOutput.style.display = "block";
-
-      // Hide loading overlay
+    })
+    .catch((error) => {
+      // 隐藏加载覆盖层
       elements.loadingOverlay.style.display = "none";
-
-      // Scroll to the output
-      elements.storyOutput.scrollIntoView({ behavior: "smooth" });
-    }, 2000);
-  }
-}
-
-// Generate a fake story based on user selections
-function generateFakeStory(type, period, background) {
-  const titles = {
-    fantasy: [
-      "The Crystal Shard",
-      "Realm of the Ancients",
-      "The Wizard's Apprentice",
-    ],
-    "martial-arts": [
-      "The Dragon Warrior",
-      "Fist of Legend",
-      "The Way of the Blade",
-    ],
-    romance: ["Hearts Entwined", "Autumn Love", "Chance Encounter"],
-    "sci-fi": ["Beyond the Stars", "Neural Connection", "The Last Colony"],
-    horror: ["Whispers in the Dark", "The Haunting", "Shadows Within"],
-    mystery: [
-      "The Silent Witness",
-      "Murder at Midnight",
-      "The Missing Heirloom",
-    ],
-    adventure: [
-      "Journey to the Unknown",
-      "The Lost Expedition",
-      "Treasure of the Deep",
-    ],
-    historical: ["The King's Guard", "Revolution", "Empire of Sand"],
-  };
-
-  const storyIntros = {
-    fantasy:
-      "The air shimmered with arcane energy as Elara approached the ancient temple. Her fingers tingled, sensing the old magic that permeated the stone walls. The prophecy had led her here, to this forgotten place, where the veil between worlds grew thin...",
-
-    "martial-arts":
-      "Master Wei watched his student with careful eyes. The young man moved through the forms with precision, but lacked the spirit that would transform technique into art. Decades of training had taught Wei that true mastery came not from the body, but from within...",
-
-    romance:
-      "The coffee shop was crowded as usual, but somehow, through the sea of faces, their eyes met. Time seemed to slow as Sarah felt a strange familiarity wash over her. She had never seen this person before, yet something deep within recognized a connection that transcended their first meeting...",
-
-    "sci-fi":
-      "The colony ship Artemis broke through the cloud layer, revealing the landscape of Proxima b for the first time. Captain Chen held her breath as the sensors analyzed the atmosphere. After two hundred years in cryosleep, humanity's new home was finally within reach...",
-
-    horror:
-      "The old house at the end of Blackwood Lane had been abandoned for decades. Local children dared each other to approach it, but none ventured inside. Mark had dismissed the stories as superstition, but as night fell and the temperature dropped unnaturally around him, he began to question his skepticism...",
-
-    mystery:
-      "Detective Morgan examined the room with practiced eyes. Nothing appeared disturbed, yet the victim's expression was frozen in terror. No signs of forced entry, no weapon found. It was the third death this month with the same mysterious circumstances. What was he missing?",
-
-    adventure:
-      "The ancient map felt fragile in Jack's weathered hands. Twenty years of searching, following fragments of legends and whispered rumors, had led to this moment. If his calculations were correct, the lost city of Azcalon lay just beyond the mountain range...",
-
-    historical:
-      "The year was 1789, and Paris simmered with revolutionary fervor. Marie clutched the letter tightly as she navigated the narrow streets. Its contents could save her brother from the guillotine, but delivering it meant risking her own neck...",
-  };
-
-  // Generate title
-  const titleOptions = titles[type] || titles["fantasy"];
-  const title = titleOptions[Math.floor(Math.random() * titleOptions.length)];
-
-  // Generate content
-  let content = storyIntros[type] || storyIntros["fantasy"];
-
-  // Add background and period details
-  let periodText = "";
-  if (period === "modern") {
-    periodText =
-      "\n\nThe modern world had lost much of its wonder, with technology replacing belief in the extraordinary. Yet beneath the surface of everyday life, ancient powers still moved, unseen by most...";
-  } else if (period === "future") {
-    periodText =
-      "\n\nIn the year 2250, humanity had spread across the solar system. Quantum computing and neural interfaces had transformed society, yet some challenges remained stubbornly resistant to technological solutions...";
-  } else if (period === "ancient") {
-    periodText =
-      "\n\nIn an age before written history, when gods walked among mortals and the first great civilizations were rising from the dust, legends were not stories but living truths...";
-  } else if (period === "medieval") {
-    periodText =
-      "\n\nCastles dominated the landscape, their stone walls offering protection in troubled times. Lords and ladies played at politics while common folk worked the land, and on the borders, ancient threats stirred once more...";
-  } else if (period === "victorian") {
-    periodText =
-      "\n\nGas lamps cast pools of light on cobblestone streets, while steam engines drove the industrial revolution forward. Society operated under strict codes of conduct, but beneath the proper exterior, secrets and passions simmered...";
-  } else {
-    periodText =
-      "\n\nTime had its own rhythm here, following patterns set in motion at the dawn of existence. The present moment was but one point in an endless cycle of renewal and decay...";
-  }
-
-  content += periodText;
-
-  let backgroundText = "";
-  if (background === "fictional-world") {
-    backgroundText =
-      "\n\nThe world of Eldoria had never known Earth. It operated by different physical laws, where magic flowed like water and mythical creatures roamed vast, unexplored territories. The five kingdoms maintained an uneasy peace, but ancient rivalries threatened to ignite a conflict that could reshape the continent...";
-  } else if (background === "alternate-world") {
-    backgroundText =
-      "\n\nHistory had taken a different turn when the Roman Empire never fell. Now, in an alternate present, steam-powered airships connected imperial provinces spanning every continent, and mechanical calculating engines were the backbone of an advanced society that never experienced the Dark Ages...";
-  } else if (background === "real-world") {
-    backgroundText =
-      "\n\nThough the setting was familiar—the streets, buildings, and people indistinguishable from any major city—what lurked beneath the surface reality remained hidden to most. Only those with the gift could sense the true nature of things, the invisible currents that shaped events...";
-  } else if (background === "post-apocalyptic") {
-    backgroundText =
-      "\n\nDecades after the collapse, nature reclaimed what civilization had built. Vines crawled up the skeletons of skyscrapers, and forests grew through cracked highways. The survivors had formed new societies from the remnants of the old world, preserving some technologies while losing others to time...";
-  } else if (background === "utopian") {
-    backgroundText =
-      "\n\nThe Great Transition had solved humanity's most pressing problems. Clean energy, automated production, and a universal basic income had eliminated poverty and most crime. People pursued creative and intellectual interests, free from material concerns. Yet in this paradise, some questioned whether something essential had been lost...";
-  } else if (background === "dystopian") {
-    backgroundText =
-      "\n\nThe Corporation controlled every aspect of citizens' lives—where they lived, what they consumed, even what they thought. Surveillance was omnipresent, dissent swiftly punished. Most accepted their reality without question, finding comfort in routine. But within the cracks of the system, resistance took root...";
-  } else {
-    backgroundText =
-      "\n\nThe boundaries between worlds had always been thin in certain places. Those sensitive to such things could feel the overlap, the moments when alternate realities brushed against each other like overlapping circles in a cosmic Venn diagram...";
-  }
-
-  content += backgroundText;
-
-  // Add more paragraphs to make it substantial
-  content += `\n\nThe morning light filtered through ancient trees, casting dappled shadows on the forest floor. In the distance, a bird called, its song echoing in the stillness. This was a moment of peace before the journey would truly begin, before choices would need to be made that could not be undone.Many had attempted this path before, leaving behind only whispered warnings and fragmentary journals. Some spoke of treasures beyond imagination, others of horrors that defied description. Which was true? Perhaps both, perhaps neither. The only certainty was that those who ventured forward would not return unchanged.
-A cool breeze stirred the leaves, carrying the scent of pine and something else—something older and more primal. It was said that in places like this, where the extraordinary touched the ordinary world, one could hear the heartbeat of creation itself if one knew how to listen.
-The decision to continue was not made lightly. It meant leaving behind the familiar, the comfortable, the known. Yet the alternative—returning to a life of predictable days and unanswered questions—seemed somehow more frightening than facing whatever lay ahead.
-With a deep breath and a silent prayer to forgotten gods, the first step was taken on a path that would lead to either glory or ruin. The journey had begun.`;
-  return {
-    id: generateId(),
-    title,
-    type,
-    period,
-    background,
-    content,
-    date: new Date().toISOString(),
-  };
+      console.error("生成故事错误:", error);
+      showToast("Network error. Please try again later.", "error");
+    });
 }
 
 // Download the current story
@@ -1191,7 +1016,7 @@ function generateFakeHistory() {
   // Clear previous history
   state.storyHistory = [];
 
-  // Generate 5 random stories
+  // Generate 5 random stories (使用模拟数据，不再调用generateFakeStory)
   const types = ["fantasy", "sci-fi", "mystery", "romance", "adventure"];
   const periods = ["modern", "future", "ancient", "medieval", "victorian"];
   const backgrounds = [
@@ -1202,14 +1027,27 @@ function generateFakeHistory() {
     "utopian",
   ];
 
+  // 使用简化版的story对象，不再需要完整内容
   for (let i = 0; i < 5; i++) {
     const type = types[Math.floor(Math.random() * types.length)];
     const period = periods[Math.floor(Math.random() * periods.length)];
     const background =
       backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
-    const story = generateFakeStory(type, period, background);
-    story.date = new Date(Date.now() - i * 86400000).toISOString(); // Subtract days
+    // 创建简单的历史记录对象，无需真实内容
+    const story = {
+      id: generateId(),
+      title: `${capitalizeFirst(type)} Story: ${capitalizeFirst(
+        period
+      )} ${capitalizeFirst(background)}`,
+      type: type,
+      period: period,
+      background: background,
+      content:
+        "This is a sample story content for history records. API calls will fetch the actual content.",
+      date: new Date(Date.now() - i * 86400000).toISOString(), // Subtract days
+    };
+
     state.storyHistory.push(story);
   }
 }
@@ -1358,6 +1196,7 @@ function renderHistoryCards() {
               </td>
             `;
 
+            /* 暂时不需要点击行显示详情功能
             // 添加点击事件 - 行点击显示详情
             row.addEventListener("click", (e) => {
               // 如果点击的是删除按钮，则不显示详情
@@ -1366,11 +1205,12 @@ function renderHistoryCards() {
                 loadStoryDetail(story);
               }
             });
+            */
 
             // 删除按钮单独添加事件，防止冒泡
             const deleteBtn = row.querySelector(".delete-story-btn");
             deleteBtn.addEventListener("click", (e) => {
-              e.stopPropagation(); // 阻止事件冒泡，防止触发行点击事件
+              // e.stopPropagation(); // 不再需要阻止冒泡，因为行没有点击事件
               showConfirmDeleteModal(story);
             });
 
@@ -1794,13 +1634,15 @@ function handleDeleteStory() {
         // 隐藏加载状态
         elements.loadingOverlay.style.display = "none";
 
-        if (res.ok || data.ok === 1) {
+        // 只有当data.ok === 1时才认为删除成功
+        if (data.ok === 1) {
           // 显示成功提示
           showToast(data.message || "Story deleted successfully", "success");
 
           // 重新渲染历史记录
           renderHistoryCards();
         } else {
+          // 显示API返回的错误信息，如果没有则显示通用错误提示
           showToast(data.message || "Failed to delete story", "error");
         }
       } catch (error) {
@@ -1950,7 +1792,7 @@ function handleForgotPassword(e) {
       const data = await res.json();
       elements.loadingOverlay.style.display = "none";
       // 只认业务成功
-      if (data.ok === 1 || data.success || data.status === "success") {
+      if (data.ok === 1) {
         elements.resetMessage.style.display = "block";
         showToast("密码重置成功", "success");
         // 1. 关闭忘记密码弹窗
@@ -1995,4 +1837,54 @@ function handleForgotPassword(e) {
       console.error("重置密码请求错误:", error);
       showToast("网络错误，请稍后重试", "error");
     });
+}
+
+// 统一处理登出完成流程
+function finishLogout(reason) {
+  console.log(`完成登出流程，原因: ${reason}`);
+
+  // 清除用户数据
+  state.isLoggedIn = false;
+  state.user = null;
+  state.credits = 0;
+  state.storyHistory = [];
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("historyCurrentPage"); // 清除历史分页
+
+  // 重置生成器表单
+  resetGenerator();
+
+  // 清空所有表单选项
+  elements.storyType.value = "";
+  elements.timePeriod.value = "";
+  elements.storyBackground.value = "";
+
+  // 隐藏故事输出区域
+  elements.storyOutput.style.display = "none";
+
+  // 清空故事内容
+  elements.storyContent.textContent = "";
+  elements.outputTitle.textContent = "Your Generated Story";
+
+  // 清空当前故事
+  state.currentStory = null;
+
+  // 清空历史列表
+  elements.historyTableBody.innerHTML = "";
+  elements.historyTotal.textContent = "0";
+  elements.paginationStart.textContent = "0";
+  elements.paginationEnd.textContent = "0";
+  elements.paginationTotal.textContent = "0";
+  elements.paginationControls.innerHTML = "";
+
+  // 更新UI
+  updateUIForLoggedOutUser();
+
+  // 显示成功提示
+  showToast("Logged out successfully", "success");
+
+  // 重置登出状态标记
+  window.isLoggingOut = false;
 }
