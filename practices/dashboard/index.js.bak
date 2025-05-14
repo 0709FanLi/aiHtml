@@ -479,6 +479,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
+  // 设置其他事件监听器
+  setupEventListeners();
+
+  // 设置PDF下载、Word下载和答案切换按钮的事件监听器
+  setupQuizDetailButtons();
 });
 
 // 重置认证表单（登录和注册）
@@ -3118,54 +3124,66 @@ function renderPagination(currentPage, totalPages, totalItems) {
 
 // 查看测验详情
 function viewQuiz(quizId) {
-  // 获取访问令牌
-  const accessToken =
-    localStorage.getItem("accessToken") ||
-    sessionStorage.getItem("accessToken") ||
-    "";
+  // 1. 在本地历史和收藏数组中查找
+  let quizData = allHistoryItems.find((item) => item.id == quizId);
+  if (!quizData) {
+    quizData = allFavoriteItems.find((item) => item.id == quizId);
+  }
+  if (!quizData) {
+    showNotification(
+      "error",
+      "Data Not Found",
+      "Unable to find the quiz record."
+    );
+    return;
+  }
 
-  // 显示加载中状态
-  showNotification("info", "Loading", "Loading quiz details...");
+  // 2. 构建内容
+  const title = `${quizData.grade_level} ${quizData.subject} ${
+    quizData.make_comprehensive_test ? "Comprehensive Test" : "Quiz"
+  }`;
+  const date = quizData.created_at
+    ? new Date(quizData.created_at).toLocaleString()
+    : "";
+  const questionHtml = quizData.question || "";
+  const answerHtml = quizData.answer || "";
 
-  // 调用API获取测验详情
-  fetch(`http://web.practicesnow.com/api/v1/quiz/${quizId}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-    .then((response) => {
-      const isSuccess = response.status >= 200 && response.status < 300;
-      return response.json().then((data) => {
-        return { isSuccess, data, status: response.status };
-      });
-    })
-    .then((result) => {
-      if (result.isSuccess && result.data.ok === 1) {
-        // 成功获取数据
-        const quizData = result.data.data;
+  // 3. 填充模态框
+  const body = document.getElementById("quiz-detail-body");
+  body.innerHTML = `
+    <div style="text-align:center;">
+      <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;" class="quiz-title">${title}</div>
+      <div style="font-size:1rem;color:#666;margin-bottom:24px;" class="quiz-date">${date}</div>
+    </div>
+    <div class="quiz-questions" style="margin-bottom:32px;">
+      ${questionHtml}
+    </div>
+    <div class="quiz-answer" style="display:none; margin-top:24px; background:#f8f9fa; border-radius:6px; padding:20px;">
+      <div style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">Answer Key</div>
+      ${answerHtml}
+    </div>
+  `;
 
-        // 导航到生成器页面
-        navigateTo("generator");
+  // 4. 答案显示/隐藏逻辑
+  let answerVisible = false;
+  const answerDiv = document.querySelector("#quiz-detail-body .quiz-answer");
+  const toggleBtn = document.getElementById("quiz-detail-toggle-answer");
+  toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> Show Answer`;
 
-        // 显示测验内容
-        displayHistoryQuiz(quizData);
-      } else {
-        // 处理API错误
-        throw new Error(result.data.message || "Failed to fetch quiz details");
-      }
-    })
-    .catch((error) => {
-      console.error("Failed to fetch quiz details:", error);
+  toggleBtn.onclick = function () {
+    answerVisible = !answerVisible;
+    if (answerVisible) {
+      answerDiv.style.display = "block";
+      toggleBtn.innerHTML = `<i class="fas fa-eye-slash me-1"></i> Hide Answer`;
+    } else {
+      answerDiv.style.display = "none";
+      toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> Show Answer`;
+    }
+  };
 
-      showNotification(
-        "error",
-        "Loading Failed",
-        error.message ||
-          "An error occurred while loading quiz details. Please try again later."
-      );
-    });
+  // 5. 打开模态框
+  const modal = new bootstrap.Modal(document.getElementById("quizDetailModal"));
+  modal.show();
 }
 
 async function fetchDashboardStatsAndUpdateUI() {
@@ -4549,22 +4567,22 @@ function viewQuiz(quizId) {
   // 3. 填充模态框
   const body = document.getElementById("quiz-detail-body");
   body.innerHTML = `
-            <div style="text-align:center;">
-              <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">${title}</div>
-              <div style="font-size:1rem;color:#666;margin-bottom:24px;">${date}</div>
-            </div>
-            <div id="quiz-detail-question" style="margin-bottom:32px;">
-              ${questionHtml}
-            </div>
-            <div id="quiz-detail-answer" style="display:none; margin-top:24px; background:#f8f9fa; border-radius:6px; padding:20px;">
-              <div style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">Answer Key</div>
-              ${answerHtml}
-            </div>
-          `;
+    <div style="text-align:center;">
+      <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;" class="quiz-title">${title}</div>
+      <div style="font-size:1rem;color:#666;margin-bottom:24px;" class="quiz-date">${date}</div>
+    </div>
+    <div class="quiz-questions" style="margin-bottom:32px;">
+      ${questionHtml}
+    </div>
+    <div class="quiz-answer" style="display:none; margin-top:24px; background:#f8f9fa; border-radius:6px; padding:20px;">
+      <div style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">Answer Key</div>
+      ${answerHtml}
+    </div>
+  `;
 
   // 4. 答案显示/隐藏逻辑
   let answerVisible = false;
-  const answerDiv = document.getElementById("quiz-detail-answer");
+  const answerDiv = document.querySelector("#quiz-detail-body .quiz-answer");
   const toggleBtn = document.getElementById("quiz-detail-toggle-answer");
   toggleBtn.innerHTML = `<i class="fas fa-eye me-1"></i> Show Answer`;
 
@@ -4582,257 +4600,6 @@ function viewQuiz(quizId) {
   // 5. 打开模态框
   const modal = new bootstrap.Modal(document.getElementById("quizDetailModal"));
   modal.show();
-
-  // === 新增：绑定PDF和Word导出按钮 ===
-  // 先解绑，防止重复绑定
-  const pdfBtn = document.getElementById("quiz-detail-download-pdf");
-  const wordBtn = document.getElementById("quiz-detail-download-word");
-  if (pdfBtn) pdfBtn.onclick = null;
-  if (wordBtn) wordBtn.onclick = null;
-
-  // 工具函数：去除多余的Answer Key标题
-  function cleanAnswerKeyHtml(html) {
-    // 匹配以"Answer Key"开头的div/h*标签
-    return html
-      .replace(/<div[^>]*>\s*Answer Key\s*<\/div>/i, "")
-      .replace(/<h[1-6][^>]*>\s*Answer Key\s*<\/h[1-6]>/i, "");
-  }
-
-  pdfBtn &&
-    (pdfBtn.onclick = async function () {
-      // 获取内容
-      const title = `${quizData.grade_level} ${quizData.subject} ${
-        quizData.make_comprehensive_test ? "Comprehensive Test" : "Quiz"
-      }`;
-      const date = quizData.created_at
-        ? new Date(quizData.created_at).toLocaleString()
-        : "";
-      const questionsDiv = document.getElementById("quiz-detail-question");
-      const answerDiv = document.getElementById("quiz-detail-answer");
-      const answerVisible = answerDiv && answerDiv.style.display !== "none";
-
-      // 1. 生成题目页
-      let exportDiv1 = document.createElement("div");
-      exportDiv1.style.position = "fixed";
-      exportDiv1.style.left = "-99999px";
-      exportDiv1.style.top = "0";
-      exportDiv1.style.width = "800px";
-      exportDiv1.style.background = "#fff";
-      exportDiv1.style.padding = "48px 40px 40px 40px";
-      exportDiv1.style.fontFamily = "Open Sans, Arial, sans-serif";
-      exportDiv1.style.color = "#222";
-      exportDiv1.style.lineHeight = "1.6";
-      exportDiv1.innerHTML = `
-    <div style="text-align:center;">
-      <div style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">${title}</div>
-      <div style="font-size:1rem;color:#666;margin-bottom:24px;">${date}</div>
-    </div>
-  `;
-      if (questionsDiv) {
-        const qClone = questionsDiv.cloneNode(true);
-        qClone.style.marginBottom = "32px";
-        exportDiv1.appendChild(qClone);
-      }
-      document.body.appendChild(exportDiv1);
-
-      // 2. 生成答案页（如果需要）
-      let exportDiv2 = null;
-      if (answerVisible && answerDiv) {
-        exportDiv2 = document.createElement("div");
-        exportDiv2.style.position = "fixed";
-        exportDiv2.style.left = "-99999px";
-        exportDiv2.style.top = "0";
-        exportDiv2.style.width = "800px";
-        exportDiv2.style.background = "#fff";
-        exportDiv2.style.padding = "48px 40px 40px 40px";
-        exportDiv2.style.fontFamily = "Open Sans, Arial, sans-serif";
-        exportDiv2.style.color = "#222";
-        exportDiv2.style.lineHeight = "1.6";
-        exportDiv2.innerHTML = `
-      <div style="text-align:center;">
-        <div style="font-size:1.25rem;font-weight:700;margin-bottom:20px;">Answer Key</div>
-      </div>
-    `;
-        const aClone = answerDiv.cloneNode(true);
-        aClone.style.display = "block";
-        aClone.style.background = "none";
-        aClone.style.color = "#222";
-        aClone.style.fontSize = "1rem";
-        aClone.style.padding = "0";
-        // 清理多余的Answer Key标题
-        aClone.innerHTML = cleanAnswerKeyHtml(aClone.innerHTML);
-        exportDiv2.appendChild(aClone);
-        document.body.appendChild(exportDiv2);
-      }
-
-      // 3. 截图并生成PDF
-      try {
-        // 题目页截图
-        const canvas1 = await html2canvas(exportDiv1, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#fff",
-        });
-        const pdf = new window.jspdf.jsPDF({
-          orientation: "p",
-          unit: "pt",
-          format: "a4",
-        });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        // 题目分页
-        let renderedHeight = 0;
-        let pageNum = 0;
-        while (renderedHeight < canvas1.height) {
-          const pageCanvas = document.createElement("canvas");
-          pageCanvas.width = canvas1.width;
-          pageCanvas.height = Math.min(
-            canvas1.height - renderedHeight,
-            Math.round((pageHeight * canvas1.width) / pageWidth)
-          );
-          const ctx = pageCanvas.getContext("2d");
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-          ctx.drawImage(
-            canvas1,
-            0,
-            renderedHeight,
-            canvas1.width,
-            pageCanvas.height,
-            0,
-            0,
-            canvas1.width,
-            pageCanvas.height
-          );
-          const pageData = pageCanvas.toDataURL("image/jpeg", 1.0);
-          if (pageNum > 0) pdf.addPage();
-          pdf.addImage(
-            pageData,
-            "JPEG",
-            0,
-            0,
-            pageWidth,
-            pageCanvas.height * (pageWidth / canvas1.width)
-          );
-          renderedHeight += pageCanvas.height;
-          pageNum++;
-        }
-        // 答案分页
-        if (exportDiv2) {
-          const canvas2 = await html2canvas(exportDiv2, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#fff",
-          });
-          renderedHeight = 0;
-          pageNum = 0;
-          while (renderedHeight < canvas2.height) {
-            pdf.addPage();
-            const pageCanvas = document.createElement("canvas");
-            pageCanvas.width = canvas2.width;
-            pageCanvas.height = Math.min(
-              canvas2.height - renderedHeight,
-              Math.round((pageHeight * canvas2.width) / pageWidth)
-            );
-            const ctx = pageCanvas.getContext("2d");
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-            ctx.drawImage(
-              canvas2,
-              0,
-              renderedHeight,
-              canvas2.width,
-              pageCanvas.height,
-              0,
-              0,
-              canvas2.width,
-              pageCanvas.height
-            );
-            const pageData = pageCanvas.toDataURL("image/jpeg", 1.0);
-            pdf.addImage(
-              pageData,
-              "JPEG",
-              0,
-              0,
-              pageWidth,
-              pageCanvas.height * (pageWidth / canvas2.width)
-            );
-            renderedHeight += pageCanvas.height;
-            pageNum++;
-          }
-        }
-        pdf.save(`${title}.pdf`);
-      } catch (err) {
-        showNotification(
-          "error",
-          "Export Failed",
-          "PDF generation failed, please try again"
-        );
-      } finally {
-        exportDiv1.remove();
-        if (exportDiv2) exportDiv2.remove();
-      }
-    });
-
-  wordBtn &&
-    (wordBtn.onclick = function () {
-      const title = `${quizData.grade_level} ${quizData.subject} ${
-        quizData.make_comprehensive_test ? "Comprehensive Test" : "Quiz"
-      }`;
-      const date = quizData.created_at
-        ? new Date(quizData.created_at).toLocaleString()
-        : "";
-      const questionsDiv = document.getElementById("quiz-detail-question");
-      const answerDiv = document.getElementById("quiz-detail-answer");
-      const answerVisible = answerDiv && answerDiv.style.display !== "none";
-      let wordHtml = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office'
-          xmlns:w='urn:schemas-microsoft-com:office:word'
-          xmlns='http://www.w3.org/TR/REC-html40'>
-    <head>
-      <meta charset='utf-8'>
-      <title>${title}</title>
-      <style>
-        body { font-family: "Open Sans", Arial, sans-serif; color: #222; line-height: 1.6; }
-        .word-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
-        .word-date { text-align: center; font-size: 1rem; color: #666; margin-bottom: 24px; }
-        .word-questions { margin-bottom: 32px; }
-        .word-answer-title { text-align: center; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
-        .word-answer { }
-        .page-break { page-break-before: always; mso-break-type: section-break; }
-      </style>
-    </head>
-    <body>
-      <div class="word-title">${title}</div>
-      <div class="word-date">${date}</div>
-      <div class="word-questions">
-        ${questionsDiv ? questionsDiv.innerHTML : ""}
-      </div>
-  `;
-      if (answerVisible && answerDiv) {
-        wordHtml += `
-      <div class="page-break"></div>
-      <div class="word-answer-title">Answer Key</div>
-      <div class="word-answer">
-        ${cleanAnswerKeyHtml(answerDiv.innerHTML)}
-      </div>
-    `;
-      }
-      wordHtml += `</body></html>`;
-      const blob = new Blob(["\ufeff", wordHtml], {
-        type: "application/msword",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${title}.doc`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-    });
 }
 
 // 检查生成按钮状态
@@ -4980,4 +4747,475 @@ function renderPurchaseHistoryItems(items) {
   });
 
   purchaseHistoryList.innerHTML = html;
+}
+
+// ... existing code ...
+// 为PDF下载按钮添加事件监听
+document
+  .getElementById("quiz-detail-download-pdf")
+  .addEventListener("click", function () {
+    // 获取测验详情内容
+    const quizDetailBody = document.getElementById("quiz-detail-body");
+    if (!quizDetailBody) {
+      showNotification("error", "导出失败", "找不到测验内容");
+      return;
+    }
+
+    // 获取标题和日期
+    const title =
+      document.querySelector("#quizDetailModalLabel").textContent || "测验";
+    const dateElement = quizDetailBody.querySelector(".quiz-date");
+    const date = dateElement ? dateElement.textContent : formatDate();
+
+    // 获取问题和答案元素
+    const questionDiv = quizDetailBody.querySelector(".quiz-questions");
+    const answerDiv = quizDetailBody.querySelector(".quiz-answer");
+
+    // 检查是否显示答案（通过按钮状态）
+    const answerToggleBtn = document.getElementById(
+      "quiz-detail-toggle-answer"
+    );
+    const answerVisible =
+      answerToggleBtn && answerToggleBtn.innerHTML.includes("Hide Answer");
+
+    // 开始PDF生成过程
+    generatePDF(title, date, questionDiv, answerDiv, answerVisible);
+  });
+
+// 全新的PDF生成函数 - 使用直接文本绘制替代HTML转Canvas
+async function generatePDF(title, date, questionDiv, answerDiv, answerVisible) {
+  try {
+    // 显示加载状态
+    showNotification("info", "正在生成", "PDF正在生成中，请稍候...");
+
+    // 初始化jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    // 设置文档属性
+    doc.setProperties({
+      title: title,
+      subject: "QuizCraft AI Generated Quiz",
+      author: "QuizCraft AI",
+      creator: "QuizCraft AI",
+    });
+
+    // 定义页面尺寸和边距
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20; // 页面边距（毫米）
+    const contentWidth = pageWidth - margin * 2;
+
+    // 当前Y位置（从页面顶部开始）
+    let yPos = margin;
+
+    // 绘制标题
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(33, 37, 41); // 深灰色
+
+    // 标题居中
+    const titleWidth =
+      (doc.getStringUnitWidth(title) * 16) / doc.internal.scaleFactor;
+    doc.text(title, (pageWidth - titleWidth) / 2, yPos);
+    yPos += 10; // 标题后的间距
+
+    // 添加日期
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(108, 117, 125); // 灰色
+
+    // 日期居中
+    const dateWidth =
+      (doc.getStringUnitWidth(date) * 10) / doc.internal.scaleFactor;
+    doc.text(date, (pageWidth - dateWidth) / 2, yPos);
+    yPos += 15; // 日期后的间距
+
+    // 设置正文文本样式
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(33, 37, 41); // 深灰色
+
+    // 解析问题内容
+    if (questionDiv) {
+      // 从DOM中提取纯文本内容
+      const extractText = (element) => {
+        let text = "";
+
+        // 遍历所有子节点
+        for (const child of element.childNodes) {
+          if (child.nodeType === Node.TEXT_NODE) {
+            // 文本节点
+            text += child.textContent;
+          } else if (child.nodeType === Node.ELEMENT_NODE) {
+            // 元素节点
+            if (child.tagName === "BR") {
+              text += "\n";
+            } else if (
+              child.tagName === "P" ||
+              child.tagName === "DIV" ||
+              child.tagName === "H1" ||
+              child.tagName === "H2" ||
+              child.tagName === "H3" ||
+              child.tagName === "H4" ||
+              child.tagName === "H5" ||
+              child.tagName === "H6" ||
+              child.tagName === "LI"
+            ) {
+              // 块级元素添加换行
+              const innerText = extractText(child);
+              text += innerText + (innerText.endsWith("\n") ? "" : "\n");
+            } else {
+              // 其他元素
+              text += extractText(child);
+            }
+          }
+        }
+        return text;
+      };
+
+      const questionText = extractText(questionDiv);
+
+      // 使用splitTextToSize为文本自动换行
+      const lines = doc.splitTextToSize(questionText, contentWidth);
+
+      // 检查是否需要新页面
+      if (yPos + lines.length * 7 > pageHeight - margin) {
+        doc.addPage();
+        yPos = margin;
+      }
+
+      // 添加文本到PDF
+      doc.text(lines, margin, yPos);
+      yPos += lines.length * 7; // 每行约7mm高
+    }
+
+    // 如果需要显示答案并且答案元素存在
+    if (answerVisible && answerDiv) {
+      // 添加新页面用于答案
+      doc.addPage();
+      yPos = margin;
+
+      // 添加答案标题
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      const answerTitle = "Answer Key";
+      const answerTitleWidth =
+        (doc.getStringUnitWidth(answerTitle) * 14) / doc.internal.scaleFactor;
+      doc.text(answerTitle, (pageWidth - answerTitleWidth) / 2, yPos);
+      yPos += 10;
+
+      // 设置答案文本样式
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+
+      // 提取答案文本
+      const extractText = (element) => {
+        let text = "";
+
+        // 遍历所有子节点
+        for (const child of element.childNodes) {
+          if (child.nodeType === Node.TEXT_NODE) {
+            // 文本节点
+            text += child.textContent;
+          } else if (child.nodeType === Node.ELEMENT_NODE) {
+            // 元素节点
+            if (child.tagName === "BR") {
+              text += "\n";
+            } else if (
+              child.tagName === "P" ||
+              child.tagName === "DIV" ||
+              child.tagName === "H1" ||
+              child.tagName === "H2" ||
+              child.tagName === "H3" ||
+              child.tagName === "H4" ||
+              child.tagName === "H5" ||
+              child.tagName === "H6" ||
+              child.tagName === "LI"
+            ) {
+              // 块级元素添加换行
+              const innerText = extractText(child);
+              text += innerText + (innerText.endsWith("\n") ? "" : "\n");
+            } else {
+              // 其他元素
+              text += extractText(child);
+            }
+          }
+        }
+        return text;
+      };
+
+      const answerText = extractText(answerDiv);
+
+      // 使用splitTextToSize为文本自动换行
+      const answerLines = doc.splitTextToSize(answerText, contentWidth);
+
+      // 添加文本到PDF
+      doc.text(answerLines, margin, yPos);
+    }
+
+    // 保存PDF
+    doc.save(`${title}.pdf`);
+
+    // 显示成功消息
+    showNotification("success", "导出成功", "PDF已成功生成并下载");
+  } catch (error) {
+    console.error("PDF生成错误:", error);
+    showNotification("error", "导出失败", "PDF生成过程中出现错误，请稍后再试");
+  }
+}
+
+// ... existing code ...
+
+// 为Word下载按钮添加事件监听
+document
+  .getElementById("quiz-detail-download-word")
+  .addEventListener("click", function () {
+    // 获取测验详情内容
+    const quizDetailBody = document.getElementById("quiz-detail-body");
+    if (!quizDetailBody) {
+      showNotification("error", "导出失败", "找不到测验内容");
+      return;
+    }
+
+    // 获取标题和日期
+    const title =
+      document.querySelector("#quizDetailModalLabel").textContent || "测验";
+    const dateElement = quizDetailBody.querySelector(".quiz-date");
+    const date = dateElement ? dateElement.textContent : formatDate();
+
+    // 获取问题和答案元素
+    const questionDiv = quizDetailBody.querySelector(".quiz-questions");
+    const answerDiv = quizDetailBody.querySelector(".quiz-answer");
+
+    // 检查是否显示答案（通过按钮状态）
+    const answerToggleBtn = document.getElementById(
+      "quiz-detail-toggle-answer"
+    );
+    const answerVisible =
+      answerToggleBtn && answerToggleBtn.innerHTML.includes("Hide Answer");
+
+    // 构建Word内容
+    generateWord(title, date, questionDiv, answerDiv, answerVisible);
+  });
+
+// 全新的Word生成函数 - 使用HTML格式创建Word文档
+function generateWord(title, date, questionDiv, answerDiv, answerVisible) {
+  try {
+    // 显示加载状态
+    showNotification("info", "正在生成", "Word文档正在生成中，请稍候...");
+
+    // 构建Word内容
+    let wordHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>${title}</title>
+        <style>
+          body { font-family: "Calibri", sans-serif; color: #333; line-height: 1.6; }
+          .word-title { text-align: center; font-size: 18pt; font-weight: bold; margin-bottom: 8pt; }
+          .word-date { text-align: center; font-size: 10pt; color: #666; margin-bottom: 24pt; }
+          .word-questions { margin-bottom: 24pt; }
+          .word-answer-title { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 16pt; }
+          .page-break { page-break-before: always; mso-break-type: section-break; }
+        </style>
+      </head>
+      <body>
+        <div class="word-title">${title}</div>
+        <div class="word-date">Generated on ${date}</div>
+        <div class="word-questions">
+    `;
+
+    // 添加问题内容
+    if (questionDiv) {
+      // 克隆问题内容，不修改原始DOM
+      const questionClone = questionDiv.cloneNode(true);
+      // 移除所有数据属性和ID，避免Word文档中的冲突
+      const allElements = questionClone.querySelectorAll("*");
+      allElements.forEach((el) => {
+        Array.from(el.attributes).forEach((attr) => {
+          if (attr.name.startsWith("data-") || attr.name === "id") {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+      wordHtml += questionClone.innerHTML;
+    }
+
+    wordHtml += `</div>`;
+
+    // 添加答案部分（如果需要）
+    if (answerVisible && answerDiv) {
+      wordHtml += `
+        <div class="page-break"></div>
+        <div class="word-answer-title">Answer Key</div>
+        <div class="word-answer">
+      `;
+
+      // 克隆答案内容，不修改原始DOM
+      const answerClone = answerDiv.cloneNode(true);
+      // 移除所有数据属性和ID
+      const allElements = answerClone.querySelectorAll("*");
+      allElements.forEach((el) => {
+        Array.from(el.attributes).forEach((attr) => {
+          if (attr.name.startsWith("data-") || attr.name === "id") {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+      wordHtml += answerClone.innerHTML;
+
+      wordHtml += `</div>`;
+    }
+
+    wordHtml += `
+      </body>
+      </html>
+    `;
+
+    // 创建Blob并下载
+    const blob = new Blob(["\ufeff", wordHtml], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title}.doc`;
+    document.body.appendChild(a);
+    a.click();
+
+    // 清理
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+    // 显示成功消息
+    showNotification("success", "导出成功", "Word文档已成功生成并下载");
+  } catch (error) {
+    console.error("Word生成错误:", error);
+    showNotification(
+      "error",
+      "导出失败",
+      "Word文档生成过程中出现错误，请稍后再试"
+    );
+  }
+}
+// ... existing code ...
+
+// 答案切换按钮添加事件监听
+document
+  .getElementById("quiz-detail-toggle-answer")
+  .addEventListener("click", function () {
+    const answerElem = document.querySelector("#quiz-detail-body .quiz-answer");
+    if (!answerElem) return;
+
+    const isVisible = answerElem.style.display !== "none";
+    const btn = document.getElementById("quiz-detail-toggle-answer");
+
+    if (isVisible) {
+      // 隐藏答案
+      answerElem.style.display = "none";
+      btn.innerHTML = '<i class="fas fa-eye me-1"></i> Show Answer';
+    } else {
+      // 显示答案
+      answerElem.style.display = "block";
+      btn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Answer';
+    }
+  });
+
+// 新函数，用于设置测验详情按钮的事件监听器
+function setupQuizDetailButtons() {
+  // PDF下载按钮
+  const pdfBtn = document.getElementById("quiz-detail-download-pdf");
+  if (pdfBtn) {
+    pdfBtn.addEventListener("click", function () {
+      // 获取测验详情内容
+      const quizDetailBody = document.getElementById("quiz-detail-body");
+      if (!quizDetailBody) {
+        showNotification("error", "导出失败", "找不到测验内容");
+        return;
+      }
+
+      // 获取标题和日期
+      const title =
+        document.querySelector("#quizDetailModalLabel").textContent || "测验";
+      const dateElement = quizDetailBody.querySelector(".quiz-date");
+      const date = dateElement ? dateElement.textContent : formatDate();
+
+      // 获取问题和答案元素
+      const questionDiv = quizDetailBody.querySelector(".quiz-questions");
+      const answerDiv = quizDetailBody.querySelector(".quiz-answer");
+
+      // 检查是否显示答案（通过按钮状态）
+      const answerToggleBtn = document.getElementById(
+        "quiz-detail-toggle-answer"
+      );
+      const answerVisible =
+        answerToggleBtn && answerToggleBtn.innerHTML.includes("Hide Answer");
+
+      // 开始PDF生成过程
+      generatePDF(title, date, questionDiv, answerDiv, answerVisible);
+    });
+  }
+
+  // Word下载按钮
+  const wordBtn = document.getElementById("quiz-detail-download-word");
+  if (wordBtn) {
+    wordBtn.addEventListener("click", function () {
+      // 获取测验详情内容
+      const quizDetailBody = document.getElementById("quiz-detail-body");
+      if (!quizDetailBody) {
+        showNotification("error", "导出失败", "找不到测验内容");
+        return;
+      }
+
+      // 获取标题和日期
+      const title =
+        document.querySelector("#quizDetailModalLabel").textContent || "测验";
+      const dateElement = quizDetailBody.querySelector(".quiz-date");
+      const date = dateElement ? dateElement.textContent : formatDate();
+
+      // 获取问题和答案元素
+      const questionDiv = quizDetailBody.querySelector(".quiz-questions");
+      const answerDiv = quizDetailBody.querySelector(".quiz-answer");
+
+      // 检查是否显示答案（通过按钮状态）
+      const answerToggleBtn = document.getElementById(
+        "quiz-detail-toggle-answer"
+      );
+      const answerVisible =
+        answerToggleBtn && answerToggleBtn.innerHTML.includes("Hide Answer");
+
+      // 构建Word内容
+      generateWord(title, date, questionDiv, answerDiv, answerVisible);
+    });
+  }
+
+  // 答案切换按钮
+  const answerToggleBtn = document.getElementById("quiz-detail-toggle-answer");
+  if (answerToggleBtn) {
+    answerToggleBtn.addEventListener("click", function () {
+      const answerElem = document.querySelector(
+        "#quiz-detail-body .quiz-answer"
+      );
+      if (!answerElem) return;
+
+      const isVisible = answerElem.style.display !== "none";
+
+      if (isVisible) {
+        // 隐藏答案
+        answerElem.style.display = "none";
+        this.innerHTML = '<i class="fas fa-eye me-1"></i> Show Answer';
+      } else {
+        // 显示答案
+        answerElem.style.display = "block";
+        this.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Answer';
+      }
+    });
+  }
 }
