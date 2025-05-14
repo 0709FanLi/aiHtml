@@ -380,7 +380,112 @@ document.addEventListener("DOMContentLoaded", function () {
   if (loginPrivacyLink) {
     loginPrivacyLink.addEventListener("click", openPrivacyModal);
   }
+
+  // 添加重置登录弹窗的功能
+  const authModal = document.getElementById("authModal");
+  if (authModal) {
+    authModal.addEventListener("hidden.bs.modal", function () {
+      resetAuthForms();
+    });
+  }
+
+  // 添加重置重置密码弹窗的功能
+  const resetPasswordModal = document.getElementById("resetPasswordModal");
+  if (resetPasswordModal) {
+    resetPasswordModal.addEventListener("hidden.bs.modal", function () {
+      resetPasswordForm();
+    });
+  }
 });
+
+// 重置认证表单（登录和注册）
+function resetAuthForms() {
+  // 重置登录表单
+  const loginForm = document.getElementById("login-form-element");
+  if (loginForm) {
+    loginForm.reset();
+
+    // 移除可能的错误提示
+    const loginErrorMessage = loginForm.querySelector(".alert");
+    if (loginErrorMessage) {
+      loginErrorMessage.classList.add("d-none");
+    }
+  }
+
+  // 重置注册表单
+  const registerForm = document.getElementById("register-form-element");
+  if (registerForm) {
+    registerForm.reset();
+
+    // 隐藏错误信息
+    const registerErrorMessage = document.getElementById(
+      "register-error-message"
+    );
+    if (registerErrorMessage) {
+      registerErrorMessage.classList.add("d-none");
+    }
+
+    // 重置密码强度指示器
+    const passwordStrength = document.getElementById(
+      "register-password-strength"
+    );
+    if (passwordStrength) {
+      passwordStrength.style.width = "0%";
+      passwordStrength.className = "progress-bar bg-danger";
+    }
+
+    // 重置密码反馈信息
+    const passwordFeedback = document.getElementById(
+      "register-password-feedback"
+    );
+    if (passwordFeedback) {
+      passwordFeedback.textContent = "Password strength will be shown here";
+    }
+  }
+
+  // 重置认证标签为默认选中登录
+  const loginTab = document.getElementById("login-tab");
+  const registerTab = document.getElementById("register-tab");
+  const loginFormDiv = document.getElementById("login-form");
+  const registerFormDiv = document.getElementById("register-form");
+
+  if (loginTab && registerTab && loginFormDiv && registerFormDiv) {
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
+    loginFormDiv.style.display = "block";
+    registerFormDiv.style.display = "none";
+  }
+}
+
+// 重置密码重置表单
+function resetPasswordForm() {
+  const form = document.getElementById("reset-password-form");
+  if (form) {
+    form.reset();
+
+    // 重置密码强度指示器
+    const passwordStrength = document.getElementById("new-password-strength");
+    if (passwordStrength) {
+      passwordStrength.style.width = "0%";
+      passwordStrength.className = "progress-bar bg-danger";
+    }
+
+    // 重置密码反馈信息
+    const passwordFeedback = document.getElementById("new-password-feedback");
+    if (passwordFeedback) {
+      passwordFeedback.textContent = "Password strength will be shown here";
+    }
+
+    // 重置验证码反馈信息
+    const verificationFeedback = document.getElementById(
+      "verification-feedback"
+    );
+    if (verificationFeedback) {
+      verificationFeedback.textContent =
+        "We'll send a verification code to your email";
+    }
+  }
+}
 
 // ===== EVENT LISTENERS =====
 function setupEventListeners() {
@@ -672,7 +777,12 @@ function loadUserProfile() {
 
   // 加载邮箱到表单（只读）
   if (currentUser.email) {
-    document.getElementById("profile-email").value = currentUser.email;
+    const emailInput = document.getElementById("profile-email");
+    emailInput.value = currentUser.email;
+    // 设置邮箱输入框为禁用状态并添加鼠标禁用样式
+    emailInput.disabled = true;
+    emailInput.style.cursor = "not-allowed";
+    emailInput.style.backgroundColor = "#f5f5f5";
   }
 
   console.log("User profile loaded from localStorage:", currentUser);
@@ -979,6 +1089,10 @@ function updateUIForLoggedInUser() {
   // Update progress bar
   const progressPercent = (remainingGens / totalGens) * 100;
   document.querySelector(".progress-bar").style.width = `${progressPercent}%`;
+
+  // 立即加载Dashboard统计数据
+  fetchDashboardStatsAndUpdateUI();
+
   checkGenerateButton(); // 登录后立即检查生成按钮
 }
 
@@ -2146,50 +2260,71 @@ function setupRouting() {
 }
 
 function navigateTo(section) {
-  // Update URL hash
+  // 更新地址栏
   window.location.hash = section;
 
-  // Hide all sections
-  document.querySelectorAll(".content-section").forEach((section) => {
-    section.classList.remove("active");
-    section.style.display = "none"; // Ensure completely hidden
+  // 处理导航链接的活跃状态
+  const navLinks = document.querySelectorAll(".nav-link");
+  navLinks.forEach((link) => {
+    const linkSection = link.getAttribute("data-section");
+    if (linkSection === section) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
   });
 
-  // Check if it's home or pricing page
-  if (section === "home" || section === "pricing") {
-    // Only show target section
-    const targetSection = document.getElementById(`${section}-section`);
-    if (targetSection) {
-      targetSection.classList.add("active");
-      targetSection.style.display = "block"; // Ensure visible
+  // 显示相应的区块
+  const contentSections = document.querySelectorAll(".content-section");
+  contentSections.forEach((sec) => {
+    if (sec.id === section + "-section") {
+      sec.classList.add("active");
+      sec.style.display = "block";
+    } else {
+      sec.classList.remove("active");
+      sec.style.display = "none";
     }
+  });
 
-    // Ensure How It Works is not displayed
-    const howItWorksSection = document.getElementById("how-it-works-section");
-    if (howItWorksSection) {
-      howItWorksSection.classList.remove("active");
-      howItWorksSection.style.display = "none"; // Ensure completely hidden
-    }
-  } else {
-    // For other pages, show target section
-    const targetSection = document.getElementById(`${section}-section`);
-    if (targetSection) {
-      targetSection.classList.add("active");
-      targetSection.style.display = "block"; // Ensure visible
+  // 滚动到顶部
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // 特殊处理：在导航到dashboard时激活默认子标签
+  if (section === "dashboard" && isLoggedIn) {
+    // 默认选中dashboard overview标签
+    const dashboardOverviewLink = document.querySelector(
+      '.nav-link[data-tab="dashboard-overview"]'
+    );
+    if (dashboardOverviewLink) {
+      // 移除所有dashboard标签的active类
+      document
+        .querySelectorAll(".dashboard-sidebar .nav-link")
+        .forEach((link) => {
+          link.classList.remove("active");
+        });
+
+      // 为dashboard overview添加active类
+      dashboardOverviewLink.classList.add("active");
+
+      // 隐藏所有dashboard内容
+      document.querySelectorAll(".dashboard-tab").forEach((tab) => {
+        tab.style.display = "none";
+      });
+
+      // 显示dashboard overview内容
+      const dashboardOverviewTab =
+        document.getElementById("dashboard-overview");
+      if (dashboardOverviewTab) {
+        dashboardOverviewTab.style.display = "block";
+      }
+
+      // 更新最近活动列表
+      updateRecentActivity();
+
+      // 更新Dashboard统计数据
+      fetchDashboardStatsAndUpdateUI();
     }
   }
-
-  // Scroll to top
-  window.scrollTo(0, 0);
-
-  // Update active navigation links
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.classList.remove("active");
-  });
-  const activeLink = document.querySelector(
-    `.nav-link[data-section="${section}"]`
-  );
-  if (activeLink) activeLink.classList.add("active");
 }
 
 function goToGenerator() {
@@ -2916,6 +3051,17 @@ async function fetchDashboardStatsAndUpdateUI() {
     localStorage.getItem("accessToken") ||
     sessionStorage.getItem("accessToken") ||
     "";
+
+  // 设置默认值
+  let totalQuizzes = "0";
+  let lastActivity = "No activity";
+  let totalFavorites = "0";
+
+  // 即使没有token也要确保显示默认值
+  document.getElementById("dashboard-total-quizzes").textContent = totalQuizzes;
+  document.getElementById("dashboard-last-activity").textContent = lastActivity;
+  document.getElementById("dashboard-favorites").textContent = totalFavorites;
+
   if (!accessToken) return;
 
   try {
@@ -2932,27 +3078,37 @@ async function fetchDashboardStatsAndUpdateUI() {
     );
     const result = await response.json();
     if (result.ok === 1 && result.data) {
-      document.getElementById("dashboard-total-quizzes").textContent =
-        result.data.total_quizzes;
-
-      let lastActivity = result.data.latest_quiz_time;
-      if (!lastActivity || lastActivity === 0) {
-        lastActivity = "No activity";
-      } else {
-        const date = new Date(lastActivity * 1000);
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        const d = String(date.getDate()).padStart(2, "0");
-        lastActivity = `${y}/${m}/${d}`;
+      // 更新总测验数
+      if (result.data.total_quizzes) {
+        totalQuizzes = result.data.total_quizzes;
+        document.getElementById("dashboard-total-quizzes").textContent =
+          totalQuizzes;
       }
-      document.getElementById("dashboard-last-activity").textContent =
-        lastActivity;
 
-      document.getElementById("dashboard-favorites").textContent =
-        result.data.total_favorites;
+      // 更新最后活动时间
+      if (result.data.latest_quiz_time) {
+        const timestamp = result.data.latest_quiz_time;
+        if (timestamp && timestamp !== 0) {
+          const date = new Date(timestamp * 1000);
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, "0");
+          const d = String(date.getDate()).padStart(2, "0");
+          lastActivity = `${y}/${m}/${d}`;
+        }
+        document.getElementById("dashboard-last-activity").textContent =
+          lastActivity;
+      }
+
+      // 更新收藏数
+      if (result.data.total_favorites) {
+        totalFavorites = result.data.total_favorites;
+        document.getElementById("dashboard-favorites").textContent =
+          totalFavorites;
+      }
     }
   } catch (e) {
     console.error("Failed to fetch dashboard stats", e);
+    // 错误处理已完成，默认值已在函数开始时设置
   }
 }
 
