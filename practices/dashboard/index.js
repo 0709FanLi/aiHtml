@@ -463,6 +463,22 @@ document.addEventListener("DOMContentLoaded", function () {
       authModal.setAttribute("data-keep-email", "true");
     });
   }
+
+  // 添加模态框显示事件监听，填充记住的邮箱
+  if (authModal) {
+    authModal.addEventListener("show.bs.modal", function () {
+      // 获取记住的邮箱
+      const rememberedEmail = localStorage.getItem("rememberedEmail");
+
+      // 如果存在记住的邮箱，填充到输入框
+      if (rememberedEmail) {
+        document.getElementById("login-email").value = rememberedEmail;
+        document.getElementById("remember-me").checked = true;
+      } else {
+        document.getElementById("remember-me").checked = false;
+      }
+    });
+  }
 });
 
 // 重置认证表单（登录和注册）
@@ -476,6 +492,13 @@ function resetAuthForms() {
     const loginErrorMessage = loginForm.querySelector(".alert");
     if (loginErrorMessage) {
       loginErrorMessage.classList.add("d-none");
+    }
+
+    // 检查是否有记住的邮箱，如果有则填充
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    if (rememberedEmail) {
+      document.getElementById("login-email").value = rememberedEmail;
+      document.getElementById("remember-me").checked = true;
     }
   }
 
@@ -1648,8 +1671,8 @@ function handleLogout(e) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("tokenType");
-      // 清除记住的邮箱信息
-      localStorage.removeItem("rememberedEmail");
+      // 不清除记住的邮箱信息，保留用户的选择
+      // localStorage.removeItem("rememberedEmail");
 
       // 清除SessionStorage中的所有存储
       sessionStorage.removeItem("currentUser");
