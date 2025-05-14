@@ -620,42 +620,39 @@ function handleAuth(e) {
         const data = await res.json();
         console.log("登录响应:", data);
 
-        if (res.ok || data.success || data.status === "success") {
+        if (data.ok === 1 || data.success || data.status === "success") {
           // 登录成功
           showToast("Login successful!", "success");
 
-          // 保存用户信息和token
-          const userData = data.data || {};
-
-          // 获取token (可能是access_token或token字段)
+          // 适配新接口结构
+          const userData = data.data && data.data.user ? data.data.user : {};
           const authToken =
-            userData.access_token ||
-            data.access_token ||
-            userData.token ||
-            data.token ||
-            "";
-          console.log("获取到的token:", authToken);
+            data.data && data.data.access_token ? data.data.access_token : "";
+          const refreshToken =
+            data.data && data.data.refresh_token ? data.data.refresh_token : "";
+          const credits = userData.credits || 0;
 
           // 构建用户对象
           state.user = {
             id: userData.id || generateId(),
             name: userData.name || email.split("@")[0],
-            email: email,
-            credits: userData.credits || 5,
-            token: authToken, // 保存在token字段
-            access_token: authToken, // 同时保存在access_token字段，确保兼容性
-            // 保存其他需要的用户信息
-            avatar: userData.avatar || "",
+            email: userData.email || email,
+            credits: credits,
+            token: authToken,
+            access_token: authToken,
+            refresh_token: refreshToken,
+            avatar: userData.avatar_url || "",
             role: userData.role || "user",
+            created_at: userData.created_at || "",
+            last_login_at: userData.last_login_at || "",
           };
-
-          // 更新状态和UI
           state.isLoggedIn = true;
-          state.credits = state.user.credits;
+          state.credits = credits;
 
           // 保存到localStorage
           localStorage.setItem("user", JSON.stringify(state.user));
-          localStorage.setItem("token", authToken); // 额外单独保存token方便使用
+          localStorage.setItem("token", authToken);
+          localStorage.setItem("refresh_token", refreshToken);
 
           // 生成历史记录
           generateFakeHistory();
@@ -758,6 +755,7 @@ function logout() {
     state.storyHistory = [];
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
 
     // 更新UI
     updateUIForLoggedOutUser();
@@ -819,8 +817,16 @@ function generateStory(e) {
   const timePeriod = elements.timePeriod.value;
   const background = elements.storyBackground.value;
 
-  if (!storyType || !timePeriod || !background) {
-    showToast("Please select all story options", "error");
+  if (!storyType) {
+    showToast("Please select a story type", "error");
+    return;
+  }
+  if (!timePeriod) {
+    showToast("Please select a time period", "error");
+    return;
+  }
+  if (!background) {
+    showToast("Please select a story background", "error");
     return;
   }
 
@@ -1832,5 +1838,111 @@ function downloadHistoryStory() {
       console.error("获取故事详情错误:", error);
       elements.loadingOverlay.style.display = "none";
       showToast("Network error. Please try again later.", "error");
+    });
+}
+
+function handleForgotPassword(e) {
+  e.preventDefault();
+
+  const email = elements.resetEmail.value.trim();
+  const code = elements.verificationCode.value.trim();
+  const newPassword = elements.newPassword.value;
+  const confirmPassword = elements.confirmPassword.value;
+
+  // 校验邮箱
+  if (!validateEmail(email)) {
+    elements.resetEmail.style.borderColor = "var(--error-color)";
+    showToast("请输入有效的邮箱地址", "error");
+    return;
+  } else {
+    elements.resetEmail.style.borderColor = "";
+  }
+
+  // 校验验证码
+  if (!code) {
+    showToast("请输入验证码", "error");
+    return;
+  }
+
+  // 校验新密码
+  if (!newPassword || newPassword.length < 6) {
+    showToast("新密码至少6位", "error");
+    return;
+  }
+
+  // 校验确认密码
+  if (newPassword !== confirmPassword) {
+    showToast("两次输入的密码不一致", "error");
+    return;
+  }
+
+  // md5加密
+  const md5Password = md5(newPassword);
+  const md5PasswordConfirm = md5(confirmPassword);
+
+  // 显示加载
+  elements.loadingOverlay.style.display = "flex";
+
+  // 发送重置密码请求
+  fetch("http://web.colstory.com/api/v1/auth/forgot-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: email,
+      verification_code: code,
+      password: md5Password,
+      password_confirm: md5PasswordConfirm,
+    }),
+  })
+    .then(async (res) => {
+      const data = await res.json();
+      elements.loadingOverlay.style.display = "none";
+      // 只认业务成功
+      if (data.ok === 1 || data.success || data.status === "success") {
+        elements.resetMessage.style.display = "block";
+        showToast("密码重置成功", "success");
+        // 1. 关闭忘记密码弹窗
+        elements.forgotPasswordModal.style.display = "none";
+        // 2. 打开登录弹窗
+        elements.authModal.style.display = "block";
+        // 3. 自动填入邮箱
+        document.getElementById("email").value = email;
+        // 4. 切换到登录模式（如果当前不是登录模式）
+        if (elements.authTitle.textContent !== "Login") {
+          elements.authTitle.textContent = "Login";
+          elements.authForm.querySelector('button[type="submit"]').textContent =
+            "Login";
+          elements.authSwitch.innerHTML =
+            'Don\'t have an account? <a href="#" id="switchAuthMode">Register</a>';
+          elements.nameGroup.style.display = "none";
+          document.querySelector(".forgot-password-link").style.display =
+            "block";
+          // 重新绑定切换事件
+          document
+            .getElementById("switchAuthMode")
+            .addEventListener("click", switchAuthMode);
+          document
+            .getElementById("termsLink")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              toggleTermsOfServiceModal();
+            });
+          document
+            .getElementById("privacyLink")
+            .addEventListener("click", function (e) {
+              e.preventDefault();
+              togglePrivacyPolicyModal();
+            });
+        }
+      } else {
+        showToast(data.message || "重置密码失败", "error");
+      }
+    })
+    .catch((error) => {
+      elements.loadingOverlay.style.display = "none";
+      console.error("重置密码请求错误:", error);
+      showToast("网络错误，请稍后重试", "error");
     });
 }
