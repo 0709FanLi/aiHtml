@@ -557,6 +557,12 @@ header {
   opacity: 0.8;
 }
 
+/* 导航栏登出按钮 */
+.logout-btn {
+  margin-left: 20px;
+  display: none; /* 默认隐藏，只在登录后显示 */
+}
+
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 10px);

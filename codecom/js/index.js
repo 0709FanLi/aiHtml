@@ -157,6 +157,12 @@ document.addEventListener("DOMContentLoaded", function () {
       userMenu.style.display = "flex"; // 改为flex以支持排列
     }
 
+    // 显示导航栏登出按钮
+    const logoutBtn = document.querySelector(".logout-btn");
+    if (logoutBtn) {
+      logoutBtn.style.display = "block";
+    }
+
     // 更新用户头像显示的首字母
     const userAvatar = document.querySelector(".user-avatar");
     if (userAvatar && currentUser && currentUser.name) {
@@ -602,8 +608,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 登出按钮点击事件
   const logoutItem = document.querySelector(".logout-item");
+  const logoutBtn = document.querySelector(".logout-btn");
+
   if (logoutItem) {
     logoutItem.addEventListener("click", function (e) {
+      e.preventDefault();
+      handleLogout();
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
       e.preventDefault();
       handleLogout();
     });
@@ -613,6 +628,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function handleLogout() {
     // 获取保存的token
     const token = localStorage.getItem("token");
+    const tokenType = localStorage.getItem("token_type") || "bearer";
+
+    // 显示正在登出的提示
+    showToast("info", "Logging Out", "Processing your logout request...");
 
     // 如果有token，则发送登出请求
     if (token) {
@@ -621,34 +640,55 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
+          Authorization: `${tokenType} ${token}`,
         },
       })
-        .then((response) => response.json())
+        .then((response) => {
+          // 只要发送了请求，无论服务器返回什么，都清除本地状态
+          // 因为图中API说明：前端需要移除存储的令牌，服务器端JWT无状态
+          completeLogout();
+
+          if (response.ok) {
+            return response.json();
+          } else {
+            // 即使请求失败，也视为登出成功
+            throw new Error("Logout request failed, but local session cleared");
+          }
+        })
         .then((data) => {
           console.log("Logout response:", data);
-          // 无论成功与否都清除本地状态
-          completeLogout();
           showToast(
-            "info",
+            "success",
             "Logged Out",
-            data.message || "You have been successfully logged out"
+            "You have been successfully logged out"
           );
+
+          // 登出后重定向到首页
+          showHomePage();
         })
         .catch((error) => {
           console.error("Logout request error:", error);
-          // 发生错误时也清除本地状态
-          completeLogout();
+          // 仍然显示成功登出，因为本地已清除
           showToast(
-            "warning",
-            "Logout Notice",
-            "There was an issue with the logout process, but you have been logged out locally"
+            "success",
+            "Logged Out",
+            "You have been successfully logged out"
           );
+
+          // 登出后重定向到首页
+          showHomePage();
         });
     } else {
       // 没有token直接清除本地状态
       completeLogout();
-      showToast("info", "Logged Out", "You have been successfully logged out");
+      showToast(
+        "success",
+        "Logged Out",
+        "You have been successfully logged out"
+      );
+
+      // 登出后重定向到首页
+      showHomePage();
     }
   }
 
@@ -670,6 +710,23 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userDashboard) {
       userDashboard.style.display = "none";
     }
+
+    // 隐藏可能正在显示的结果卡片
+    if (resultsCard) {
+      resultsCard.style.display = "none";
+    }
+
+    // 清空代码输入区域
+    const codeTextarea = document.querySelector(".code-textarea");
+    if (codeTextarea) {
+      codeTextarea.value = "";
+    }
+
+    // 关闭任何可能打开的模态框
+    const activeModals = document.querySelectorAll(".modal-backdrop.active");
+    activeModals.forEach((modal) => {
+      modal.classList.remove("active");
+    });
   }
 
   // 更新登出后的UI
@@ -684,6 +741,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const userMenu = document.querySelector(".user-menu");
     if (userMenu) {
       userMenu.style.display = "none";
+    }
+
+    // 隐藏导航栏登出按钮
+    const logoutBtn = document.querySelector(".logout-btn");
+    if (logoutBtn) {
+      logoutBtn.style.display = "none";
     }
 
     // 关闭可能打开的下拉菜单
