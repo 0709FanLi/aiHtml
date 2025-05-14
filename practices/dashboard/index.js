@@ -1138,7 +1138,7 @@ function updateUIForLoggedInUser() {
   // 检查和显示用户积分
   // 格式化积分显示，确保不会换行
   const creditsSpan = document.getElementById("navbar-credits");
-  creditsSpan.textContent = `${currentUser.remainingGenerations || 5} credits`;
+  creditsSpan.textContent = `${currentUser.remainingGenerations || 0} credits`;
   creditsSpan.style.whiteSpace = "nowrap"; // 防止换行
 
   // Update dashboard info
@@ -1757,12 +1757,12 @@ document.addEventListener("DOMContentLoaded", function () {
 function handleGenerate(e) {
   e.preventDefault();
 
-  // 检查剩余次数
+  // Check remaining generations
   if (isLoggedIn && currentUser.remainingGenerations <= 0) {
     showNotification(
       "warning",
-      "可用次数已用完",
-      "请购买更多生成次数或升级套餐。"
+      "Out of generations",
+      "Please purchase more generations or upgrade your plan."
     );
     checkGenerateButton();
     navigateTo("pricing");
@@ -1777,7 +1777,7 @@ function handleGenerate(e) {
   const subjectValue = subjectSelect.value;
   const subjectText = subjectSelect.options[subjectSelect.selectedIndex].text;
 
-  // 提取主题分类，例如从"math-arithmetic"提取为"Mathematics Arithmetic"
+  // Extract subject category, for example from "math-arithmetic" to "Mathematics Arithmetic"
   let formattedSubject = "";
   if (subjectValue.includes("math")) {
     formattedSubject = "Mathematics " + subjectText;
@@ -1794,17 +1794,17 @@ function handleGenerate(e) {
   const difficulty = getDifficultyLevel();
   const isComprehensive = document.getElementById("comprehensive-test").checked;
 
-  // 确定问题数量
+  // Determine number of questions
   let numberOfQuestions = parseInt(
     document.getElementById("questions-count").value,
     10
   );
 
-  // 如果是综合测试，强制设置为1
+  // If it's a comprehensive test, force set to 1
   if (isComprehensive) {
     numberOfQuestions = 1;
   } else {
-    // 限制普通测试最大问题数为100
+    // Limit regular test maximum questions to 100
     numberOfQuestions = Math.min(numberOfQuestions, 100);
   }
 
@@ -1813,7 +1813,7 @@ function handleGenerate(e) {
   document
     .querySelectorAll(".question-type-checkbox:checked")
     .forEach((checkbox) => {
-      // 将值首字母大写并添加到数组中
+      // Capitalize first letter and add to array
       const typeValue = checkbox.value;
       let formattedType = "";
 
@@ -1851,7 +1851,7 @@ function handleGenerate(e) {
     return;
   }
 
-  // 检查用户是否登录
+  // Check if user is logged in
   if (!isLoggedIn) {
     showNotification(
       "warning",
@@ -1859,13 +1859,13 @@ function handleGenerate(e) {
       "Please log in to generate quizzes."
     );
 
-    // 打开登录模态框
+    // Open login modal
     const authModal = new bootstrap.Modal(document.getElementById("authModal"));
     authModal.show();
     return;
   }
 
-  // 准备API请求数据
+  // Prepare API request data
   let requestData = {
     grade_level: grade,
     subject: formattedSubject,
@@ -1874,7 +1874,7 @@ function handleGenerate(e) {
     make_comprehensive_test: isComprehensive,
   };
 
-  // 只有在非综合测试模式下才添加问题类型
+  // Only add question types in non-comprehensive test mode
   if (!isComprehensive) {
     requestData.question_types = selectedTypes;
   }
@@ -1886,13 +1886,13 @@ function handleGenerate(e) {
   document.getElementById("preview-placeholder").style.display = "none";
   document.getElementById("preview-content").style.display = "none";
 
-  // 获取 accessToken
+  // Get accessToken
   const accessToken =
     localStorage.getItem("accessToken") ||
     sessionStorage.getItem("accessToken") ||
     "";
 
-  // 调用API生成测验
+  // Call API to generate quiz
   fetch("http://web.practicesnow.com/api/v1/quiz/generate", {
     method: "POST",
     headers: {
@@ -1912,28 +1912,28 @@ function handleGenerate(e) {
     .then((result) => {
       console.log("API Result:", result);
       if (result.isSuccess && result.data.ok === 1) {
-        // 生成成功
+        // Generation successful
         const responseData = result.data.data;
 
-        // 更新预览标题
+        // Update preview title
         document.getElementById(
           "preview-title"
         ).textContent = `${grade} ${formattedSubject} Quiz`;
         document.getElementById("preview-date").textContent = formatDate();
 
-        // 渲染问题和答案内容
+        // Render question and answer content
         displayQuizContent(responseData);
 
-        // 隐藏加载指示器并显示预览
+        // Hide loading indicator and show preview
         document.getElementById("loading-indicator").style.display = "none";
         document.getElementById("preview-content").style.display = "block";
 
-        // 重置答案显示状态
+        // Reset answer display state
         showingAnswers = false;
         document.getElementById("toggle-answers").innerHTML =
           '<i class="fas fa-eye me-1"></i> Show Answers';
 
-        // 减少用户的剩余生成次数
+        // Reduce user's remaining generations
         if (isLoggedIn) {
           if (currentUser.remainingGenerations > 0) {
             currentUser.remainingGenerations--;
@@ -1949,22 +1949,26 @@ function handleGenerate(e) {
             checkGenerateButton();
             showNotification(
               "success",
-              "生成成功",
-              `测验生成成功，剩余可用次数：${currentUser.remainingGenerations}`
+              "Generation Successful",
+              `Quiz generated successfully, remaining generations: ${currentUser.remainingGenerations}`
             );
           } else {
             checkGenerateButton();
             showNotification(
               "warning",
-              "可用次数已用完",
-              "请购买更多生成次数或升级套餐。"
+              "Out of generations",
+              "Please purchase more generations or upgrade your plan."
             );
           }
         } else {
-          showNotification("success", "生成成功", "测验生成成功。");
+          showNotification(
+            "success",
+            "Generation Successful",
+            "Quiz generated successfully."
+          );
         }
       } else {
-        // 处理API错误
+        // Handle API error
         throw new Error(
           result.data.message || "Failed to generate quiz. Please try again."
         );
@@ -1973,11 +1977,11 @@ function handleGenerate(e) {
     .catch((error) => {
       console.error("Quiz generation error:", error);
 
-      // 隐藏加载指示器并显示占位符
+      // Hide loading indicator and show placeholder
       document.getElementById("loading-indicator").style.display = "none";
       document.getElementById("preview-placeholder").style.display = "flex";
 
-      // 显示错误通知
+      // Show error notification
       showNotification(
         "error",
         "Generation Failed",
@@ -1986,23 +1990,23 @@ function handleGenerate(e) {
     });
 }
 
-// 显示API生成的问题和答案
+// Display API generated questions and answers
 function displayQuizContent(data) {
   const container = document.getElementById("questions-container");
   container.innerHTML = "";
 
-  // 创建问题容器
+  // Create question container
   const questionsDiv = document.createElement("div");
   questionsDiv.className = "generated-questions";
   questionsDiv.innerHTML = data.question;
 
-  // 创建答案容器（默认隐藏）
+  // Create answer container (hidden by default)
   const answersDiv = document.createElement("div");
   answersDiv.className = "question-answer";
   answersDiv.style.display = "none";
   answersDiv.innerHTML = data.answer;
 
-  // 添加到容器
+  // Add to container
   container.appendChild(questionsDiv);
   container.appendChild(answersDiv);
 }
