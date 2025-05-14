@@ -1780,6 +1780,9 @@ function handleLogout(e) {
         "Logged Out",
         "You have been successfully logged out."
       );
+
+      // 退出登录后，重新检查生成按钮状态，确保未登录时可点击
+      checkGenerateButton();
     });
 }
 
@@ -4855,7 +4858,10 @@ function viewQuiz(quizId) {
 function checkGenerateButton() {
   const btn = document.getElementById("generate-btn");
   if (!btn) return;
-  if (!isLoggedIn || currentUser.remainingGenerations <= 0) {
+  if (!isLoggedIn) {
+    btn.disabled = false;
+    btn.innerText = "Generate";
+  } else if (currentUser.remainingGenerations <= 0) {
     btn.disabled = true;
     btn.innerText = "Out of credits, please upgrade";
   } else {
