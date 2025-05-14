@@ -427,7 +427,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const authModal = document.getElementById("authModal");
   if (authModal) {
     authModal.addEventListener("hidden.bs.modal", function () {
-      resetAuthForms();
+      // 只有在未设置data-reset-form='false'时才重置表单
+      if (authModal.getAttribute("data-reset-form") !== "false") {
+        resetAuthForms();
+      }
+      // 重置控制属性，确保下次正常重置
+      authModal.removeAttribute("data-reset-form");
     });
   }
 
@@ -442,10 +447,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // 重置认证表单（登录和注册）
 function resetAuthForms() {
+  // 检查是否有记住的邮箱
+  const rememberedEmail = localStorage.getItem("rememberedEmail");
+
   // 重置登录表单
   const loginForm = document.getElementById("login-form-element");
   if (loginForm) {
     loginForm.reset();
+
+    // 如果有记住的邮箱，填充邮箱字段并勾选"记住我"选项
+    if (rememberedEmail) {
+      document.getElementById("login-email").value = rememberedEmail;
+      document.getElementById("remember-me").checked = true;
+    }
 
     // 移除可能的错误提示
     const loginErrorMessage = loginForm.querySelector(".alert");
@@ -1294,6 +1308,8 @@ function handleLogin(e) {
           localStorage.setItem("accessToken", data.access_token);
           localStorage.setItem("refreshToken", data.refresh_token);
           localStorage.setItem("tokenType", data.token_type);
+          // 单独存储邮箱地址，用于下次自动填充
+          localStorage.setItem("rememberedEmail", email);
         } else {
           // 会话存储（浏览器关闭后清除）
           sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
@@ -1301,13 +1317,15 @@ function handleLogin(e) {
           sessionStorage.setItem("accessToken", data.access_token);
           sessionStorage.setItem("refreshToken", data.refresh_token);
           sessionStorage.setItem("tokenType", data.token_type);
+          // 不要清除记住的邮箱，这样可以保留上次记住的设置
         }
 
         // 关闭登录模态框
-        const authModal = bootstrap.Modal.getInstance(
-          document.getElementById("authModal")
-        );
-        authModal.hide();
+        const authModal = document.getElementById("authModal");
+        // 设置属性，指示关闭时不要重置表单
+        authModal.setAttribute("data-reset-form", "false");
+        const authModalInstance = bootstrap.Modal.getInstance(authModal);
+        authModalInstance.hide();
 
         // 更新UI
         updateUIForLoggedInUser();
@@ -1613,6 +1631,8 @@ function handleLogout(e) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("tokenType");
+      // 清除记住的邮箱信息
+      localStorage.removeItem("rememberedEmail");
 
       // 清除SessionStorage中的所有存储
       sessionStorage.removeItem("currentUser");
