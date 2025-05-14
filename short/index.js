@@ -804,16 +804,12 @@ function generateStory(e) {
   const timePeriod = elements.timePeriod.value;
   const background = elements.storyBackground.value;
 
-  if (!storyType) {
-    showToast("Please select a story type", "error");
-    return;
-  }
-  if (!timePeriod) {
-    showToast("Please select a time period", "error");
-    return;
-  }
-  if (!background) {
-    showToast("Please select a story background", "error");
+  // 统一检查所有三个选项是否都已选择
+  if (!storyType || !timePeriod || !background) {
+    showToast(
+      "Please select all story parameters (type, time period, and background)",
+      "error"
+    );
     return;
   }
 
