@@ -312,6 +312,36 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // 从登录模态框中的"Sign up"链接到注册模态框
+  if (showSignupLink) {
+    showSignupLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      // 隐藏登录模态框
+      if (loginModal) {
+        loginModal.classList.remove("active");
+      }
+      // 显示注册模态框
+      if (signupModal) {
+        signupModal.classList.add("active");
+      }
+    });
+  }
+
+  // 从注册模态框中的"Login"链接到登录模态框
+  if (showLoginLink) {
+    showLoginLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      // 隐藏注册模态框
+      if (signupModal) {
+        signupModal.classList.remove("active");
+      }
+      // 显示登录模态框
+      if (loginModal) {
+        loginModal.classList.add("active");
+      }
+    });
+  }
+
   // 模态框关闭按钮事件处理
   if (modalCloseButtons) {
     modalCloseButtons.forEach(function (btn) {
@@ -385,61 +415,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 处理登出
   function handleLogout() {
-    // 显示加载指示或禁用按钮
-    const logoutItem = document.querySelector(".logout-item");
-    const originalText = logoutItem.innerHTML;
-    logoutItem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登出中...';
+    // 清除用户信息
+    localStorage.removeItem("currentUser");
+    sessionStorage.removeItem("currentUser");
+    currentUser = null;
+    isLoggedIn = false;
 
-    // 调用登出API
-    fetch("http://web.practicesnow.com/practice/v1/users/logout", {
-      method: "POST",
-      credentials: "omit",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        // 不管状态码如何，先解析JSON响应
-        return response.json();
-      })
-      .then((data) => {
-        // 清除用户信息，无论请求是否成功
-        localStorage.removeItem("currentUser");
-        sessionStorage.removeItem("currentUser");
-        currentUser = null;
-        isLoggedIn = false;
+    // 更新UI
+    updateUIForLoggedOutUser();
 
-        // 更新UI
-        updateUIForLoggedOutUser();
-
-        // 显示通知
-        if (data.status_code >= 200 && data.status_code < 300) {
-          // 成功通知
-          alert("登出成功！");
-        } else {
-          // 依然登出，但显示服务器返回的错误
-          console.warn("登出过程中服务器返回错误:", data.error);
-          alert("登出成功，但服务器返回错误: " + (data.error || "未知错误"));
-        }
-      })
-      .catch((error) => {
-        // 即使API调用失败，也进行本地登出
-        localStorage.removeItem("currentUser");
-        sessionStorage.removeItem("currentUser");
-        currentUser = null;
-        isLoggedIn = false;
-
-        // 更新UI
-        updateUIForLoggedOutUser();
-
-        console.error("登出错误:", error);
-        alert("登出成功，但服务器连接错误");
-      })
-      .finally(() => {
-        // 恢复按钮原始状态
-        logoutItem.innerHTML = originalText;
-      });
+    // 显示通知
+    alert("登出成功！");
   }
 
   // 更新登出后的UI
@@ -484,74 +470,30 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // 准备登录数据
-      const loginData = {
-        email: email,
-        password: password,
-      };
+      // 模拟登录成功
+      setTimeout(function () {
+        // 创建用户对象
+        currentUser = {
+          name: "John Doe",
+          email: email,
+          credits: 25,
+        };
 
-      // 更新按钮状态
-      const submitButton = loginForm.querySelector('button[type="submit"]');
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 登录中...';
+        // 保存用户信息
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        isLoggedIn = true;
 
-      // 调用登录API
-      fetch("http://web.practicesnow.com/practice/v1/users/login", {
-        method: "POST",
-        credentials: "omit",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(loginData),
-      })
-        .then((response) => {
-          // 不管状态码如何，先解析JSON响应
-          return response.json();
-        })
-        .then((data) => {
-          // 检查status_code是否在200-299范围内
-          if (data.status_code >= 200 && data.status_code < 300) {
-            // 登录成功，创建用户对象
-            const user = {
-              id: data.id || generateRandomId(),
-              name: data.full_name || email.split("@")[0],
-              email: email,
-              credits: data.credits || 25,
-            };
+        // 更新UI
+        updateUIForLoggedInUser();
 
-            // 保存用户信息
-            currentUser = user;
-            isLoggedIn = true;
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        // 关闭登录模态框
+        if (loginModal) {
+          loginModal.classList.remove("active");
+        }
 
-            // 关闭登录模态框
-            if (loginModal) {
-              loginModal.classList.remove("active");
-            }
-
-            // 更新UI
-            updateUIForLoggedInUser();
-
-            // 显示成功消息
-            alert("登录成功！欢迎回来，" + currentUser.name);
-          } else {
-            // 登录失败
-            throw new Error(data.error || "登录失败，请检查账户信息");
-          }
-        })
-        .catch((error) => {
-          // 显示错误消息
-          alert(error.message || "登录失败，请稍后重试");
-          console.error("登录错误:", error);
-        })
-        .finally(() => {
-          // 恢复按钮状态
-          submitButton.disabled = false;
-          submitButton.innerHTML = originalButtonText;
-        });
+        // 显示成功消息
+        alert("登录成功！");
+      }, 1000);
     });
   }
 
@@ -569,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // 简单验证
       if (!name) {
-        alert("请输入您的姓名");
+        alert("请输入姓名");
         return;
       }
 
@@ -578,375 +520,46 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      if (!password || password.length < 6) {
-        alert("密码长度必须至少为6个字符");
+      if (!password) {
+        alert("请输入密码");
         return;
       }
 
       if (password !== confirmPassword) {
-        alert("两次输入的密码不一致");
+        alert("两次输入的密码不匹配");
         return;
       }
 
-      // 准备注册数据
-      const userData = {
-        full_name: name,
-        email: email,
-        password: password,
-      };
-
-      // 更新按钮状态
-      const submitButton = signupForm.querySelector('button[type="submit"]');
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 注册中...';
-
-      // 调用注册API
-      fetch("http://web.practicesnow.com/practice/v1/users/register", {
-        method: "POST",
-        credentials: "omit",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(userData),
-      })
-        .then((response) => {
-          // 不管状态码如何，先解析JSON响应
-          return response.json();
-        })
-        .then((data) => {
-          // 检查status_code是否在200-299范围内
-          if (data.status_code >= 200 && data.status_code < 300) {
-            // 注册成功，创建用户对象
-            const user = {
-              id: data.id || generateRandomId(),
-              name: name,
-              email: email,
-              credits: data.credits || 25,
-            };
-
-            // 保存用户信息
-            currentUser = user;
-            isLoggedIn = true;
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-            // 关闭注册模态框
-            if (signupModal) {
-              signupModal.classList.remove("active");
-            }
-
-            // 更新UI
-            updateUIForLoggedInUser();
-
-            // 显示成功消息
-            alert("注册成功！欢迎，" + name);
-          } else {
-            // 注册失败
-            throw new Error(data.error || "注册失败，请稍后重试");
-          }
-        })
-        .catch((error) => {
-          // 显示错误消息
-          alert(error.message || "注册失败，请稍后重试");
-          console.error("注册错误:", error);
-        })
-        .finally(() => {
-          // 恢复按钮状态
-          submitButton.disabled = false;
-          submitButton.innerHTML = originalButtonText;
-        });
-    });
-  }
-
-  // 生成随机ID的辅助函数
-  function generateRandomId() {
-    return "user_" + Math.random().toString(36).substr(2, 9);
-  }
-
-  // 邮箱验证函数
-  function validateEmail(email) {
-    const re =
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
-
-  // 为输入框添加实时验证
-  const loginEmail = document.getElementById("login-email");
-  const signupEmail = document.getElementById("signup-email");
-  // 重命名避免重复定义
-  const forgotEmail = document.getElementById("forgot-email");
-
-  if (loginEmail) {
-    loginEmail.addEventListener("input", function () {
-      const email = this.value;
-      if (email && !validateEmail(email)) {
-        displayErrorMessage(
-          "login-email",
-          "Please enter a valid email address"
-        );
-      } else {
-        clearErrorMessage("login-email");
-      }
-    });
-  }
-
-  if (signupEmail) {
-    signupEmail.addEventListener("input", function () {
-      const email = this.value;
-      if (email && !validateEmail(email)) {
-        displayErrorMessage(
-          "signup-email",
-          "Please enter a valid email address"
-        );
-      } else {
-        clearErrorMessage("signup-email");
-      }
-    });
-  }
-
-  // 为忘记密码输入框添加实时验证
-  if (forgotEmail) {
-    forgotEmail.addEventListener("input", function () {
-      const email = this.value;
-      if (email && !validateEmail(email)) {
-        displayErrorMessage(
-          "forgot-email",
-          "Please enter a valid email address"
-        );
-      } else {
-        clearErrorMessage("forgot-email");
-      }
-    });
-  }
-
-  // 为登录邮箱输入框添加blur和focus事件，提供即时验证反馈
-  if (loginEmail) {
-    // 在输入时验证
-    loginEmail.addEventListener("input", function () {
-      // 仅当用户已经开始输入时才验证
-      if (this.value) {
-        if (!validateEmail(this.value)) {
-          displayErrorMessage(
-            "login-email",
-            "Please enter a valid email address"
-          );
-        } else {
-          clearErrorMessage("login-email");
-        }
-      }
-    });
-
-    // 当输入框失去焦点时验证
-    loginEmail.addEventListener("blur", function () {
-      if (this.value && !validateEmail(this.value)) {
-        displayErrorMessage(
-          "login-email",
-          "Please enter a valid email address"
-        );
-      }
-    });
-
-    // 当获得焦点且有错误时，清除错误以便用户重新输入
-    loginEmail.addEventListener("focus", function () {
-      // 可选：在获得焦点时清除错误，让用户有更好的体验
-      // clearErrorMessage("login-email");
-    });
-  }
-
-  // 添加Try Service Now和About CTA按钮点击事件
-  const tryServiceBtn = document.getElementById("try-service-btn");
-  const aboutCtaBtn = document.getElementById("about-cta-btn");
-
-  if (tryServiceBtn) {
-    tryServiceBtn.addEventListener("click", function () {
-      showFeaturesPage();
-    });
-  }
-
-  if (aboutCtaBtn) {
-    aboutCtaBtn.addEventListener("click", function () {
-      showFeaturesPage();
-    });
-  }
-
-  // 忘记密码表单提交处理
-  const forgotPasswordForm = document.getElementById("forgot-password-form");
-  if (forgotPasswordForm) {
-    forgotPasswordForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      // 获取表单数据
-      const email = document.getElementById("forgot-email").value.trim();
-
-      // 简单验证
-      if (!email || !validateEmail(email)) {
-        showNotification("error", "Please enter a valid email address");
-        return;
-      }
-
-      // 准备请求数据
-      const resetData = {
-        email: email,
-      };
-
-      // 更新按钮状态
-      const submitButton = forgotPasswordForm.querySelector(
-        'button[type="submit"]'
-      );
-      const originalButtonText = submitButton.textContent;
-      submitButton.disabled = true;
-      submitButton.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
-
-      // 模拟API调用 - 实际项目中应替换为真实API
+      // 模拟注册成功
       setTimeout(function () {
-        // 恢复按钮状态
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonText;
+        // 创建用户对象
+        currentUser = {
+          name: name,
+          email: email,
+          credits: 25,
+        };
+
+        // 保存用户信息
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        isLoggedIn = true;
+
+        // 更新UI
+        updateUIForLoggedInUser();
+
+        // 关闭注册模态框
+        if (signupModal) {
+          signupModal.classList.remove("active");
+        }
 
         // 显示成功消息
-        showNotification(
-          "success",
-          "Password reset link has been sent to your email"
-        );
-
-        // 关闭忘记密码模态框
-        if (forgotPasswordModal) {
-          forgotPasswordModal.classList.remove("active");
-        }
-      }, 1500);
-
-      // 实际项目中的API调用示例
-      /*
-            fetch("http://your-api-endpoint/reset-password", {
-              method: "POST",
-              credentials: "omit",
-              headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-              },
-              body: JSON.stringify(resetData)
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.status_code >= 200 && data.status_code < 300) {
-                // 成功发送重置链接
-                showNotification("success", "Password reset link has been sent to your email");
-                
-                // 关闭忘记密码模态框
-                if (forgotPasswordModal) {
-                  forgotPasswordModal.classList.remove("active");
-                }
-              } else {
-                // 发送失败
-                throw new Error(data.error || "Failed to send reset link, please try again later");
-              }
-            })
-            .catch(error => {
-              // 显示错误消息
-              showNotification("error", error.message || "Failed to send reset link, please try again later");
-              console.error("Reset password error:", error);
-            })
-            .finally(() => {
-              // 恢复按钮状态
-              submitButton.disabled = false;
-              submitButton.innerHTML = originalButtonText;
-            });
-            */
+        alert("注册成功！");
+      }, 1000);
     });
   }
 
-  // 显示错误消息的函数
-  function displayErrorMessage(inputId, message) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-
-    // 检查是否已存在错误消息
-    let errorElement = input.parentNode.querySelector(".form-error");
-
-    if (!errorElement) {
-      // 创建错误消息元素
-      errorElement = document.createElement("div");
-      errorElement.className = "form-error";
-      errorElement.style.color = "var(--danger)";
-      errorElement.style.fontSize = "14px";
-      errorElement.style.marginTop = "5px";
-
-      // 添加到DOM中
-      input.parentNode.appendChild(errorElement);
-    }
-
-    // 设置错误消息
-    errorElement.textContent = message;
-
-    // 添加错误样式到输入框
-    input.style.borderColor = "var(--danger)";
-  }
-
-  // 清除错误消息的函数
-  function clearErrorMessage(inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-
-    // 查找并删除错误消息
-    const errorElement = input.parentNode.querySelector(".form-error");
-    if (errorElement) {
-      errorElement.remove();
-    }
-
-    // 恢复输入框样式
-    input.style.borderColor = "";
-  }
-
-  // 显示通知的函数
-  function showNotification(type, message, duration = 3000) {
-    // 先移除可能存在的通知
-    removeAllNotifications();
-
-    // 创建通知元素
-    const notification = document.createElement("div");
-    notification.className =
-      type === "success" ? "success-notification" : "error-notification";
-
-    // 添加图标和消息
-    const icon = document.createElement("i");
-    icon.className =
-      type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
-    notification.appendChild(icon);
-
-    const messageElem = document.createElement("p");
-    messageElem.textContent = message;
-    notification.appendChild(messageElem);
-
-    // 添加到DOM
-    document.body.appendChild(notification);
-
-    // 显示通知
-    setTimeout(() => {
-      notification.classList.add("active");
-    }, 10);
-
-    // 设置通知自动消失
-    setTimeout(() => {
-      notification.classList.remove("active");
-      setTimeout(() => {
-        notification.remove();
-      }, 300);
-    }, duration);
-  }
-
-  // 移除所有通知的函数
-  function removeAllNotifications() {
-    const notifications = document.querySelectorAll(
-      ".success-notification, .error-notification"
-    );
-    notifications.forEach((notif) => {
-      notif.classList.remove("active");
-      setTimeout(() => {
-        notif.remove();
-      }, 300);
-    });
+  // 工具函数 - 验证邮箱
+  function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   }
 });
