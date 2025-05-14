@@ -232,6 +232,13 @@ header {
 
 .file-upload:hover {
   border-color: var(--primary);
+  background-color: rgba(66, 99, 235, 0.05);
+}
+
+.file-upload.dragover {
+  border-color: var(--primary);
+  background-color: rgba(66, 99, 235, 0.1);
+  box-shadow: 0 0 10px rgba(66, 99, 235, 0.2);
 }
 
 .file-upload i {
@@ -719,6 +726,13 @@ header {
 .history-actions {
   display: flex;
   gap: 10px;
+}
+
+.history-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--gray);
+  font-style: italic;
 }
 
 .btn-sm {

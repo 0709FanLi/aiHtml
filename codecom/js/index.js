@@ -17,9 +17,15 @@ document.addEventListener("DOMContentLoaded", function () {
   // 页面加载时初始化显示设置
   initialPageSetup();
 
+  // 初始化标签页切换功能
+  initTabSwitching();
+
+  // 初始化文件上传功能
+  initFileUpload();
+
   // 初始显示设置 - 页面加载时默认显示Home (About内容)
   function initialPageSetup() {
-    // 仅显示About内容相关卡片 (前5个卡片是About内容)
+    // 仅显示About相关卡片 (前5个卡片是About内容)
     if (mainContent) {
       const contentCards = mainContent.querySelectorAll(".card");
 
@@ -316,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Annotate Code按钮事件处理
+  // 代码注释按钮事件处理
   const annotateBtn = document.getElementById("annotate-btn");
   if (annotateBtn) {
     annotateBtn.addEventListener("click", function () {
@@ -347,12 +353,17 @@ document.addEventListener("DOMContentLoaded", function () {
       // 获取代码内容
       const codeTextarea = document.querySelector(".code-textarea");
       const codeContent = codeTextarea ? codeTextarea.value.trim() : "";
+      const fileInput = document.getElementById("code-file-input");
 
-      if (!codeContent) {
+      // 检查是否有代码输入或文件上传
+      if (
+        !codeContent &&
+        (!fileInput || !fileInput.files || !fileInput.files.length)
+      ) {
         showToast(
           "warning",
           "Empty Code",
-          "Please enter some code to annotate"
+          "Please enter some code or upload a file to annotate"
         );
         return;
       }
@@ -361,39 +372,340 @@ document.addEventListener("DOMContentLoaded", function () {
       const loader = document.getElementById("annotation-loader");
       if (loader) loader.style.display = "block";
 
-      // 模拟处理延迟 (在实际应用中，这里会是API调用)
-      setTimeout(function () {
-        // 隐藏加载指示器
-        if (loader) loader.style.display = "none";
+      // 隐藏之前的结果
+      if (resultsCard) resultsCard.style.display = "none";
 
-        // 显示成功指示器
-        const successCheck = document.getElementById("annotation-success");
-        if (successCheck) {
-          successCheck.style.display = "block";
+      // 禁用按钮，防止重复提交
+      annotateBtn.disabled = true;
 
-          // 短暂显示成功标记后显示结果
-          setTimeout(function () {
-            if (successCheck) successCheck.style.display = "none";
+      // 准备请求数据
+      const requestData = {
+        file_name: "code_snippet.txt", // 默认文件名
+      };
 
-            // 减少用户积分
-            if (decreaseUserCredits(1)) {
-              // 显示注释后的代码结果
-              if (resultsCard) resultsCard.style.display = "block";
+      // 如果有文件，处理文件上传
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
 
-              // 滚动到结果卡片
-              if (resultsCard) {
-                resultsCard.scrollIntoView({ behavior: "smooth" });
-              }
-
-              showToast(
-                "success",
-                "Annotation Complete",
-                "Your code has been successfully annotated"
-              );
-            }
-          }, 1000);
+        // 检查文件大小限制 (3MB)
+        if (file.size > 3 * 1024 * 1024) {
+          showToast(
+            "error",
+            "File Too Large",
+            "The file exceeds the maximum size of 3MB"
+          );
+          if (loader) loader.style.display = "none";
+          annotateBtn.disabled = false;
+          return;
         }
-      }, 2000);
+
+        // 更新文件名
+        requestData.file_name = file.name;
+
+        // 读取文件并转换为Base64
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          // 获取Base64字符串 (移除前缀 "data:*;base64,")
+          const base64Content = e.target.result.split(",")[1];
+          requestData.base64_file = base64Content;
+
+          // 发送API请求
+          sendAnnotationRequest(requestData);
+        };
+
+        reader.onerror = function () {
+          showToast(
+            "error",
+            "File Read Error",
+            "Failed to read the uploaded file"
+          );
+          if (loader) loader.style.display = "none";
+          annotateBtn.disabled = false;
+        };
+
+        // 读取文件为Base64
+        reader.readAsDataURL(file);
+      }
+      // 如果有代码输入，直接发送
+      else if (codeContent) {
+        requestData.code = codeContent;
+        sendAnnotationRequest(requestData);
+      }
+    });
+
+    // 发送注释请求到API
+    function sendAnnotationRequest(requestData) {
+      // 获取token（如果存在）
+      const token = localStorage.getItem("token");
+      const tokenType = localStorage.getItem("token_type") || "bearer";
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      // 如果有token，添加到请求头
+      if (token) {
+        headers["Authorization"] = `${tokenType} ${token}`;
+      }
+
+      // 发送请求到API
+      fetch("http://web.codecommont.com/api/v1/code/comment", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(requestData),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`API responded with status ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          // 隐藏加载指示器
+          const loader = document.getElementById("annotation-loader");
+          if (loader) loader.style.display = "none";
+
+          // 检查API响应
+          if (data.ok === 1 || data.success) {
+            // 显示成功指示器
+            const successCheck = document.getElementById("annotation-success");
+            if (successCheck) {
+              successCheck.style.display = "block";
+
+              // 短暂显示成功标记后显示结果
+              setTimeout(function () {
+                if (successCheck) successCheck.style.display = "none";
+
+                // 更新用户积分
+                if (data.data && data.data.credits !== undefined) {
+                  // 直接使用API返回的积分更新用户积分
+                  if (currentUser) {
+                    currentUser.credits = data.data.credits;
+                    localStorage.setItem(
+                      "currentUser",
+                      JSON.stringify(currentUser)
+                    );
+                    updateCreditsDisplay();
+                  }
+                } else {
+                  // 如果API没有返回积分，则使用原来的扣减逻辑
+                  decreaseUserCredits(1);
+                }
+
+                // 显示注释后的代码结果
+                displayAnnotatedCode(data.data || data);
+
+                // 显示结果卡片
+                if (resultsCard) {
+                  resultsCard.style.display = "block";
+                  resultsCard.scrollIntoView({ behavior: "smooth" });
+                }
+
+                showToast(
+                  "success",
+                  "Annotation Complete",
+                  "Your code has been successfully annotated"
+                );
+
+                // 重置表单状态
+                const fileInput = document.getElementById("code-file-input");
+                if (fileInput) fileInput.value = "";
+
+                // 恢复按钮状态
+                annotateBtn.disabled = false;
+              }, 1000);
+            }
+          } else {
+            // 处理API错误
+            showToast(
+              "error",
+              "Annotation Failed",
+              data.message || "Failed to annotate code. Please try again."
+            );
+            annotateBtn.disabled = false;
+          }
+        })
+        .catch((error) => {
+          console.error("Annotation API error:", error);
+
+          // 隐藏加载指示器
+          const loader = document.getElementById("annotation-loader");
+          if (loader) loader.style.display = "none";
+
+          // 显示错误信息
+          showToast(
+            "error",
+            "API Error",
+            "An error occurred while processing your request. Please try again later."
+          );
+
+          // 恢复按钮状态
+          annotateBtn.disabled = false;
+        });
+    }
+
+    // 显示注释后的代码结果
+    function displayAnnotatedCode(responseData) {
+      // 提取原始代码和注释后的代码
+      const originalCode = document.getElementById("original-code");
+      const annotatedCode = document.getElementById("annotated-code");
+      const originalLineNumbers = document.getElementById(
+        "original-line-numbers"
+      );
+      const annotatedLineNumbers = document.getElementById(
+        "annotated-line-numbers"
+      );
+
+      if (!originalCode || !annotatedCode) return;
+
+      // 清空之前的内容
+      originalCode.innerHTML = "";
+      annotatedCode.innerHTML = "";
+      originalLineNumbers.innerHTML = "";
+      annotatedLineNumbers.innerHTML = "";
+
+      // 获取代码内容
+      let codeContent = "";
+      const codeTextarea = document.querySelector(".code-textarea");
+      const fileInput = document.getElementById("code-file-input");
+
+      if (codeTextarea && codeTextarea.value.trim()) {
+        codeContent = codeTextarea.value.trim();
+      } else if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        // 已经处理了文件，使用API返回的原始代码（如果有）
+        codeContent =
+          responseData.original_code ||
+          "// Original code was provided as a file";
+      }
+
+      // 显示原始代码
+      const originalLines = codeContent.split("\n");
+      for (let i = 0; i < originalLines.length; i++) {
+        originalLineNumbers.innerHTML += `<div>${i + 1}</div>`;
+        originalCode.innerHTML += `<div>${
+          escapeHtml(originalLines[i]) || " "
+        }</div>`;
+      }
+
+      // 处理注释后的代码 - 检查新的API响应格式
+      if (responseData.content) {
+        // 直接将API返回的content内容展示在annotated code框中
+        annotatedCode.innerHTML = responseData.content;
+      } else {
+        // 旧格式
+        const commentedCode =
+          responseData.commented_code ||
+          responseData.code ||
+          "// No annotated code returned";
+        const commentedLines = commentedCode.split("\n");
+        for (let i = 0; i < commentedLines.length; i++) {
+          annotatedLineNumbers.innerHTML += `<div>${i + 1}</div>`;
+          annotatedCode.innerHTML += `<div>${
+            escapeHtml(commentedLines[i]) || " "
+          }</div>`;
+        }
+      }
+    }
+
+    // HTML转义函数，防止XSS
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  }
+
+  // 下载按钮事件处理
+  const downloadBtn = document.getElementById("download-btn");
+  if (downloadBtn) {
+    downloadBtn.addEventListener("click", function () {
+      // 获取代码内容
+      const annotatedCode = document.getElementById("annotated-code");
+      if (!annotatedCode) return;
+
+      // 检查是否含有HTML内容
+      let codeContent = "";
+
+      if (annotatedCode.querySelector("pre code")) {
+        // 如果有pre/code标签，获取code标签中的内容
+        const codeElement = annotatedCode.querySelector("pre code");
+        // 使用innerText获取格式化的纯文本内容，包括换行
+        codeContent = codeElement.innerText;
+      } else if (annotatedCode.innerHTML.includes("<pre")) {
+        // 备用方案：如果找不到code元素但有pre标签
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = annotatedCode.innerHTML;
+        const preElement = tempElement.querySelector("pre");
+        if (preElement) {
+          codeContent = preElement.innerText || preElement.textContent;
+        } else {
+          codeContent = tempElement.innerText || tempElement.textContent;
+        }
+      } else {
+        // 否则获取普通文本内容
+        codeContent = annotatedCode.textContent || annotatedCode.innerText;
+      }
+
+      // 解码HTML实体
+      codeContent = decodeHtmlEntities(codeContent);
+
+      // 创建下载文件
+      const blob = new Blob([codeContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "annotated-code.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // 显示成功提示
+      showToast(
+        "success",
+        "Download Complete",
+        "Your annotated code has been downloaded"
+      );
+    });
+  }
+
+  // 辅助函数：解码HTML实体
+  function decodeHtmlEntities(text) {
+    const textArea = document.createElement("textarea");
+    textArea.innerHTML = text;
+    return textArea.value;
+  }
+
+  // 监听代码输入和文件上传互斥逻辑
+  const codeTextarea = document.querySelector(".code-textarea");
+  const fileInput = document.getElementById("code-file-input");
+
+  if (codeTextarea && fileInput) {
+    // 当输入代码时，清空文件选择
+    codeTextarea.addEventListener("input", function () {
+      if (this.value.trim() && fileInput.value) {
+        fileInput.value = "";
+        showToast(
+          "info",
+          "File Cleared",
+          "Your uploaded file has been cleared as you've entered code directly"
+        );
+      }
+    });
+
+    // 当选择文件时，清空代码输入
+    fileInput.addEventListener("change", function () {
+      if (this.files.length > 0 && codeTextarea.value.trim()) {
+        codeTextarea.value = "";
+        showToast(
+          "info",
+          "Input Cleared",
+          "Your entered code has been cleared as you've uploaded a file"
+        );
+      }
     });
   }
 
@@ -1355,5 +1667,126 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         });
     });
+  }
+
+  // 初始化标签页切换功能
+  function initTabSwitching() {
+    const tabs = document.querySelectorAll(".tab");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", function () {
+        // 移除所有tab的active类
+        tabs.forEach((t) => t.classList.remove("active"));
+
+        // 为当前点击的tab添加active类
+        this.classList.add("active");
+
+        // 获取对应内容区域的标识
+        const targetContent = this.getAttribute("data-tab");
+
+        // 隐藏所有内容区域
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+        });
+
+        // 显示目标内容区域
+        const contentToShow = document.querySelector(
+          `.tab-content[data-content="${targetContent}"]`
+        );
+        if (contentToShow) {
+          contentToShow.classList.add("active");
+        }
+      });
+    });
+  }
+
+  // 初始化文件上传功能
+  function initFileUpload() {
+    const fileUploadArea = document.querySelector(".file-upload");
+    const fileInput = document.getElementById("code-file-input");
+    const codeTextarea = document.querySelector(".code-textarea");
+
+    if (!fileUploadArea || !fileInput) return;
+
+    // 点击上传区域触发文件选择
+    fileUploadArea.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    // 拖拽文件到上传区域
+    fileUploadArea.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.add("dragover");
+    });
+
+    fileUploadArea.addEventListener("dragleave", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove("dragover");
+    });
+
+    fileUploadArea.addEventListener("drop", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove("dragover");
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files[0]);
+      }
+    });
+
+    // 文件选择变化
+    fileInput.addEventListener("change", function () {
+      if (this.files.length > 0) {
+        handleFileUpload(this.files[0]);
+      }
+    });
+
+    // 处理文件上传
+    function handleFileUpload(file) {
+      // 检查文件大小 (最大2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showToast(
+          "error",
+          "File Too Large",
+          "The file exceeds the maximum size of 2MB"
+        );
+        return;
+      }
+
+      // 读取文件内容
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        // 显示文件内容到文本区域
+        if (codeTextarea) {
+          codeTextarea.value = e.target.result;
+
+          // 自动切换到Paste标签页显示内容
+          const pasteTab = document.querySelector('.tab[data-tab="paste"]');
+          if (pasteTab) {
+            pasteTab.click();
+          }
+
+          showToast(
+            "success",
+            "File Uploaded",
+            "Your file has been successfully loaded"
+          );
+        }
+      };
+
+      reader.onerror = function () {
+        showToast(
+          "error",
+          "Upload Failed",
+          "Failed to read the file. Please try again."
+        );
+      };
+
+      reader.readAsText(file);
+    }
   }
 });
