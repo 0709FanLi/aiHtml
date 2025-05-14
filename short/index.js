@@ -119,103 +119,87 @@ const elements = {
 
 // Initialize the application
 function init() {
-  // 确保先获取所有忘记密码相关的DOM元素
-  elements.getVerificationBtn = document.getElementById("getVerificationBtn");
-  elements.verificationCode = document.getElementById("verificationCode");
-  elements.newPassword = document.getElementById("newPassword");
-  elements.confirmPassword = document.getElementById("confirmPassword");
+  console.log("Initializing application...");
 
-  // Attach event listeners
-  attachEventListeners();
-
-  // Check if user is logged in (simulate with localStorage)
+  // 获取DOM元素
+  // 检查登录状态
   checkLoginStatus();
 
-  // Generate some fake history for logged in users
+  // 添加事件监听器
+  attachEventListeners();
+
+  // 显示首页
+  showGenerator();
+
+  // 如果用户已登录，加载历史记录
   if (state.isLoggedIn) {
-    generateFakeHistory();
     renderHistoryCards();
   }
-
-  // 调试输出，确认元素是否存在
-  console.log("验证码按钮:", elements.getVerificationBtn);
-  console.log("忘记密码表单:", elements.forgotPasswordForm);
 }
 
 // Event Listeners
 function attachEventListeners() {
+  console.log("Attaching event listeners...");
+
+  // Generator Form
+  if (elements.generatorForm) {
+    elements.generatorForm.addEventListener("submit", generateStory);
+  }
+
+  if (elements.downloadBtn) {
+    elements.downloadBtn.addEventListener("click", downloadStory);
+  }
+
+  if (elements.copyBtn) {
+    elements.copyBtn.addEventListener("click", copyStory);
+  }
+
+  if (elements.newStoryBtn) {
+    elements.newStoryBtn.addEventListener("click", resetGenerator);
+  }
+
+  // History Detail
+  if (elements.historyDownload) {
+    elements.historyDownload.addEventListener("click", downloadHistoryStory);
+  }
+
+  if (elements.historyClose) {
+    elements.historyClose.addEventListener("click", toggleHistoryModal);
+  }
+
   // Navigation
-  elements.navLogin.addEventListener("click", function (e) {
-    e.preventDefault();
-
-    if (state.isLoggedIn) {
-      // If already logged in, perform logout
-      logout();
-    } else {
-      // If not logged in, show login modal
-      elements.authModal.style.display = "block";
-      // 确保初始显示登录模式时，显示忘记密码链接
-      if (elements.authTitle.textContent === "Login") {
-        document.querySelector(".forgot-password-link").style.display = "block";
-      } else {
-        document.querySelector(".forgot-password-link").style.display = "none";
-      }
-    }
-  });
-  elements.navDashboard.addEventListener("click", showDashboard);
-  elements.navPricing.addEventListener("click", togglePricingModal);
-  elements.navHome.addEventListener("click", showGenerator);
-  elements.navAbout.addEventListener("click", showAbout);
-
-  // Auth Modal
-  elements.authClose.addEventListener("click", function (e) {
-    e.preventDefault();
-
-    // Close the modal
-    elements.authModal.style.display = "none";
-
-    // Reset form fields
-    document.getElementById("email").value = "";
-    document.getElementById("password").value = "";
-    document.getElementById("agreeTerms").checked = false;
-    if (document.getElementById("name")) {
-      document.getElementById("name").value = "";
-    }
-
-    // Reset any error styles
-    document.getElementById("email").style.borderColor = "";
-  });
-  elements.authForm.addEventListener("submit", handleAuth);
-  elements.switchAuthMode.addEventListener("click", switchAuthMode);
-
-  // Terms and Privacy links in auth form
-  document.getElementById("termsLink").addEventListener("click", function (e) {
-    e.preventDefault();
-    toggleTermsOfServiceModal();
-  });
-
-  document
-    .getElementById("privacyLink")
-    .addEventListener("click", function (e) {
+  if (elements.navLogin) {
+    elements.navLogin.addEventListener("click", function (e) {
       e.preventDefault();
-      togglePrivacyPolicyModal();
+      if (state.isLoggedIn) {
+        logout();
+      } else {
+        toggleAuthModal();
+      }
     });
+  }
 
-  // Pricing Modal
-  elements.pricingClose.addEventListener("click", togglePricingModal);
-  document.querySelectorAll(".buy-plan").forEach((btn) => {
-    btn.addEventListener("click", handlePurchase);
-  });
+  if (elements.navDashboard) {
+    elements.navDashboard.addEventListener("click", showDashboard);
+  }
 
-  // Payment Modal
-  elements.paymentClose.addEventListener("click", togglePaymentModal);
-  elements.paymentConfirm.addEventListener("click", togglePaymentModal);
+  if (elements.navHome) {
+    elements.navHome.addEventListener("click", showGenerator);
+  }
 
-  // History Modal
-  elements.historyClose.addEventListener("click", toggleHistoryModal);
-  elements.historyDownload.addEventListener("click", downloadHistoryStory);
+  if (elements.navAbout) {
+    elements.navAbout.addEventListener("click", showAbout);
+  }
 
-  // Privacy Policy Modal
+  if (elements.navPricing) {
+    elements.navPricing.addEventListener("click", togglePricingModal);
+  }
+
+  // Modals
+  if (elements.authClose) {
+    elements.authClose.addEventListener("click", toggleAuthModal);
+  }
+
   if (elements.privacyPolicyClose) {
     elements.privacyPolicyClose.addEventListener(
       "click",
@@ -223,7 +207,6 @@ function attachEventListeners() {
     );
   }
 
-  // Terms of Service Modal
   if (elements.termsOfServiceClose) {
     elements.termsOfServiceClose.addEventListener(
       "click",
@@ -231,85 +214,15 @@ function attachEventListeners() {
     );
   }
 
-  // Add click event to Privacy Policy link in footer
-  const privacyPolicyLink = document.querySelector(
-    ".footer-links li:nth-child(1) a"
-  );
-  if (privacyPolicyLink) {
-    privacyPolicyLink.addEventListener("click", togglePrivacyPolicyModal);
+  if (elements.pricingClose) {
+    elements.pricingClose.addEventListener("click", togglePricingModal);
   }
 
-  // Add click event to Terms of Service link in footer
-  const termsOfServiceLink = document.querySelector(
-    ".footer-links li:nth-child(2) a"
-  );
-  if (termsOfServiceLink) {
-    termsOfServiceLink.addEventListener("click", toggleTermsOfServiceModal);
+  if (elements.paymentClose) {
+    elements.paymentClose.addEventListener("click", togglePaymentModal);
   }
 
-  // Story Generator
-  elements.generateBtn.addEventListener("click", generateStory);
-  elements.downloadBtn.addEventListener("click", downloadStory);
-  elements.copyBtn.addEventListener("click", copyStory);
-  elements.newStoryBtn.addEventListener("click", resetGenerator);
-
-  // Dashboard
-  elements.buyCreditsBtn.addEventListener("click", togglePricingModal);
-
-  // Hero
-  elements.startWritingBtn.addEventListener("click", scrollToGenerator);
-
-  // 修改忘记密码相关事件绑定
-  // 忘记密码相关事件绑定 - 移除原有的直接绑定方式，改为更安全的方式
-  if (elements.forgotPasswordLink) {
-    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
-    elements.forgotPasswordLink.removeEventListener(
-      "click",
-      toggleForgotPasswordModal
-    );
-    elements.forgotPasswordLink.addEventListener(
-      "click",
-      toggleForgotPasswordModal
-    );
-  }
-
-  if (elements.forgotPasswordClose) {
-    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
-    elements.forgotPasswordClose.removeEventListener("click", function () {});
-    elements.forgotPasswordClose.addEventListener("click", function (e) {
-      e.preventDefault();
-      elements.forgotPasswordModal.style.display = "none";
-      resetForgotPasswordForm(); // 使用函数重置表单，而不是直接操作DOM
-    });
-  }
-
-  // 忘记密码表单提交事件
-  if (elements.forgotPasswordForm) {
-    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
-    elements.forgotPasswordForm.removeEventListener(
-      "submit",
-      handleForgotPassword
-    );
-    elements.forgotPasswordForm.addEventListener(
-      "submit",
-      handleForgotPassword
-    );
-  } else {
-    console.error("忘记密码表单不存在");
-  }
-
-  // 获取验证码按钮点击事件
-  const getVerificationBtn = document.getElementById("getVerificationBtn");
-  if (getVerificationBtn) {
-    // 先移除所有旧的事件监听器，再添加新的，避免重复绑定
-    getVerificationBtn.removeEventListener("click", handleGetVerificationCode);
-    getVerificationBtn.addEventListener("click", handleGetVerificationCode);
-    console.log("验证码按钮事件绑定成功");
-  } else {
-    console.error("获取验证码按钮不存在");
-  }
-
-  // Confirm Delete Modal
+  // Delete Confirmations
   if (elements.confirmDeleteClose) {
     elements.confirmDeleteClose.addEventListener(
       "click",
@@ -326,6 +239,57 @@ function attachEventListeners() {
 
   if (elements.confirmDeleteBtn) {
     elements.confirmDeleteBtn.addEventListener("click", handleDeleteStory);
+  }
+
+  // Auth Form
+  if (elements.authForm) {
+    elements.authForm.addEventListener("submit", handleAuth);
+  }
+
+  if (elements.switchAuthMode) {
+    elements.switchAuthMode.addEventListener("click", switchAuthMode);
+  }
+
+  // Buy Plans
+  document.querySelectorAll(".buy-plan").forEach((btn) => {
+    btn.addEventListener("click", handlePurchase);
+  });
+
+  // Dashboard
+  if (elements.buyCreditsBtn) {
+    elements.buyCreditsBtn.addEventListener("click", togglePricingModal);
+  }
+
+  // Forgot Password
+  if (elements.forgotPasswordLink) {
+    elements.forgotPasswordLink.addEventListener(
+      "click",
+      toggleForgotPasswordModal
+    );
+  }
+
+  if (elements.forgotPasswordClose) {
+    elements.forgotPasswordClose.addEventListener("click", function (e) {
+      e.preventDefault();
+      elements.forgotPasswordModal.style.display = "none";
+      resetForgotPasswordForm();
+    });
+  }
+
+  if (elements.forgotPasswordForm) {
+    elements.forgotPasswordForm.addEventListener(
+      "submit",
+      handleForgotPassword
+    );
+  }
+
+  if (elements.getVerificationBtn) {
+    elements.getVerificationBtn.addEventListener(
+      "click",
+      handleGetVerificationCode
+    );
+  } else {
+    console.error("获取验证码按钮不存在");
   }
 }
 
@@ -1246,13 +1210,13 @@ function generateFakeHistory() {
 
 // Render history cards
 function renderHistoryCards() {
-  if (!state.isLoggedIn || !state.storyHistory.length) {
-    // 如果没有历史记录，显示空状态
+  if (!state.isLoggedIn) {
+    // 如果用户未登录，显示空状态
     elements.historyTableBody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align: center; padding: 2rem 0;">
-          <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 1rem; color: #aaa;"></i>
-          <p>You haven't generated any stories yet</p>
+          <i class="fas fa-user-lock" style="font-size: 2rem; margin-bottom: 1rem; color: #aaa;"></i>
+          <p>Please login to view your history</p>
         </td>
       </tr>
     `;
@@ -1266,157 +1230,311 @@ function renderHistoryCards() {
     return;
   }
 
-  // 分页逻辑
-  const itemsPerPage = 10; // 每页显示10条
-  const totalStories = state.storyHistory.length;
-  const totalPages = Math.ceil(totalStories / itemsPerPage);
+  // 显示加载状态
+  elements.loadingOverlay.style.display = "flex";
 
-  // 当前页码（默认为1）
+  // 获取当前页码（默认为1）
   let currentPage = parseInt(localStorage.getItem("historyCurrentPage")) || 1;
+  const itemsPerPage = 10; // 每页显示10条
 
-  // 确保当前页码有效
-  if (currentPage > totalPages) {
-    currentPage = totalPages;
+  // 获取token
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    showToast("Authorization token not found", "error");
+    elements.loadingOverlay.style.display = "none";
+    return;
   }
 
-  // 计算当前页的故事范围
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, totalStories);
-  const currentPageStories = state.storyHistory.slice(startIndex, endIndex);
+  // 构造请求数据
+  const requestData = {
+    page: currentPage,
+    page_size: itemsPerPage,
+  };
 
-  // 更新分页信息
-  elements.historyTotal.textContent = totalStories;
-  elements.paginationStart.textContent =
-    totalStories === 0 ? "0" : startIndex + 1;
-  elements.paginationEnd.textContent = endIndex;
-  elements.paginationTotal.textContent = totalStories;
+  console.log("请求历史数据:", requestData);
 
-  // 清空表格和分页控件
-  elements.historyTableBody.innerHTML = "";
-  elements.paginationControls.innerHTML = "";
+  // 调用API获取历史数据
+  fetch("http://web.colstory.com/api/v1/story/list", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(requestData),
+  })
+    .then(async (res) => {
+      try {
+        const data = await res.json();
+        console.log("历史记录响应:", data);
 
-  // 填充表格数据
-  currentPageStories.forEach((story) => {
-    const date = new Date(story.date);
-    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        // 隐藏加载状态
+        elements.loadingOverlay.style.display = "none";
 
-    const row = document.createElement("tr");
-    row.dataset.id = story.id;
-    row.innerHTML = `
-      <td class="history-title">${story.title}</td>
-      <td class="history-meta">${formattedDate}</td>
-      <td class="history-meta">${capitalizeFirst(story.type)}</td>
-      <td class="history-meta">${capitalizeFirst(story.period)}</td>
-      <td class="history-preview">${story.content.substring(0, 100)}...</td>
-      <td class="history-actions">
-        <button class="delete-story-btn" data-id="${story.id}">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </td>
-    `;
+        if (res.ok || data.ok === 1) {
+          // 处理响应数据
+          const { total, items, has_more } = data.data || {
+            total: 0,
+            items: [],
+            has_more: 0,
+          };
 
-    // 添加点击事件 - 行点击显示详情
-    row.addEventListener("click", (e) => {
-      // 如果点击的是删除按钮，则不显示详情
-      if (!e.target.closest(".delete-story-btn")) {
-        showHistoryDetail(story);
+          // 如果当前是第一页，保存总条数
+          if (currentPage === 1 && total !== undefined) {
+            state.totalStories = total;
+          }
+
+          const totalStories = state.totalStories || 0;
+          const totalPages = Math.ceil(totalStories / itemsPerPage);
+
+          if (items.length === 0) {
+            // 如果没有历史记录，显示空状态
+            elements.historyTableBody.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem 0;">
+                  <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 1rem; color: #aaa;"></i>
+                  <p>You haven't generated any stories yet</p>
+                </td>
+              </tr>
+            `;
+
+            // 更新分页信息
+            elements.historyTotal.textContent = totalStories.toString();
+            elements.paginationStart.textContent = "0";
+            elements.paginationEnd.textContent = "0";
+            elements.paginationTotal.textContent = totalStories.toString();
+            elements.paginationControls.innerHTML = "";
+            return;
+          }
+
+          // 计算当前页的起始和结束索引
+          const startIndex = (currentPage - 1) * itemsPerPage + 1;
+          const endIndex = startIndex + items.length - 1;
+
+          // 更新分页信息
+          elements.historyTotal.textContent = totalStories.toString();
+          elements.paginationStart.textContent = startIndex.toString();
+          elements.paginationEnd.textContent = endIndex.toString();
+          elements.paginationTotal.textContent = totalStories.toString();
+
+          // 清空表格和分页控件
+          elements.historyTableBody.innerHTML = "";
+          elements.paginationControls.innerHTML = "";
+
+          // 填充表格数据
+          items.forEach((story) => {
+            const date = new Date(story.created_at);
+            const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
+            // 创建标题（基于类型和时间）
+            const title = `${capitalizeFirst(
+              story.story_type
+            )} Story: ${capitalizeFirst(story.time_period)} ${capitalizeFirst(
+              story.story_background
+            )}`;
+
+            const row = document.createElement("tr");
+            row.dataset.id = story.id;
+            row.innerHTML = `
+              <td class="history-title">${title}</td>
+              <td class="history-meta">${formattedDate}</td>
+              <td class="history-meta">${capitalizeFirst(story.story_type)}</td>
+              <td class="history-meta">${capitalizeFirst(
+                story.time_period
+              )}</td>
+              <td class="history-meta">${capitalizeFirst(
+                story.story_background
+              )}</td>
+              <td class="history-actions">
+                <button class="delete-story-btn" data-id="${story.id}">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            `;
+
+            // 添加点击事件 - 行点击显示详情
+            row.addEventListener("click", (e) => {
+              // 如果点击的是删除按钮，则不显示详情
+              if (!e.target.closest(".delete-story-btn")) {
+                // 详情加载需要单独请求
+                loadStoryDetail(story);
+              }
+            });
+
+            // 删除按钮单独添加事件，防止冒泡
+            const deleteBtn = row.querySelector(".delete-story-btn");
+            deleteBtn.addEventListener("click", (e) => {
+              e.stopPropagation(); // 阻止事件冒泡，防止触发行点击事件
+              showConfirmDeleteModal(story);
+            });
+
+            elements.historyTableBody.appendChild(row);
+          });
+
+          // 创建分页按钮
+          if (totalPages > 1) {
+            // 添加"上一页"按钮
+            const prevBtn = document.createElement("button");
+            prevBtn.classList.add("pagination-btn");
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener("click", () => {
+              if (currentPage > 1) {
+                localStorage.setItem(
+                  "historyCurrentPage",
+                  (currentPage - 1).toString()
+                );
+                renderHistoryCards();
+              }
+            });
+            elements.paginationControls.appendChild(prevBtn);
+
+            // 添加页码按钮
+            const maxPageButtons = 5; // 最多显示5个页码按钮
+            let startPage = Math.max(
+              1,
+              currentPage - Math.floor(maxPageButtons / 2)
+            );
+            let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            // 调整开始页码，确保始终显示最大数量的页码按钮
+            if (endPage - startPage + 1 < maxPageButtons && startPage > 1) {
+              startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+              const pageBtn = document.createElement("button");
+              pageBtn.classList.add("pagination-btn");
+              if (i === currentPage) {
+                pageBtn.classList.add("active");
+              }
+              pageBtn.textContent = i.toString();
+              pageBtn.addEventListener("click", () => {
+                localStorage.setItem("historyCurrentPage", i.toString());
+                renderHistoryCards();
+              });
+              elements.paginationControls.appendChild(pageBtn);
+            }
+
+            // 添加"下一页"按钮
+            const nextBtn = document.createElement("button");
+            nextBtn.classList.add("pagination-btn");
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = !has_more;
+            nextBtn.addEventListener("click", () => {
+              if (has_more) {
+                localStorage.setItem(
+                  "historyCurrentPage",
+                  (currentPage + 1).toString()
+                );
+                renderHistoryCards();
+              }
+            });
+            elements.paginationControls.appendChild(nextBtn);
+          }
+        } else {
+          // 显示错误提示
+          showToast(data.message || "Failed to fetch history", "error");
+
+          // 显示空状态
+          elements.historyTableBody.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2rem 0;">
+                <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem; color: #aaa;"></i>
+                <p>Failed to load history data</p>
+              </td>
+            </tr>
+          `;
+        }
+      } catch (error) {
+        console.error("解析历史记录响应错误:", error);
+        elements.loadingOverlay.style.display = "none";
+        showToast("Error processing response", "error");
       }
+    })
+    .catch((error) => {
+      console.error("获取历史记录错误:", error);
+      elements.loadingOverlay.style.display = "none";
+      showToast("Network error. Please try again later.", "error");
+
+      // 显示错误状态
+      elements.historyTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 2rem 0;">
+            <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 1rem; color: #aaa;"></i>
+            <p>Network error. Please check your connection and try again.</p>
+          </td>
+        </tr>
+      `;
     });
+}
 
-    // 删除按钮单独添加事件，防止冒泡
-    const deleteBtn = row.querySelector(".delete-story-btn");
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // 阻止事件冒泡，防止触发行点击事件
-      showConfirmDeleteModal(story);
-    });
+// Load story detail
+function loadStoryDetail(story) {
+  // 显示加载状态
+  elements.loadingOverlay.style.display = "flex";
 
-    elements.historyTableBody.appendChild(row);
-  });
+  // 获取token
+  const token = localStorage.getItem("token");
 
-  // 创建分页按钮
-  if (totalPages > 1) {
-    // 添加"上一页"按钮
-    const prevBtn = document.createElement("button");
-    prevBtn.classList.add("pagination-btn");
-    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-    prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener("click", () => {
-      if (currentPage > 1) {
-        localStorage.setItem("historyCurrentPage", currentPage - 1);
-        renderHistoryCards();
-      }
-    });
-    elements.paginationControls.appendChild(prevBtn);
-
-    // 添加页码按钮
-    const maxPageButtons = 5; // 最多显示5个页码按钮
-    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
-    // 调整开始页码，确保始终显示最大数量的页码按钮
-    if (endPage - startPage + 1 < maxPageButtons && startPage > 1) {
-      startPage = Math.max(1, endPage - maxPageButtons + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      const pageBtn = document.createElement("button");
-      pageBtn.classList.add("pagination-btn");
-      if (i === currentPage) {
-        pageBtn.classList.add("active");
-      }
-      pageBtn.textContent = i;
-      pageBtn.addEventListener("click", () => {
-        localStorage.setItem("historyCurrentPage", i);
-        renderHistoryCards();
-      });
-      elements.paginationControls.appendChild(pageBtn);
-    }
-
-    // 添加"下一页"按钮
-    const nextBtn = document.createElement("button");
-    nextBtn.classList.add("pagination-btn");
-    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-    nextBtn.disabled = currentPage === totalPages;
-    nextBtn.addEventListener("click", () => {
-      if (currentPage < totalPages) {
-        localStorage.setItem("historyCurrentPage", currentPage + 1);
-        renderHistoryCards();
-      }
-    });
-    elements.paginationControls.appendChild(nextBtn);
+  if (!token) {
+    showToast("Authorization token not found", "error");
+    elements.loadingOverlay.style.display = "none";
+    return;
   }
-}
 
-// Show history detail
-function showHistoryDetail(story) {
-  elements.historyTitle.textContent = story.title;
-  elements.historyContent.textContent = story.content;
-  elements.historyDetailModal.dataset.id = story.id;
-  toggleHistoryModal();
-}
+  // 调用API获取故事详情
+  fetch(`http://web.colstory.com/api/v1/story/${story.id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(async (res) => {
+      try {
+        const data = await res.json();
+        console.log("故事详情响应:", data);
 
-// Download history story
-function downloadHistoryStory() {
-  const storyId = elements.historyDetailModal.dataset.id;
-  const story = state.storyHistory.find((s) => s.id === storyId);
+        // 隐藏加载状态
+        elements.loadingOverlay.style.display = "none";
 
-  if (!story) return;
+        if (res.ok || data.ok === 1) {
+          const storyData = data.data || {};
 
-  const title = story.title;
-  const content = story.content;
-  const blob = new Blob([`${title}\n\n${content}`], {
-    type: "text/plain",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+          // 创建完整的故事对象
+          const fullStory = {
+            id: story.id,
+            title: `${capitalizeFirst(
+              story.story_type
+            )} Story: ${capitalizeFirst(story.time_period)} ${capitalizeFirst(
+              story.story_background
+            )}`,
+            type: story.story_type,
+            period: story.time_period,
+            background: story.story_background,
+            content: storyData.content || "Content not available.",
+            date: story.created_at,
+          };
 
-  showToast("Story downloaded successfully", "success");
+          // 显示故事详情
+          elements.historyTitle.textContent = fullStory.title;
+          elements.historyContent.textContent = fullStory.content;
+          elements.historyDetailModal.dataset.id = fullStory.id;
+          toggleHistoryModal();
+        } else {
+          showToast(data.message || "Failed to load story details", "error");
+        }
+      } catch (error) {
+        console.error("解析故事详情响应错误:", error);
+        elements.loadingOverlay.style.display = "none";
+        showToast("Error processing response", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("获取故事详情错误:", error);
+      elements.loadingOverlay.style.display = "none";
+      showToast("Network error. Please try again later.", "error");
+    });
 }
 
 // Show toast notification
@@ -1562,107 +1680,10 @@ function handleGetVerificationCode(e) {
         showToast(data.message || "Failed to send verification code", "error");
       }
     })
-    .catch((err) => {
-      console.error("获取验证码错误:", err);
-      showToast("Network error, please try again", "error");
+    .catch((error) => {
+      console.error("获取验证码请求错误:", error);
+      showToast("Network error. Please try again later.", "error");
     });
-}
-
-// 处理忘记密码表单提交
-function handleForgotPassword(e) {
-  e.preventDefault();
-  console.log("提交忘记密码表单...");
-
-  const email = document.getElementById("resetEmail").value.trim();
-  const code = document.getElementById("verificationCode").value.trim();
-  const newPassword = document.getElementById("newPassword").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
-
-  // 验证表单
-  if (!validateEmail(email)) {
-    document.getElementById("resetEmail").style.borderColor =
-      "var(--error-color)";
-    showToast("Please enter a valid email address", "error");
-    return;
-  }
-
-  if (!code) {
-    showToast("Please enter verification code", "error");
-    return;
-  }
-
-  if (!newPassword) {
-    showToast("Please enter new password", "error");
-    return;
-  }
-
-  if (newPassword !== confirmPassword) {
-    showToast("Passwords do not match", "error");
-    return;
-  }
-
-  // 加密密码
-  const md5Password = md5(newPassword);
-  const md5PasswordConfirm = md5(confirmPassword);
-
-  console.log("发送重置密码请求", {
-    email,
-    code,
-    md5Password: "已加密",
-    md5PasswordConfirm: "已加密",
-  });
-
-  // 发送重置密码请求
-  fetch("http://web.colstory.com/api/v1/auth/forgot-password", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: email,
-      verification_code: code,
-      password: md5Password,
-      password_confirm: md5PasswordConfirm,
-    }),
-  })
-    .then(async (res) => {
-      const data = await res.json();
-      console.log("重置密码响应:", data);
-
-      if (
-        res.ok ||
-        data.success ||
-        data.status === "success" ||
-        (data.message &&
-          (data.message.includes("success") ||
-            data.message.toLowerCase().includes("成功")))
-      ) {
-        showToast("Password reset successful", "success");
-        document.getElementById("resetMessage").style.display = "block";
-
-        // 3秒后关闭弹窗
-        setTimeout(() => {
-          document.getElementById("forgotPasswordModal").style.display = "none";
-          document.getElementById("resetEmail").value = "";
-          document.getElementById("verificationCode").value = "";
-          document.getElementById("newPassword").value = "";
-          document.getElementById("confirmPassword").value = "";
-          document.getElementById("resetMessage").style.display = "none";
-        }, 3000);
-      } else {
-        showToast(data.message || "Failed to reset password", "error");
-      }
-    })
-    .catch((err) => {
-      console.error("重置密码错误:", err);
-      showToast("Network error, please try again", "error");
-    });
-}
-
-// Toggle confirm delete modal
-function toggleConfirmDeleteModal() {
-  elements.confirmDeleteModal.style.display =
-    elements.confirmDeleteModal.style.display === "block" ? "none" : "block";
 }
 
 // Show confirm delete modal
@@ -1672,6 +1693,12 @@ function showConfirmDeleteModal(story) {
 
   // 显示模态框
   elements.confirmDeleteModal.style.display = "block";
+}
+
+// Toggle confirm delete modal
+function toggleConfirmDeleteModal() {
+  elements.confirmDeleteModal.style.display =
+    elements.confirmDeleteModal.style.display === "block" ? "none" : "block";
 }
 
 // Handle delete story
@@ -1706,26 +1733,17 @@ function handleDeleteStory() {
     .then(async (res) => {
       try {
         const data = await res.json();
+        console.log("删除故事响应:", data);
 
         // 隐藏加载状态
         elements.loadingOverlay.style.display = "none";
 
         if (res.ok || data.ok === 1) {
-          // 删除成功，从本地状态中移除
-          state.storyHistory = state.storyHistory.filter(
-            (s) => s.id.toString() !== storyId.toString()
-          );
-
-          // 更新本地存储
-          if (state.user) {
-            localStorage.setItem("user", JSON.stringify(state.user));
-          }
+          // 显示成功提示
+          showToast(data.message || "Story deleted successfully", "success");
 
           // 重新渲染历史记录
           renderHistoryCards();
-
-          // 显示成功提示
-          showToast(data.message || "Story deleted successfully", "success");
         } else {
           showToast(data.message || "Failed to delete story", "error");
         }
@@ -1743,4 +1761,76 @@ function handleDeleteStory() {
 
   // 关闭确认删除模态框
   toggleConfirmDeleteModal();
+}
+
+// Download history story
+function downloadHistoryStory() {
+  const storyId = elements.historyDetailModal.dataset.id;
+
+  if (!storyId) {
+    showToast("Story not found", "error");
+    return;
+  }
+
+  // 获取token
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    showToast("Authorization token not found", "error");
+    return;
+  }
+
+  // 显示加载状态
+  elements.loadingOverlay.style.display = "flex";
+
+  // 调用API获取故事详情
+  fetch(`http://web.colstory.com/api/v1/story/${storyId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(async (res) => {
+      try {
+        const data = await res.json();
+        console.log("下载故事详情响应:", data);
+
+        // 隐藏加载状态
+        elements.loadingOverlay.style.display = "none";
+
+        if (res.ok || data.ok === 1) {
+          const storyData = data.data || {};
+
+          // 创建标题
+          const title = elements.historyTitle.textContent || "Story";
+          const content = storyData.content || "Content not available.";
+
+          // 创建下载文件
+          const blob = new Blob([`${title}\n\n${content}`], {
+            type: "text/plain",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          showToast("Story downloaded successfully", "success");
+        } else {
+          showToast(data.message || "Failed to download story", "error");
+        }
+      } catch (error) {
+        console.error("解析故事详情响应错误:", error);
+        elements.loadingOverlay.style.display = "none";
+        showToast("Error processing response", "error");
+      }
+    })
+    .catch((error) => {
+      console.error("获取故事详情错误:", error);
+      elements.loadingOverlay.style.display = "none";
+      showToast("Network error. Please try again later.", "error");
+    });
 }
