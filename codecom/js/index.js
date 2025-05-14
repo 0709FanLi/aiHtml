@@ -73,74 +73,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // 更新UI
         updateUIForLoggedInUser();
-
-        // 可选：验证token有效性（在后台静默执行，不影响用户体验）
-        validateTokenSilently(token);
       } catch (e) {
         console.error("Error parsing user info:", e);
         // 数据解析错误但不清除数据，保持用户会话
       }
     }
-  }
-
-  // 静默验证token (不阻塞UI显示，后台验证)
-  function validateTokenSilently(token) {
-    fetch("http://web.codecommont.com/api/v1/auth/user-info", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          // token可能无效，但仍保持当前会话，除非服务器明确要求登出
-          console.warn(
-            "Token validation warning - server returned:",
-            response.status
-          );
-          return response.json().then((data) => {
-            // 只有当服务器明确指示需要重新登录时，才清除会话
-            if (data.code === 401 || data.message === "unauthorized") {
-              completeLogout();
-              showToast(
-                "warning",
-                "Session Expired",
-                "Your session has expired. Please login again."
-              );
-            }
-            return data;
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.success || data.ok === 1) {
-          // token有效，可以更新用户信息
-          if (data.user || data.data) {
-            const userData = data.user || data.data;
-            // 更新本地用户数据，但保留现有数据
-            if (currentUser) {
-              currentUser = {
-                ...currentUser,
-                name: userData.name || currentUser.name,
-                email: userData.email || currentUser.email,
-                credits:
-                  userData.credits !== undefined
-                    ? userData.credits
-                    : currentUser.credits,
-              };
-              localStorage.setItem("currentUser", JSON.stringify(currentUser));
-              // 仅更新UI，不重置登录状态
-              updateUIForLoggedInUser();
-            }
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Silent token validation error:", error);
-        // 网络错误不影响当前会话
-      });
   }
 
   // 更新已登录用户UI
@@ -474,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const backToLoginLink = document.getElementById("back-to-login");
 
-  // 函数：清空表单内容
+  // 清空表单内容
   function clearFormInputs(formElement) {
     if (!formElement) return;
 
@@ -482,16 +419,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputs = formElement.querySelectorAll("input");
     inputs.forEach((input) => {
       input.value = "";
-    });
 
-    // 清除可能存在的验证错误样式
-    inputs.forEach((input) => {
+      // 清除可能存在的验证错误样式
       input.classList.remove("is-invalid");
     });
   }
 
-  // 关闭模态框并清空其中的表单
-  function closeModalAndClearForm(modal) {
+  // 清空表单内容而不清除特定项
+  function clearFormInputsExcept(formElement, exceptIds = []) {
+    if (!formElement) return;
+
+    // 找到表单中所有输入元素
+    const inputs = formElement.querySelectorAll("input");
+    inputs.forEach((input) => {
+      // 如果输入框ID不在exceptIds列表中，则清空它
+      if (!exceptIds.includes(input.id)) {
+        input.value = "";
+      }
+
+      // 清除可能存在的验证错误样式
+      input.classList.remove("is-invalid");
+    });
+  }
+
+  // 关闭模态框并清空其中的表单，支持保留特定输入项
+  function closeModalAndClearForm(modal, preserveInputIds = []) {
     if (modal) {
       // 关闭模态框
       modal.classList.remove("active");
@@ -499,7 +451,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // 查找并清空模态框中的表单
       const form = modal.querySelector("form");
       if (form) {
-        clearFormInputs(form);
+        if (preserveInputIds.length > 0) {
+          clearFormInputsExcept(form, preserveInputIds);
+        } else {
+          clearFormInputs(form);
+        }
       }
     }
   }
@@ -539,11 +495,24 @@ document.addEventListener("DOMContentLoaded", function () {
   if (showLoginLink) {
     showLoginLink.addEventListener("click", function (e) {
       e.preventDefault();
+      // 获取注册邮箱
+      const signupEmail = document.getElementById("signup-email");
+      const emailValue = signupEmail ? signupEmail.value.trim() : "";
+
       // 隐藏注册模态框并清空表单
       closeModalAndClearForm(signupModal);
+
       // 显示登录模态框
       if (loginModal) {
         loginModal.classList.add("active");
+
+        // 如果有填写邮箱，带入登录弹框
+        if (emailValue) {
+          const loginEmail = document.getElementById("login-email");
+          if (loginEmail) {
+            loginEmail.value = emailValue;
+          }
+        }
       }
     });
   }
@@ -565,11 +534,27 @@ document.addEventListener("DOMContentLoaded", function () {
   if (showForgotPasswordLink) {
     showForgotPasswordLink.addEventListener("click", function (e) {
       e.preventDefault();
+
+      // 获取登录邮箱
+      const loginEmail = document.getElementById("login-email");
+      const emailValue = loginEmail ? loginEmail.value.trim() : "";
+
       // 隐藏登录模态框并清空表单
       closeModalAndClearForm(loginModal);
+
       // 显示忘记密码模态框
       if (forgotPasswordModal) {
         forgotPasswordModal.classList.add("active");
+
+        // 如果登录弹框已填写邮箱，带入到忘记密码弹框
+        if (emailValue) {
+          setTimeout(() => {
+            const forgotEmail = document.getElementById("forgot-email");
+            if (forgotEmail) {
+              forgotEmail.value = emailValue;
+            }
+          }, 100); // 短暂延时确保DOM已渲染
+        }
       }
     });
   }
@@ -578,11 +563,27 @@ document.addEventListener("DOMContentLoaded", function () {
   if (backToLoginLink) {
     backToLoginLink.addEventListener("click", function (e) {
       e.preventDefault();
+
+      // 获取忘记密码弹框中的邮箱
+      const forgotEmail = document.getElementById("forgot-email");
+      const emailValue = forgotEmail ? forgotEmail.value.trim() : "";
+
       // 隐藏忘记密码模态框并清空表单
       closeModalAndClearForm(forgotPasswordModal);
+
       // 显示登录模态框
       if (loginModal) {
         loginModal.classList.add("active");
+
+        // 如果忘记密码弹框已填写邮箱，带入到登录弹框
+        if (emailValue) {
+          setTimeout(() => {
+            const loginEmail = document.getElementById("login-email");
+            if (loginEmail) {
+              loginEmail.value = emailValue;
+            }
+          }, 100); // 短暂延时确保DOM已渲染
+        }
       }
     });
   }
@@ -1184,7 +1185,8 @@ document.addEventListener("DOMContentLoaded", function () {
             getVerificationBtn.disabled = false;
             getVerificationBtn.innerHTML = originalBtnText;
 
-            if (data.success) {
+            // 检查API响应
+            if (data.ok === 1 || data.success) {
               // 倒计时禁用按钮
               let countdown = 60;
               getVerificationBtn.disabled = true;
@@ -1288,8 +1290,9 @@ document.addEventListener("DOMContentLoaded", function () {
       submitBtn.innerHTML =
         '<i class="fas fa-spinner fa-spin spinner"></i> Processing...';
 
-      // MD5加密密码
+      // MD5加密密码和确认密码
       const hashedPassword = md5(newPassword);
+      const hashedConfirmPassword = md5(confirmPassword);
 
       // 发送重置密码请求
       fetch("http://web.codecommont.com/api/v1/auth/forgot-password", {
@@ -1299,8 +1302,9 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         body: JSON.stringify({
           email: email,
-          code: verificationCode,
+          verification_code: verificationCode,
           password: hashedPassword,
+          password_confirm: hashedConfirmPassword,
         }),
       })
         .then((response) => response.json())
@@ -1310,7 +1314,7 @@ document.addEventListener("DOMContentLoaded", function () {
           submitBtn.classList.remove("btn-loading");
           submitBtn.innerHTML = originalBtnText;
 
-          if (data.success) {
+          if (data.ok === 1 || data.success) {
             // 重置成功
             showToast(
               "success",
