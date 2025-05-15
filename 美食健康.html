@@ -205,20 +205,22 @@
                 id="analyzedFoodImage"
               />
               <div class="result-title">
-                <h3 id="analyzedFoodName">食物名称</h3>
+                <h3 id="analyzedFoodName">Food Name</h3>
                 <div>
                   <span class="result-tag tag-success" id="foodHealthTag"
-                    >健康选择</span
+                    >Healthy Choice</span
                   >
                   <span class="result-tag" id="foodCaloriesTag"
-                    >220 卡路里</span
+                    >220 Calories</span
                   >
                 </div>
               </div>
             </div>
 
             <div class="result-body">
-              <p id="foodAnalysisText">分析结果将在这里显示...</p>
+              <p id="foodAnalysisText">
+                Analysis results will be displayed here...
+              </p>
 
               <div id="recommendationsSection" style="margin-top: 30px">
                 <h3
@@ -228,7 +230,7 @@
                     font-size: 22px;
                   "
                 >
-                  推荐健康菜谱
+                  Recommended Healthy Recipes
                 </h3>
 
                 <div class="grid" id="relatedRecipes">
@@ -240,7 +242,7 @@
 
           <div style="text-align: center; margin-top: 20px">
             <button class="btn btn-outline" id="backToHomeBtn">
-              <i class="fas fa-arrow-left"></i> 返回首页
+              <i class="fas fa-arrow-left"></i> Back to Home
             </button>
           </div>
         </div>
@@ -261,42 +263,42 @@
               <div class="recipe-stats">
                 <div class="stat">
                   <div class="stat-value" id="recipeCalories">250</div>
-                  <div class="stat-label">卡路里</div>
+                  <div class="stat-label">Calories</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeProtein">18g</div>
-                  <div class="stat-label">蛋白质</div>
+                  <div class="stat-label">Protein</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeCarbs">30g</div>
-                  <div class="stat-label">碳水化合物</div>
+                  <div class="stat-label">Carbs</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeFat">10g</div>
-                  <div class="stat-label">脂肪</div>
+                  <div class="stat-label">Fat</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeTime">25</div>
-                  <div class="stat-label">分钟</div>
+                  <div class="stat-label">Minutes</div>
                 </div>
               </div>
 
               <div class="recipe-section">
-                <h3>健康提示</h3>
+                <h3>Health Tips</h3>
                 <div id="recipeHealthTips" class="health-tips-container">
-                  健康提示将在这里显示...
+                  Health tips will be displayed here...
                 </div>
               </div>
 
               <div class="recipe-section">
-                <h3>食材</h3>
+                <h3>Ingredients</h3>
                 <ul class="ingredient-list" id="recipeIngredients">
                   <!-- 食材将在这里动态插入 -->
                 </ul>
               </div>
 
               <div class="recipe-section">
-                <h3>步骤</h3>
+                <h3>Steps</h3>
                 <ol class="step-list" id="recipeSteps">
                   <!-- 步骤将在这里动态插入 -->
                 </ol>
@@ -306,7 +308,7 @@
 
           <div style="text-align: center; margin-top: 20px">
             <button class="btn btn-outline" id="backFromRecipeBtn">
-              <i class="fas fa-arrow-left"></i> 返回
+              <i class="fas fa-arrow-left"></i> Back
             </button>
           </div>
         </div>
@@ -420,8 +422,10 @@
             class="hero"
             style="background: linear-gradient(135deg, #9c27b0, #2196f3)"
           >
-            <h1>您的历史记录</h1>
-            <p>查看和访问您之前分析过的食物和浏览过的食谱。</p>
+            <h1>Your History</h1>
+            <p>
+              View and access previously analyzed foods and browsed recipes.
+            </p>
           </div>
 
           <div
@@ -436,12 +440,12 @@
                 margin-bottom: 15px;
               "
             ></i>
-            <h2>请登录查看您的历史记录</h2>
+            <h2>Please Login to View Your History</h2>
             <p style="margin-bottom: 20px">
-              登录以查看所有分析记录和浏览的食谱
+              Login to see all analysis records and browsed recipes
             </p>
             <button class="btn btn-primary" id="historyLoginBtn">
-              登录 / 注册
+              Login / Register
             </button>
           </div>
 
@@ -460,10 +464,10 @@
                 class="btn btn-outline active-tab"
                 style="margin-right: 10px"
               >
-                食物分析
+                Food Analysis
               </button>
               <button id="recipeTabBtn" class="btn btn-outline">
-                食谱浏览
+                Recipe Browse
               </button>
               <div style="float: right">
                 <div
@@ -473,7 +477,7 @@
                   <input
                     type="text"
                     id="historySearchInput"
-                    placeholder="搜索历史记录..."
+                    placeholder="Search history..."
                     style="
                       padding: 8px 12px;
                       border-radius: 20px;
@@ -496,7 +500,7 @@
                   class="btn btn-outline"
                   style="margin-left: 10px; color: var(--danger-color)"
                 >
-                  <i class="fas fa-trash"></i> 清空历史
+                  <i class="fas fa-trash"></i> Clear History
                 </button>
               </div>
             </div>
@@ -543,7 +547,7 @@
             <!-- 食物分析历史标签页 -->
             <div id="analysisHistoryTab">
               <div class="section-header">
-                <h2 class="section-title">食物分析历史记录</h2>
+                <h2 class="section-title">Food Analysis History Records</h2>
               </div>
 
               <div id="analysisHistory" class="history-list">
@@ -556,23 +560,23 @@
                   />
                   <div class="history-content">
                     <div class="history-date">2023-06-15 14:30</div>
-                    <h3 class="history-title">红苹果</h3>
+                    <h3 class="history-title">Red Apple</h3>
                     <div class="history-meta">
-                      <div><i class="fas fa-fire"></i> 95 卡路里</div>
+                      <div><i class="fas fa-fire"></i> 95 Calories</div>
                       <div>
                         <i
                           class="fas fa-check-circle"
                           style="color: var(--success-color)"
                         ></i>
-                        健康选择
+                        Healthy Choice
                       </div>
                     </div>
                   </div>
                   <div class="history-actions">
-                    <button class="btn-icon view-detail" title="查看详情">
+                    <button class="btn-icon view-detail" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-icon delete-item" title="删除">
+                    <button class="btn-icon delete-item" title="Delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -586,23 +590,23 @@
                   />
                   <div class="history-content">
                     <div class="history-date">2023-06-14 18:45</div>
-                    <h3 class="history-title">芝士汉堡</h3>
+                    <h3 class="history-title">Cheese Burger</h3>
                     <div class="history-meta">
-                      <div><i class="fas fa-fire"></i> 450 卡路里</div>
+                      <div><i class="fas fa-fire"></i> 450 Calories</div>
                       <div>
                         <i
                           class="fas fa-exclamation-circle"
                           style="color: var(--warning-color)"
                         ></i>
-                        偶尔食用
+                        Occasional Consumption
                       </div>
                     </div>
                   </div>
                   <div class="history-actions">
-                    <button class="btn-icon view-detail" title="查看详情">
+                    <button class="btn-icon view-detail" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-icon delete-item" title="删除">
+                    <button class="btn-icon delete-item" title="Delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -613,7 +617,7 @@
             <!-- 食谱浏览历史标签页 -->
             <div id="recipeHistoryTab" style="display: none">
               <div class="section-header">
-                <h2 class="section-title">食谱浏览历史记录</h2>
+                <h2 class="section-title">Recipe Browse History Records</h2>
               </div>
 
               <div id="recipeHistory" class="history-list">
@@ -626,17 +630,17 @@
                   />
                   <div class="history-content">
                     <div class="history-date">2023-06-15 15:10</div>
-                    <h3 class="history-title">彩虹蔬菜沙拉</h3>
+                    <h3 class="history-title">Rainbow Vegetable Salad</h3>
                     <div class="history-meta">
-                      <div><i class="fas fa-fire"></i> 180 卡路里</div>
-                      <div><i class="fas fa-clock"></i> 15 分钟</div>
+                      <div><i class="fas fa-fire"></i> 180 Calories</div>
+                      <div><i class="fas fa-clock"></i> 15 Minutes</div>
                     </div>
                   </div>
                   <div class="history-actions">
-                    <button class="btn-icon view-detail" title="查看详情">
+                    <button class="btn-icon view-detail" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-icon delete-item" title="删除">
+                    <button class="btn-icon delete-item" title="Delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -650,17 +654,17 @@
                   />
                   <div class="history-content">
                     <div class="history-date">2023-06-14 09:20</div>
-                    <h3 class="history-title">浆果奇亚籽思慕雪碗</h3>
+                    <h3 class="history-title">Berry Chia Seed Smoothie Bowl</h3>
                     <div class="history-meta">
-                      <div><i class="fas fa-fire"></i> 250 卡路里</div>
-                      <div><i class="fas fa-clock"></i> 10 分钟</div>
+                      <div><i class="fas fa-fire"></i> 250 Calories</div>
+                      <div><i class="fas fa-clock"></i> 10 Minutes</div>
                     </div>
                   </div>
                   <div class="history-actions">
-                    <button class="btn-icon view-detail" title="查看详情">
+                    <button class="btn-icon view-detail" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-icon delete-item" title="删除">
+                    <button class="btn-icon delete-item" title="Delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -1465,6 +1469,458 @@
       </button>
     </div>
 
+    <!-- 添加食谱详情弹窗 -->
+    <div
+      id="recipeDetailsModal"
+      class="modal"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: #fff;
+          padding: 30px;
+          max-width: 800px;
+          width: 90vw;
+          border-radius: 8px;
+          position: relative;
+          max-height: 80vh;
+          overflow: auto;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2 style="margin: 0" id="modalRecipeTitle">Recipe Details</h2>
+          <button
+            onclick="document.getElementById('recipeDetailsModal').style.display='none'"
+            class="btn btn-outline"
+            style="padding: 5px 10px; margin: 0"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="recipe-detail-modal">
+          <div class="recipe-header">
+            <img
+              src=""
+              alt="Recipe"
+              id="modalRecipeImage"
+              style="display: none"
+            />
+          </div>
+
+          <div class="recipe-body">
+            <div class="recipe-stats">
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeCalories">250</div>
+                <div class="stat-label">Calories</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeProtein">18g</div>
+                <div class="stat-label">Protein</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeCarbs">30g</div>
+                <div class="stat-label">Carbs</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeFat">10g</div>
+                <div class="stat-label">Fat</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeTime">25</div>
+                <div class="stat-label">Minutes</div>
+              </div>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Health Tips</h3>
+              <div id="modalRecipeHealthTips" class="health-tips-container">
+                Health tips will be displayed here...
+              </div>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Ingredients</h3>
+              <ul class="ingredient-list" id="modalRecipeIngredients">
+                <!-- Ingredients will be dynamically inserted here -->
+              </ul>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Steps</h3>
+              <ol class="step-list" id="modalRecipeSteps">
+                <!-- Steps will be dynamically inserted here -->
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="food/js/index.js"></script>
+
+    <!-- 添加点击查看详情的JavaScript代码 -->
+    <script>
+      // 初始化时运行
+      document.addEventListener("DOMContentLoaded", function () {
+        try {
+          // 确保DOM元素完全加载后再执行以下代码
+          // 更改界面中的中文文本为英文
+          const analyzedFoodName = document.querySelector("#analyzedFoodName");
+          if (analyzedFoodName) analyzedFoodName.textContent = "Food Name";
+
+          const foodHealthTag = document.querySelector("#foodHealthTag");
+          if (foodHealthTag) foodHealthTag.textContent = "Healthy Choice";
+
+          const foodAnalysisText = document.querySelector("#foodAnalysisText");
+          if (foodAnalysisText)
+            foodAnalysisText.textContent =
+              "Analysis results will be displayed here...";
+
+          const recommendationsTitle = document.querySelector(
+            "#recommendationsSection h3"
+          );
+          if (recommendationsTitle)
+            recommendationsTitle.textContent = "Recommended Healthy Recipes";
+
+          const backToHomeBtn = document.querySelector("#backToHomeBtn");
+          if (backToHomeBtn)
+            backToHomeBtn.innerHTML =
+              '<i class="fas fa-arrow-left"></i> Back to Home';
+
+          // 历史记录视图文本修改
+          const historyTitle = document.querySelector("#historyView .hero h1");
+          if (historyTitle) historyTitle.textContent = "Your History";
+
+          const historyDesc = document.querySelector("#historyView .hero p");
+          if (historyDesc)
+            historyDesc.textContent =
+              "View and access previously analyzed foods and browsed recipes.";
+
+          const loginPromptTitle = document.querySelector("#loginPrompt h2");
+          if (loginPromptTitle)
+            loginPromptTitle.textContent = "Please Login to View Your History";
+
+          const loginPromptDesc = document.querySelector("#loginPrompt p");
+          if (loginPromptDesc)
+            loginPromptDesc.textContent =
+              "Login to see all analysis records and browsed recipes";
+
+          const historyLoginBtn = document.querySelector("#historyLoginBtn");
+          if (historyLoginBtn) historyLoginBtn.textContent = "Login / Register";
+
+          const analysisTabBtn = document.querySelector("#analysisTabBtn");
+          if (analysisTabBtn) analysisTabBtn.textContent = "Food Analysis";
+
+          const recipeTabBtn = document.querySelector("#recipeTabBtn");
+          if (recipeTabBtn) recipeTabBtn.textContent = "Recipe Browse";
+
+          const historySearchInput = document.querySelector(
+            "#historySearchInput"
+          );
+          if (historySearchInput)
+            historySearchInput.placeholder = "Search history...";
+
+          const clearHistoryBtn = document.querySelector("#clearHistoryBtn");
+          if (clearHistoryBtn)
+            clearHistoryBtn.innerHTML =
+              '<i class="fas fa-trash"></i> Clear History';
+
+          // 食谱详情视图文本修改
+          const caloriesLabel = document.querySelector(
+            "#recipeDetailView .recipe-stats .stat-label:nth-child(2)"
+          );
+          if (caloriesLabel) caloriesLabel.textContent = "Calories";
+
+          const proteinLabel = document.querySelector(
+            "#recipeDetailView .recipe-stats .stat-label:nth-child(4)"
+          );
+          if (proteinLabel) proteinLabel.textContent = "Protein";
+
+          const carbsLabel = document.querySelector(
+            "#recipeDetailView .recipe-stats .stat-label:nth-child(6)"
+          );
+          if (carbsLabel) carbsLabel.textContent = "Carbs";
+
+          const fatLabel = document.querySelector(
+            "#recipeDetailView .recipe-stats .stat-label:nth-child(8)"
+          );
+          if (fatLabel) fatLabel.textContent = "Fat";
+
+          const minutesLabel = document.querySelector(
+            "#recipeDetailView .recipe-stats .stat-label:nth-child(10)"
+          );
+          if (minutesLabel) minutesLabel.textContent = "Minutes";
+
+          const healthTipsLabel = document.querySelector(
+            "#recipeDetailView .recipe-section h3:nth-of-type(1)"
+          );
+          if (healthTipsLabel) healthTipsLabel.textContent = "Health Tips";
+
+          const ingredientsLabel = document.querySelector(
+            "#recipeDetailView .recipe-section h3:nth-of-type(2)"
+          );
+          if (ingredientsLabel) ingredientsLabel.textContent = "Ingredients";
+
+          const stepsLabel = document.querySelector(
+            "#recipeDetailView .recipe-section h3:nth-of-type(3)"
+          );
+          if (stepsLabel) stepsLabel.textContent = "Steps";
+
+          const backFromRecipeBtn =
+            document.querySelector("#backFromRecipeBtn");
+          if (backFromRecipeBtn)
+            backFromRecipeBtn.innerHTML =
+              '<i class="fas fa-arrow-left"></i> Back';
+
+          // 实现点击查看详情的弹窗功能
+          function setupRecipeDetailLinks() {
+            // 为所有具有"点击查看详情"的元素添加点击事件
+            const viewDetailButtons = document.querySelectorAll(
+              ".view-recipe-details"
+            );
+            console.log("找到View Details按钮数量:", viewDetailButtons.length);
+
+            if (viewDetailButtons && viewDetailButtons.length > 0) {
+              viewDetailButtons.forEach((button) => {
+                button.textContent = "View Details";
+                button.addEventListener("click", function (e) {
+                  e.preventDefault();
+                  e.stopPropagation(); // 阻止事件冒泡
+                  console.log("View Details按钮被点击");
+                  const recipeId = this.getAttribute("data-recipe-id");
+                  console.log("Recipe ID:", recipeId);
+                  showRecipeDetailsModal(recipeId);
+                });
+              });
+            }
+          }
+
+          // 显示食谱详情弹窗
+          function showRecipeDetailsModal(recipeId) {
+            console.log("显示食谱详情弹窗, ID:", recipeId);
+            const modal = document.getElementById("recipeDetailsModal");
+            if (!modal) {
+              console.error("未找到recipeDetailsModal元素");
+              return;
+            }
+
+            // 这里应该根据recipeId获取食谱数据
+            // 为简化示例，这里使用静态数据
+            const recipeData = getRecipeById(recipeId);
+            console.log("获取到的食谱数据:", recipeData);
+
+            if (recipeData) {
+              // 填充弹窗内容
+              const modalTitle = document.getElementById("modalRecipeTitle");
+              if (modalTitle) modalTitle.textContent = recipeData.title;
+
+              // 不显示图片
+              const modalImage = document.getElementById("modalRecipeImage");
+              if (modalImage) modalImage.style.display = "none";
+
+              const modalCalories = document.getElementById(
+                "modalRecipeCalories"
+              );
+              if (modalCalories)
+                modalCalories.textContent = recipeData.calories;
+
+              const modalProtein =
+                document.getElementById("modalRecipeProtein");
+              if (modalProtein) modalProtein.textContent = recipeData.protein;
+
+              const modalCarbs = document.getElementById("modalRecipeCarbs");
+              if (modalCarbs) modalCarbs.textContent = recipeData.carbs;
+
+              const modalFat = document.getElementById("modalRecipeFat");
+              if (modalFat) modalFat.textContent = recipeData.fat;
+
+              const modalTime = document.getElementById("modalRecipeTime");
+              if (modalTime) modalTime.textContent = recipeData.time;
+
+              // 正确处理Health Tips中的HTML标签
+              const modalHealthTips = document.getElementById(
+                "modalRecipeHealthTips"
+              );
+              if (modalHealthTips) {
+                // 如果包含HTML标签，使用innerHTML以正确渲染
+                if (
+                  recipeData.healthTips &&
+                  (recipeData.healthTips.includes("<strong>") ||
+                    recipeData.healthTips.includes("<br>"))
+                ) {
+                  modalHealthTips.innerHTML = recipeData.healthTips;
+                } else {
+                  modalHealthTips.textContent = recipeData.healthTips;
+                }
+              }
+
+              // 填充食材列表
+              const ingredientsList = document.getElementById(
+                "modalRecipeIngredients"
+              );
+              if (ingredientsList) {
+                ingredientsList.innerHTML = "";
+                recipeData.ingredients.forEach((ingredient) => {
+                  const li = document.createElement("li");
+                  li.textContent = ingredient;
+                  ingredientsList.appendChild(li);
+                });
+              }
+
+              // 填充步骤列表
+              const stepsList = document.getElementById("modalRecipeSteps");
+              if (stepsList) {
+                stepsList.innerHTML = "";
+                recipeData.steps.forEach((step) => {
+                  const li = document.createElement("li");
+                  li.textContent = step;
+                  stepsList.appendChild(li);
+                });
+              }
+
+              // 显示弹窗
+              modal.style.display = "flex";
+            } else {
+              console.error("未找到ID为", recipeId, "的食谱数据");
+            }
+          }
+
+          // 模拟从后端获取食谱数据的函数
+          function getRecipeById(id) {
+            // 示例数据
+            const recipes = {
+              1: {
+                title: "Rainbow Vegetable Salad",
+                image:
+                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+                calories: "180",
+                protein: "5g",
+                carbs: "22g",
+                fat: "8g",
+                time: "15",
+                healthTips:
+                  "This low-calorie salad is rich in vitamins and fiber, making it perfect for weight management.",
+                ingredients: [
+                  "2 cups mixed greens",
+                  "1/2 cup cherry tomatoes, halved",
+                  "1/4 cup cucumber, sliced",
+                  "1/4 cup bell peppers, diced",
+                  "1/4 cup carrots, grated",
+                  "2 tbsp low-fat dressing",
+                ],
+                steps: [
+                  "Wash all vegetables thoroughly.",
+                  "Chop all vegetables as directed.",
+                  "Combine all vegetables in a large bowl.",
+                  "Drizzle with dressing just before serving.",
+                  "Toss gently to coat all ingredients.",
+                ],
+              },
+              2: {
+                title: "High Protein Energy Bowl",
+                image:
+                  "https://images.unsplash.com/photo-1484723091739-30a097e8f929",
+                calories: "320",
+                protein: "28g",
+                carbs: "30g",
+                fat: "10g",
+                time: "20",
+                healthTips:
+                  "High in protein for muscle recovery, this bowl provides sustained energy throughout the day.",
+                ingredients: [
+                  "1/2 cup cooked quinoa",
+                  "100g grilled chicken breast",
+                  "1/4 avocado, sliced",
+                  "1/4 cup cherry tomatoes",
+                  "1/4 cup cucumber",
+                  "1 tbsp olive oil",
+                  "1 tsp lemon juice",
+                  "Salt and pepper to taste",
+                ],
+                steps: [
+                  "Cook quinoa according to package instructions.",
+                  "Grill chicken breast and slice into strips.",
+                  "Arrange quinoa as base in a bowl.",
+                  "Top with chicken, avocado, and vegetables.",
+                  "Drizzle with olive oil and lemon juice.",
+                  "Season with salt and pepper to taste.",
+                ],
+              },
+            };
+
+            // 处理动态生成的食谱ID (1000以上)
+            if (id >= 1000) {
+              // 对于动态生成的食谱，使用默认模板
+              return {
+                title: "Custom Recipe " + id,
+                image:
+                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c", // 默认图片
+                calories: "250",
+                protein: "15g",
+                carbs: "25g",
+                fat: "10g",
+                time: "20",
+                // 移除HTML标签以避免显示问题
+                healthTips:
+                  "This is a custom recipe generated based on your food analysis.",
+                ingredients: ["Ingredient 1", "Ingredient 2", "Ingredient 3"],
+                steps: [
+                  "Step 1: Prepare ingredients",
+                  "Step 2: Cook according to instructions",
+                  "Step 3: Serve and enjoy",
+                ],
+              };
+            }
+
+            return recipes[id];
+          }
+
+          // 初始化时设置"点击查看详情"链接
+          console.log("开始设置View Details链接");
+          setupRecipeDetailLinks();
+
+          // 添加监听器，在动态加载内容后重新设置链接
+          const observer = new MutationObserver(function (mutations) {
+            console.log("检测到DOM变化，重新设置View Details链接");
+            setupRecipeDetailLinks();
+          });
+
+          // 监听文档变化
+          observer.observe(document.body, { childList: true, subtree: true });
+
+          // 为关闭按钮添加事件监听
+          const modalCloseBtn = document.querySelector(
+            "#recipeDetailsModal button"
+          );
+          if (modalCloseBtn) {
+            modalCloseBtn.addEventListener("click", function () {
+              document.getElementById("recipeDetailsModal").style.display =
+                "none";
+            });
+          }
+        } catch (error) {
+          console.error("初始化脚本时出错:", error);
+        }
+      });
+    </script>
   </body>
 </html>

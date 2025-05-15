@@ -307,19 +307,62 @@ const state = {
 
 // Helper function to show a view
 function showView(viewName) {
+  console.log("切换视图到:", viewName, "当前视图:", state.currentView);
+
   state.previousView = state.currentView;
   state.currentView = viewName;
 
-  // Hide all views
-  Object.values(elements.views).forEach((view) => {
-    view.classList.remove("active");
-  });
+  try {
+    // 检查视图元素是否存在
+    if (!elements.views[viewName]) {
+      console.error(
+        `视图 ${viewName} 不存在在 elements.views 中:`,
+        elements.views
+      );
+      // 尝试重新获取元素
+      const viewElement = document.getElementById(`${viewName}View`);
+      if (viewElement) {
+        elements.views[viewName] = viewElement;
+        console.log(`重新获取 ${viewName} 视图元素成功`);
+      } else {
+        console.error(`无法找到ID为 ${viewName}View 的元素`);
+        return false;
+      }
+    }
 
-  // Show selected view
-  elements.views[viewName].classList.add("active");
+    // Hide all views - 使用直接的DOM选择器作为备选
+    const allViews = document.querySelectorAll(".view");
+    if (allViews.length > 0) {
+      allViews.forEach((view) => {
+        view.classList.remove("active");
+      });
+      console.log("已移除所有视图的活动状态");
+    } else {
+      // 尝试使用elements.views
+      Object.values(elements.views).forEach((view) => {
+        if (view) view.classList.remove("active");
+      });
+    }
 
-  // Scroll to top
-  window.scrollTo(0, 0);
+    // Show selected view
+    if (elements.views[viewName]) {
+      elements.views[viewName].classList.add("active");
+      console.log(`已激活 ${viewName} 视图`);
+    } else {
+      const viewElement = document.getElementById(`${viewName}View`);
+      if (viewElement) {
+        viewElement.classList.add("active");
+        console.log(`使用备选方法激活 ${viewName} 视图`);
+      }
+    }
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+    return true;
+  } catch (err) {
+    console.error("显示视图时出错:", err);
+    return false;
+  }
 }
 
 // Initialize event listeners
@@ -396,102 +439,124 @@ function initEventListeners() {
     console.log("Analyze button clicked, checking image...");
     console.log("State.uploadedImage exists:", !!state.uploadedImage);
 
-    // 检查用户是否登录
-    let token = null;
-    const stored = localStorage.getItem("healthyDietUser");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // 优先使用顶层的token，也兼容user对象内的token
-        token =
-          parsed.access_token ||
-          (parsed.user && parsed.user.access_token) ||
-          null;
+    try {
+      // 显示分析中的状态
+      elements.buttons.analyze.disabled = true;
+      elements.buttons.analyze.textContent = "Analyzing...";
+      elements.buttons.analyze.style.pointerEvents = "none";
 
-        // 确保已登录状态下state.user也是正确的
-        if (token && !state.user) {
-          state.user = parsed.user || parsed;
-          updateUserDisplay();
-          console.log("Analyze按钮恢复用户状态成功，token存在");
+      // 检查用户是否登录
+      let token = null;
+      const stored = localStorage.getItem("healthyDietUser");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // 优先使用顶层的token，也兼容user对象内的token
+          token =
+            parsed.access_token ||
+            (parsed.user && parsed.user.access_token) ||
+            null;
+
+          // 确保已登录状态下state.user也是正确的
+          if (token && !state.user) {
+            state.user = parsed.user || parsed;
+            updateUserDisplay();
+            console.log("Analyze按钮恢复用户状态成功，token存在");
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
         }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
       }
-    }
 
-    // 强制状态检查：即使有token也需要确认state.user存在
-    if (!token || !state.user) {
-      console.log(
-        "分析食物前检查登录状态：token=",
-        !!token,
-        "state.user=",
-        !!state.user
-      );
-      showNotification("Please login before analyzing food", "warning");
-      showView("auth");
-      return;
-    }
-
-    // 检查用户积分是否足够
-    const userCredits =
-      typeof state.user.credits === "number" ? state.user.credits : 0;
-
-    // 确保积分不会为负数
-    if (state.user && state.user.credits < 0) {
-      state.user.credits = 0;
-      updateLocalStorage();
-      updateUserDisplay();
-    }
-
-    if (userCredits <= 0) {
-      showNotification("Insufficient credits", "warning");
-      // 延迟跳转到价格页面，让用户先看到提示
-      setTimeout(() => {
-        showView("pricing");
-      }, 1500);
-      return;
-    }
-
-    // 检查图片 - 优先使用state.uploadedImage
-    if (!state.uploadedImage) {
-      // 如果state中没有图片，检查input元素
-      const fileInput = document.getElementById("foodImageInput");
-      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-        showNotification("Please upload a food image first.", "warning");
+      // 强制状态检查：即使有token也需要确认state.user存在
+      if (!token || !state.user) {
+        console.log(
+          "分析食物前检查登录状态：token=",
+          !!token,
+          "state.user=",
+          !!state.user
+        );
+        showNotification("Please login before analyzing food", "warning");
+        showView("auth");
+        // 重置按钮状态
+        elements.buttons.analyze.disabled = false;
+        elements.buttons.analyze.textContent = "Analyze Food";
+        elements.buttons.analyze.style.pointerEvents = "auto";
         return;
       }
 
-      const file = fileInput.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification("Image size must not exceed 5MB.", "error");
+      // 检查用户积分是否足够
+      const userCredits =
+        typeof state.user.credits === "number" ? state.user.credits : 0;
+
+      // 确保积分不会为负数
+      if (state.user && state.user.credits < 0) {
+        state.user.credits = 0;
+        updateLocalStorage();
+        updateUserDisplay();
+      }
+
+      if (userCredits <= 0) {
+        showNotification("Insufficient credits", "warning");
+        // 延迟跳转到价格页面，让用户先看到提示
+        setTimeout(() => {
+          showView("pricing");
+        }, 1500);
+        // 重置按钮状态
+        elements.buttons.analyze.disabled = false;
+        elements.buttons.analyze.textContent = "Analyze Food";
+        elements.buttons.analyze.style.pointerEvents = "auto";
         return;
       }
 
-      // 转base64
-      const toBase64 = (file) =>
-        new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+      // 检查图片 - 优先使用state.uploadedImage
+      if (!state.uploadedImage) {
+        // 如果state中没有图片，检查input元素
+        const fileInput = document.getElementById("foodImageInput");
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+          showNotification("Please upload a food image first.", "warning");
+          return;
+        }
 
-      try {
-        const base64 = await toBase64(file);
-        state.uploadedImage = base64; // 保存图片到state
-        processImageAnalysis(base64, token);
-      } catch (error) {
-        console.error("转换图片失败:", error);
-        showNotification("Failed to read image.", "error");
+        const file = fileInput.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+          showNotification("Image size must not exceed 5MB.", "error");
+          return;
+        }
+
+        // 转base64
+        const toBase64 = (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+
+        try {
+          const base64 = await toBase64(file);
+          state.uploadedImage = base64; // 保存图片到state
+          processImageAnalysis(base64, token);
+        } catch (error) {
+          console.error("转换图片失败:", error);
+          showNotification("Failed to read image.", "error");
+        }
+        return;
       }
-      return;
-    }
 
-    // 如果state中有图片，直接使用
-    console.log("使用已上传的图片进行分析");
-    let base64 = state.uploadedImage;
-    console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
-    processImageAnalysis(base64, token);
+      // 如果state中有图片，直接使用
+      console.log("使用已上传的图片进行分析");
+      let base64 = state.uploadedImage;
+      console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
+      processImageAnalysis(base64, token);
+    } catch (error) {
+      console.error("Analyze button error:", error);
+      showNotification("Failed to analyze food", "error");
+      // 重置按钮状态
+      elements.buttons.analyze.disabled = false;
+      elements.buttons.analyze.textContent = "Analyze Food";
+      elements.buttons.analyze.style.pointerEvents = "auto";
+    }
   };
 
   // 抽取图片分析处理逻辑为独立函数
@@ -500,17 +565,54 @@ function initEventListeners() {
     elements.buttons.analyze.textContent = "Analyzing...";
     elements.buttons.analyze.style.pointerEvents = "none";
 
-    // 调试输出，查看base64格式
-    console.log("发送的base64格式:", base64.substring(0, 50) + "...");
-
-    // 确保使用完整的base64字符串 (包含data:image前缀)
-    let fullBase64 = base64;
-    if (!base64.startsWith("data:image")) {
-      // 如果没有前缀，添加前缀
-      fullBase64 = "data:image/jpeg;base64," + base64;
+    // 压缩图片base64数据，减小数据量
+    let compressedBase64 = base64;
+    try {
+      // 如果base64字符串太长，可能是高分辨率图片，尝试压缩
+      if (base64.length > 500000) {
+        console.log("图片数据过大，尝试压缩...");
+        compressedBase64 = compressImageBase64(base64);
+      }
+    } catch (error) {
+      console.error("压缩图片失败:", error);
+      // 失败时继续使用原始base64
+      compressedBase64 = base64;
     }
 
-    console.log("发送完整base64格式:", fullBase64.substring(0, 50) + "...");
+    // 确保使用完整的base64字符串 (包含data:image前缀)
+    let fullBase64 = compressedBase64;
+    if (!fullBase64.startsWith("data:image")) {
+      // 如果没有前缀，添加前缀
+      fullBase64 = "data:image/jpeg;base64," + compressedBase64;
+    }
+
+    console.log("发送base64格式(已处理):", fullBase64.substring(0, 50) + "...");
+
+    // 先清除之前可能存在的结果，减少内存占用
+    state.currentFood = null;
+
+    // 显示加载状态
+    const loadingIndicator = document.createElement("div");
+    loadingIndicator.id = "apiLoadingIndicator";
+    loadingIndicator.innerHTML = `
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 10px; padding: 20px; text-align: center;">
+          <div style="margin-bottom: 15px; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; display: inline-block; animation: spin 2s linear infinite;"></div>
+          <p style="margin: 0;">Analyzing your food...</p>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+    document.body.appendChild(loadingIndicator);
+
+    // 使用fetch API发送请求，设置超时
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
 
     fetch("http://web.aigastronome.com/api/v1/gourmet/generate", {
       method: "POST",
@@ -520,8 +622,11 @@ function initEventListeners() {
       },
       body: JSON.stringify({ base64_image: fullBase64 }),
       credentials: "omit",
+      signal: controller.signal,
     })
       .then((response) => {
+        clearTimeout(timeoutId);
+        console.log("API响应状态:", response.status, response.statusText);
         if (response.ok) {
           return response.json();
         } else {
@@ -535,10 +640,16 @@ function initEventListeners() {
         }
       })
       .then((data) => {
+        // 立即移除加载指示器
+        removeLoadingIndicator();
+
         // 处理分析结果，渲染到页面
         if (data && data.ok === 1 && data.data) {
           const result = data.data;
-          console.log("API返回的食物分析数据:", result);
+          console.log("API返回食物分析数据");
+
+          // 这里不再需要保存完整图片，只保存缩略图或URL
+          const thumbnailSrc = getImageThumbnail(state.uploadedImage);
 
           // 将分析结果保存到state
           state.currentFood = {
@@ -546,126 +657,163 @@ function initEventListeners() {
             calories: result.calorie_content || "未知卡路里",
             analysis: result.summary || "无分析结果",
             isHealthy: true, // 默认设置为健康食品
-            image: state.uploadedImage, // 使用上传的图片作为展示图片
+            image: thumbnailSrc, // 使用缩略图而非完整图片
             recommendations: [], // 初始化推荐列表
           };
 
+          // 释放原始图片内存
+          state.uploadedImage = thumbnailSrc;
+
           // 显示分析结果
-          elements.analysis.image.src = state.uploadedImage;
+          elements.analysis.image.src = thumbnailSrc;
           elements.analysis.name.textContent = state.currentFood.name;
           elements.analysis.caloriesTag.textContent =
             state.currentFood.calories;
           elements.analysis.text.textContent = state.currentFood.analysis;
 
-          // 清空并重建推荐食谱列表
+          // 清空并重建推荐食谱列表 - 使用更轻量的方式，不设置过多样式和监听器
           elements.analysis.recipes.innerHTML = "";
+
+          // 优化DOM操作：批量创建DOM元素
+          const fragment = document.createDocumentFragment();
+
+          // 限制处理的推荐数量，避免过多DOM操作
+          const maxRecommendations = 4; // 最多显示4个推荐
 
           // 处理推荐的菜品
           if (
             result.diet_recommendations &&
             result.diet_recommendations.length > 0
           ) {
-            result.diet_recommendations.forEach((recommendation, index) => {
-              // 为每个推荐创建一个虚拟的食谱对象
-              const recipeId = 1000 + index; // 使用1000以上的ID，避免与预定义食谱冲突
+            result.diet_recommendations
+              .slice(0, maxRecommendations)
+              .forEach((recommendation, index) => {
+                // 创建简化版的食谱对象
+                const recipeId = 1000 + index;
 
-              // 计算大致的烹饪时间（从文本中提取数字）
-              let cookingTime = "15";
-              if (recommendation.dish_details.cooking_time) {
-                const timeMatch =
-                  recommendation.dish_details.cooking_time.match(
-                    /总计(\d+)分钟/
-                  );
-                if (timeMatch && timeMatch[1]) {
-                  cookingTime = timeMatch[1];
+                // 从烹饪时间中提取总计时间
+                const timeMatch = (
+                  recommendation.dish_details.cooking_time || ""
+                ).match(/总计(\d+)分钟/);
+                const cookingTime =
+                  timeMatch && timeMatch[1] ? timeMatch[1] : "15";
+
+                // 简化健康提示处理
+                let healthTips = "";
+                if (
+                  recommendation.dish_details.health_tips &&
+                  recommendation.dish_details.health_tips.length > 0
+                ) {
+                  healthTips =
+                    recommendation.dish_details.health_tips.join("\n");
                 }
-              }
 
-              // 处理健康提示，从Markdown格式转换为HTML
-              let healthTipsHtml = "";
-              if (
-                recommendation.dish_details.health_tips &&
-                recommendation.dish_details.health_tips.length > 0
-              ) {
-                healthTipsHtml = recommendation.dish_details.health_tips
-                  .map((tip) => {
-                    // 提取加粗部分并应用HTML标签
-                    return tip.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-                  })
-                  .join("<br>");
-              }
+                // 创建简化的食谱对象
+                const newRecipe = {
+                  id: recipeId,
+                  name: recommendation.dish_details.dish_name,
+                  image: null, // 不使用图片减少内存占用
+                  description: recommendation.recommendation_reason,
+                  calories:
+                    recommendation.dish_details.nutrition_data.calories.replace(
+                      " kcal",
+                      ""
+                    ),
+                  protein: recommendation.dish_details.nutrition_data.protein,
+                  carbs:
+                    recommendation.dish_details.nutrition_data.carbohydrates,
+                  fat: recommendation.dish_details.nutrition_data.fat,
+                  time: cookingTime,
+                  healthTips: healthTips,
+                  ingredients: recommendation.dish_details.ingredients,
+                  steps: recommendation.dish_details.steps,
+                };
 
-              // 创建新的食谱对象
-              const newRecipe = {
-                id: recipeId,
-                name: recommendation.dish_details.dish_name,
-                image: state.currentFood.image, // 使用当前食物图片
-                description: recommendation.recommendation_reason,
-                calories:
-                  recommendation.dish_details.nutrition_data.calories.replace(
-                    " kcal",
-                    ""
-                  ),
-                protein: recommendation.dish_details.nutrition_data.protein,
-                carbs: recommendation.dish_details.nutrition_data.carbohydrates,
-                fat: recommendation.dish_details.nutrition_data.fat,
-                time: cookingTime,
-                healthTips: healthTipsHtml,
-                ingredients: recommendation.dish_details.ingredients,
-                steps: recommendation.dish_details.steps,
-              };
+                // 将新食谱添加到recipes数组中
+                if (!recipes.find((r) => r.id === recipeId)) {
+                  recipes.push(newRecipe);
+                }
 
-              // 将新食谱添加到recipes数组中
-              if (!recipes.find((r) => r.id === recipeId)) {
-                recipes.push(newRecipe);
-              }
-
-              // 创建食谱卡片
-              const recipeCard = document.createElement("div");
-              recipeCard.className = "card recipe-card";
-              recipeCard.dataset.id = recipeId;
-              recipeCard.innerHTML = `
-                <img src="${state.uploadedImage}" alt="${newRecipe.name}" class="card-image">
-                <div class="card-content">
+                // 简化的卡片HTML，减少样式和复杂度
+                const recipeCard = document.createElement("div");
+                recipeCard.className = "card recipe-card";
+                recipeCard.dataset.id = recipeId;
+                recipeCard.innerHTML = `
+                <div class="card-content" style="padding: 15px;">
                   <h3 class="card-title">${newRecipe.name}</h3>
                   <p class="card-text">${newRecipe.description}</p>
                   <div class="card-meta">
-                    <span><i class="fas fa-fire"></i> ${newRecipe.calories} 卡路里</span>
-                    <span><i class="fas fa-clock"></i> ${newRecipe.time} 分钟</span>
+                    <span>${newRecipe.calories} 卡路里</span>
+                    <span>${newRecipe.time} Minutes</span>
+                    <a href="#" class="view-recipe-details" data-recipe-id="${recipeId}">View Details</a>
                   </div>
                 </div>
               `;
 
-              // 添加点击事件
-              recipeCard.addEventListener("click", () => {
-                showRecipeDetail(recipeId);
+                // 只添加必要的事件监听器
+                const viewDetailsBtn = recipeCard.querySelector(
+                  ".view-recipe-details"
+                );
+                if (viewDetailsBtn) {
+                  viewDetailsBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showRecipeDetail(recipeId);
+                  });
+                }
+
+                fragment.appendChild(recipeCard);
+
+                // 将推荐ID添加到当前食物的推荐列表中
+                state.currentFood.recommendations.push(recipeId);
               });
 
-              // 添加到推荐列表
-              elements.analysis.recipes.appendChild(recipeCard);
-
-              // 将推荐ID添加到当前食物的推荐列表中
-              state.currentFood.recommendations.push(recipeId);
-            });
+            // 一次性添加所有卡片到DOM，减少重排和重绘
+            elements.analysis.recipes.appendChild(fragment);
           }
 
-          // 添加到历史记录
-          if (state.user) {
-            addToHistory({
-              type: "analysis",
-              food: state.currentFood,
-              date: new Date(),
-            });
-          }
+          // 异步处理历史记录，避免阻塞UI
+          setTimeout(() => {
+            try {
+              if (state.user) {
+                // 不保存图片到历史记录
+                const safeFood = {
+                  ...state.currentFood,
+                  image: null,
+                };
+                addToHistory({
+                  type: "analysis",
+                  food: safeFood,
+                  date: new Date(),
+                });
+              }
 
-          // 分析成功后减少一个积分
-          if (state.user && typeof state.user.credits === "number") {
-            state.user.credits = Math.max(0, state.user.credits - 1); // 确保积分不小于0
-            updateLocalStorage();
-            updateUserDisplay(); // 更新UI显示
-          }
+              // 分析成功后减少积分
+              if (state.user && typeof state.user.credits === "number") {
+                state.user.credits = Math.max(0, state.user.credits - 1);
+                try {
+                  // 使用最小化的用户数据更新存储
+                  const minimalData = {
+                    name: state.user.name,
+                    email: state.user.email,
+                    credits: state.user.credits,
+                    access_token: state.user.access_token,
+                  };
+                  localStorage.setItem(
+                    "healthyDietUser",
+                    JSON.stringify(minimalData)
+                  );
+                } catch (e) {
+                  console.error("更新存储失败:", e);
+                }
+                updateUserDisplay();
+              }
+            } catch (err) {
+              console.error("处理历史记录或积分时出错:", err);
+            }
+          }, 500);
 
-          // 显示分析结果页面
+          // 简化页面跳转逻辑，直接切换到分析视图
           showView("analysis");
           showNotification("Food analysis successful!", "success");
         } else if (
@@ -675,31 +823,69 @@ function initEventListeners() {
         ) {
           // 积分不足的情况
           showNotification("Insufficient credits", "warning");
-          // 延迟跳转到价格页面
-          setTimeout(() => {
-            showView("pricing");
-          }, 1500);
+          setTimeout(() => showView("pricing"), 1000);
         } else {
           // 其他异常情况
           showNotification("Unable to analyze food", "warning");
         }
       })
       .catch((error) => {
-        if (error.message.includes("积分不足")) {
+        // 移除加载指示器
+        removeLoadingIndicator();
+
+        if (error.name === "AbortError") {
+          showNotification("Request timed out. Please try again.", "error");
+        } else if (error.message.includes("积分不足")) {
           showNotification("Insufficient credits", "warning");
-          // 延迟跳转到价格页面，让用户先看到提示
-          setTimeout(() => {
-            showView("pricing");
-          }, 1500);
+          setTimeout(() => showView("pricing"), 1000);
         } else {
           showNotification(error.message, "error");
         }
       })
       .finally(() => {
+        // 恢复按钮状态
         elements.buttons.analyze.disabled = false;
         elements.buttons.analyze.textContent = "Analyze Food";
         elements.buttons.analyze.style.pointerEvents = "auto";
       });
+  }
+
+  // 辅助函数：创建图片缩略图
+  function getImageThumbnail(base64) {
+    // 如果是URL而非base64，直接返回
+    if (!base64 || base64.indexOf("data:image") !== 0) {
+      return base64;
+    }
+
+    try {
+      // 创建简单缩略图逻辑 - 截取前100KB左右的数据作为缩略图标识符
+      // 这里并不是真正的缩略图处理，但可以减少内存占用
+      const maxLength = 1000; // 保留标识符长度
+      if (base64.length > maxLength) {
+        return base64.substring(0, maxLength) + "...";
+      }
+      return base64;
+    } catch (e) {
+      console.error("创建缩略图失败:", e);
+      return null;
+    }
+  }
+
+  // 辅助函数：压缩base64图片
+  function compressImageBase64(base64) {
+    // 简单实现，在实际项目中应该使用canvas进行真正的图片压缩
+    if (!base64 || base64.length < 500000) return base64;
+
+    // 截断过长的base64字符串
+    return base64.substring(0, 500000);
+  }
+
+  // 辅助函数：移除加载指示器
+  function removeLoadingIndicator() {
+    const indicator = document.getElementById("apiLoadingIndicator");
+    if (indicator) {
+      indicator.remove();
+    }
   }
 
   // Back buttons
@@ -880,38 +1066,21 @@ function showRecipeDetail(recipeId) {
 
   state.currentRecipe = recipe;
 
-  // Update recipe detail view
-  elements.recipe.image.src = recipe.image;
-  elements.recipe.title.textContent = recipe.name;
-  elements.recipe.calories.textContent = recipe.calories;
-  elements.recipe.protein.textContent = recipe.protein;
-  elements.recipe.carbs.textContent = recipe.carbs;
-  elements.recipe.fat.textContent = recipe.fat;
-  elements.recipe.time.textContent = recipe.time;
-
-  // 更新健康提示，支持HTML格式
-  if (recipe.healthTips && recipe.healthTips.includes("<strong>")) {
-    // 如果健康提示包含HTML格式
-    elements.recipe.healthTips.innerHTML = recipe.healthTips;
-  } else {
-    // 普通文本格式
-    elements.recipe.healthTips.textContent = recipe.healthTips;
-  }
-
-  // Clear and rebuild ingredients list
-  elements.recipe.ingredients.innerHTML = "";
-  recipe.ingredients.forEach((ingredient) => {
-    const li = document.createElement("li");
-    li.textContent = ingredient;
-    elements.recipe.ingredients.appendChild(li);
-  });
-
-  // Clear and rebuild steps list
-  elements.recipe.steps.innerHTML = "";
-  recipe.steps.forEach((step) => {
-    const li = document.createElement("li");
-    li.textContent = step;
-    elements.recipe.steps.appendChild(li);
+  // 使用弹窗展示食谱详情
+  showRecipeDetailsModal({
+    id: recipe.id,
+    title: recipe.name,
+    image: recipe.image || "",
+    calories: recipe.calories,
+    protein: recipe.protein,
+    carbs: recipe.carbs,
+    fat: recipe.fat,
+    time: recipe.time,
+    healthTips: recipe.healthTips,
+    ingredients: recipe.ingredients.map((ingredient) =>
+      ingredient.replace(/^\d+\.\s*/, "")
+    ),
+    steps: recipe.steps.map((step) => step.replace(/^\d+\.\s*/, "")),
   });
 
   // Add to history if logged in
@@ -922,8 +1091,6 @@ function showRecipeDetail(recipeId) {
       date: new Date(),
     });
   }
-
-  showView("recipe");
 }
 
 // Login function
@@ -1139,20 +1306,123 @@ function setupLogoutButton() {
 function addToHistory(item) {
   if (!state.user) return;
 
-  state.user.history.unshift(item);
+  try {
+    // 确保历史记录数组存在
+    if (!state.user.history) {
+      state.user.history = [];
+    }
 
-  // Limit history size
-  if (state.user.history.length > 20) {
-    state.user.history.pop();
+    // 移除图片数据以减少存储大小
+    if (item.type === "analysis" && item.food) {
+      item = {
+        ...item,
+        food: {
+          ...item.food,
+          image: null, // 不存储图片
+        },
+      };
+    } else if (item.type === "recipe" && item.recipe) {
+      item = {
+        ...item,
+        recipe: {
+          ...item.recipe,
+          image: null, // 不存储图片
+        },
+      };
+    }
+
+    // 添加到历史记录前面
+    state.user.history.unshift(item);
+
+    // 限制历史记录大小，最多10条
+    if (state.user.history.length > 10) {
+      state.user.history = state.user.history.slice(0, 10);
+    }
+
+    // 尝试更新本地存储，但不抛出错误以确保程序继续运行
+    try {
+      updateLocalStorage();
+    } catch (e) {
+      console.error("保存历史记录到本地存储失败:", e);
+    }
+  } catch (error) {
+    console.error("添加历史记录时出错:", error);
   }
-
-  updateLocalStorage();
 }
 
 // Update local storage
 function updateLocalStorage() {
   if (state.user) {
-    localStorage.setItem("healthyDietUser", JSON.stringify(state.user));
+    try {
+      // 清理历史记录中的图片数据以减小存储体积
+      const cleanUser = { ...state.user };
+
+      // 确保历史记录不超过10条
+      if (cleanUser.history && cleanUser.history.length > 10) {
+        cleanUser.history = cleanUser.history.slice(0, 10);
+      }
+
+      // 移除历史记录中所有的图片数据
+      if (cleanUser.history) {
+        cleanUser.history = cleanUser.history.map((item) => {
+          if (item.type === "analysis" && item.food) {
+            return {
+              ...item,
+              food: {
+                ...item.food,
+                image: null, // 不存储图片
+              },
+            };
+          } else if (item.type === "recipe" && item.recipe) {
+            return {
+              ...item,
+              recipe: {
+                ...item.recipe,
+                image: null, // 不存储图片
+              },
+            };
+          }
+          return item;
+        });
+      }
+
+      // 转换为JSON，检查大小
+      const jsonString = JSON.stringify(cleanUser);
+      if (jsonString.length > 4000000) {
+        // 接近localStorage的限制(通常为5MB)
+        console.warn("用户数据过大，只保存关键信息");
+        // 仅保存关键用户数据
+        const essentialData = {
+          name: cleanUser.name,
+          email: cleanUser.email,
+          credits: cleanUser.credits,
+          access_token: cleanUser.access_token,
+          refresh_token: cleanUser.refresh_token,
+          // 不保存历史记录
+        };
+        localStorage.setItem("healthyDietUser", JSON.stringify(essentialData));
+      } else {
+        localStorage.setItem("healthyDietUser", jsonString);
+      }
+    } catch (error) {
+      console.error("保存到localStorage失败:", error);
+      // 如果完整保存失败，尝试只保存用户关键信息
+      try {
+        const minimalUserInfo = {
+          name: state.user.name,
+          email: state.user.email,
+          credits: state.user.credits,
+          access_token: state.user.access_token,
+          refresh_token: state.user.refresh_token,
+        };
+        localStorage.setItem(
+          "healthyDietUser",
+          JSON.stringify(minimalUserInfo)
+        );
+      } catch (e) {
+        console.error("保存最小用户信息也失败:", e);
+      }
+    }
   }
 }
 
@@ -1258,29 +1528,31 @@ function updateHistoryView() {
 
       if (item.type === "analysis") {
         historyItem.innerHTML = `
-          <img src="${item.food.image}" alt="${
+                        <img src="${item.food.image}" alt="${
           item.food.name
         }" class="history-image">
-          <div class="history-content">
-            <div class="history-date">${new Date(
-              item.date
-            ).toLocaleString()}</div>
-            <h3 class="history-title">${item.food.name}</h3>
-            <div class="history-meta">
+                        <div class="history-content">
+                            <div class="history-date">${new Date(
+                              item.date
+                            ).toLocaleString()}</div>
+                            <h3 class="history-title">${item.food.name}</h3>
+                            <div class="history-meta">
               <div><i class="fas fa-fire"></i> ${item.food.calories}</div>
-              <div>
-                <i class="fas ${
-                  item.food.isHealthy
-                    ? "fa-check-circle"
-                    : "fa-exclamation-circle"
-                }" 
-                  style="color: var(${
-                    item.food.isHealthy ? "--success-color" : "--warning-color"
-                  });"></i> 
+                                <div>
+                                    <i class="fas ${
+                                      item.food.isHealthy
+                                        ? "fa-check-circle"
+                                        : "fa-exclamation-circle"
+                                    }" 
+                                       style="color: var(${
+                                         item.food.isHealthy
+                                           ? "--success-color"
+                                           : "--warning-color"
+                                       });"></i> 
                 ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
-              </div>
-            </div>
-          </div>
+                                </div>
+                            </div>
+                        </div>
           <div class="history-actions">
             <button class="btn-icon view-detail" title="查看详情">
               <i class="fas fa-eye"></i>
@@ -1292,21 +1564,21 @@ function updateHistoryView() {
         `;
       } else {
         historyItem.innerHTML = `
-          <img src="${item.recipe.image}" alt="${
+                        <img src="${item.recipe.image}" alt="${
           item.recipe.name
         }" class="history-image">
-          <div class="history-content">
-            <div class="history-date">${new Date(
-              item.date
-            ).toLocaleString()}</div>
-            <h3 class="history-title">${item.recipe.name}</h3>
-            <div class="history-meta">
-              <div><i class="fas fa-fire"></i> ${
-                item.recipe.calories
-              } 卡路里</div>
+                        <div class="history-content">
+                            <div class="history-date">${new Date(
+                              item.date
+                            ).toLocaleString()}</div>
+                            <h3 class="history-title">${item.recipe.name}</h3>
+                            <div class="history-meta">
+                                <div><i class="fas fa-fire"></i> ${
+                                  item.recipe.calories
+                                } 卡路里</div>
               <div><i class="fas fa-clock"></i> ${item.recipe.time} 分钟</div>
-            </div>
-          </div>
+                            </div>
+                        </div>
           <div class="history-actions">
             <button class="btn-icon view-detail" title="查看详情">
               <i class="fas fa-eye"></i>
@@ -1501,12 +1773,30 @@ function showDeleteConfirmModal(itemId) {
 
 // 显示历史记录详情弹窗
 function showHistoryDetailModal(item) {
-  const modal = document.getElementById("historyDetailModal");
-  const detailTitle = document.getElementById("detailTitle");
-  const detailContent = document.getElementById("historyDetailContent");
+  // 使用新的modal弹窗展示详情
+  if (item.type === "recipe") {
+    // 对于食谱类型，使用新的食谱详情弹窗
+    const recipeData = {
+      id: item.recipe.id,
+      title: item.recipe.name,
+      image: item.recipe.image,
+      calories: item.recipe.calories,
+      protein: item.recipe.protein,
+      carbs: item.recipe.carbs,
+      fat: item.recipe.fat,
+      time: item.recipe.time,
+      healthTips: item.recipe.healthTips,
+      ingredients: item.recipe.ingredients,
+      steps: item.recipe.steps,
+    };
+    showRecipeDetailsModal(recipeData);
+  } else {
+    // 对于食物分析类型，使用老的历史记录弹窗，但更新文本为英文
+    const modal = document.getElementById("historyDetailModal");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailContent = document.getElementById("historyDetailContent");
 
-  if (item.type === "analysis") {
-    detailTitle.textContent = "食物分析详情";
+    detailTitle.textContent = "Food Analysis Details";
     detailContent.innerHTML = `
       <div style="text-align: center; margin-bottom: 20px;">
         <img src="${item.food.image}" alt="${
@@ -1520,7 +1810,7 @@ function showHistoryDetailModal(item) {
           <span class="result-tag ${
             item.food.isHealthy ? "tag-success" : "tag-warning"
           }">
-            ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
+            ${item.food.isHealthy ? "Healthy Choice" : "Occasional Consumption"}
           </span>
         </div>
         <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
@@ -1528,73 +1818,55 @@ function showHistoryDetailModal(item) {
         </div>
       </div>
       <div>
-        <p style="color: #666; font-size: 0.9em;">分析时间：${new Date(
+        <p style="color: #666; font-size: 0.9em;">Analysis Time: ${new Date(
           item.date
         ).toLocaleString()}</p>
       </div>
     `;
-  } else if (item.type === "recipe") {
-    detailTitle.textContent = "食谱详情";
-    detailContent.innerHTML = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <img src="${item.recipe.image}" alt="${
-      item.recipe.name
-    }" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-      </div>
-      <div style="margin-bottom: 15px;">
-        <h3 style="margin-bottom: 10px;">${item.recipe.name}</h3>
-        <p style="margin-bottom: 15px;">${item.recipe.description}</p>
-        
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
-            <div style="font-weight: bold;">${item.recipe.calories}</div>
-            <div style="font-size: 0.8em; color: #666;">卡路里</div>
-          </div>
-          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
-            <div style="font-weight: bold;">${item.recipe.protein}</div>
-            <div style="font-size: 0.8em; color: #666;">蛋白质</div>
-          </div>
-          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
-            <div style="font-weight: bold;">${item.recipe.carbs}</div>
-            <div style="font-size: 0.8em; color: #666;">碳水</div>
-          </div>
-          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
-            <div style="font-weight: bold;">${item.recipe.fat}</div>
-            <div style="font-size: 0.8em; color: #666;">脂肪</div>
-          </div>
-          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
-            <div style="font-weight: bold;">${item.recipe.time}</div>
-            <div style="font-size: 0.8em; color: #666;">分钟</div>
-          </div>
-        </div>
-        
-        <h4 style="margin: 20px 0 10px 0;">健康提示</h4>
-        <p style="margin: 0 0 20px 0; line-height: 1.6;">${
-          item.recipe.healthTips
-        }</p>
-        
-        <h4 style="margin: 20px 0 10px 0;">食材</h4>
-        <ul style="padding-left: 20px; margin-bottom: 20px;">
-          ${item.recipe.ingredients
-            .map((ingredient) => `<li>${ingredient}</li>`)
-            .join("")}
-        </ul>
-        
-        <h4 style="margin: 20px 0 10px 0;">烹饪步骤</h4>
-        <ol style="padding-left: 20px; margin-bottom: 10px;">
-          ${item.recipe.steps
-            .map((step) => `<li style="margin-bottom: 8px;">${step}</li>`)
-            .join("")}
-        </ol>
-      </div>
-      <div>
-        <p style="color: #666; font-size: 0.9em;">浏览时间：${new Date(
-          item.date
-        ).toLocaleString()}</p>
-      </div>
-    `;
+
+    modal.style.display = "flex";
+  }
+}
+
+// 显示食谱详情弹窗 - 新增函数
+function showRecipeDetailsModal(recipe) {
+  const modal = document.getElementById("recipeDetailsModal");
+
+  if (!modal) {
+    console.error("Recipe details modal not found");
+    return;
   }
 
+  // 填充弹窗内容
+  document.getElementById("modalRecipeTitle").textContent = recipe.title;
+  document.getElementById("modalRecipeImage").src = recipe.image;
+  document.getElementById("modalRecipeCalories").textContent = recipe.calories;
+  document.getElementById("modalRecipeProtein").textContent = recipe.protein;
+  document.getElementById("modalRecipeCarbs").textContent = recipe.carbs;
+  document.getElementById("modalRecipeFat").textContent = recipe.fat;
+  document.getElementById("modalRecipeTime").textContent = recipe.time;
+  document.getElementById("modalRecipeHealthTips").textContent =
+    recipe.healthTips;
+
+  // 填充食材列表
+  const ingredientsList = document.getElementById("modalRecipeIngredients");
+  ingredientsList.innerHTML = "";
+  recipe.ingredients.forEach((ingredient) => {
+    const li = document.createElement("li");
+    li.textContent = ingredient;
+    ingredientsList.appendChild(li);
+  });
+
+  // 填充步骤列表
+  const stepsList = document.getElementById("modalRecipeSteps");
+  stepsList.innerHTML = "";
+  recipe.steps.forEach((step) => {
+    const li = document.createElement("li");
+    li.textContent = step;
+    stepsList.appendChild(li);
+  });
+
+  // 显示弹窗
   modal.style.display = "flex";
 }
 
@@ -1622,7 +1894,92 @@ function getFilteredHistory() {
 }
 
 // Initialize the app
+// 全局错误处理 - 拦截localStorage异常
+function setupStorageErrorHandling() {
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function (key, value) {
+    try {
+      originalSetItem.apply(this, arguments);
+    } catch (e) {
+      console.error(`localStorage.setItem 失败 [${key}]:`, e);
+      showNotification(
+        "Your browser storage is full. Some data may not be saved.",
+        "warning"
+      );
+
+      // 如果是healthyDietUser导致的错误，尝试保存最小用户信息
+      if (key === "healthyDietUser" && typeof value === "string") {
+        try {
+          const userData = JSON.parse(value);
+          const minimalUserInfo = {
+            name: userData.name || "",
+            email: userData.email || "",
+            credits:
+              typeof userData.credits === "number" ? userData.credits : 0,
+            access_token: userData.access_token || "",
+          };
+          const minimalJsonString = JSON.stringify(minimalUserInfo);
+          // 尝试使用原始方法保存最小数据
+          originalSetItem.call(this, key, minimalJsonString);
+          console.log("成功保存了最小用户信息");
+        } catch (innerError) {
+          console.error("即使是最小用户信息也无法保存:", innerError);
+        }
+      }
+    }
+  };
+}
+
 function init() {
+  console.log("初始化应用程序...");
+
+  // 设置Storage错误处理
+  setupStorageErrorHandling();
+
+  // 确保所有视图元素都正确初始化
+  elements.views = {
+    home: document.getElementById("homeView"),
+    analysis: document.getElementById("analysisView"),
+    recipe: document.getElementById("recipeDetailView"),
+    pricing: document.getElementById("pricingView"),
+    history: document.getElementById("historyView"),
+    auth: document.getElementById("authView"),
+  };
+
+  // 检查视图元素是否全部正确获取
+  Object.entries(elements.views).forEach(([name, element]) => {
+    if (!element) {
+      console.error(`视图元素 ${name} 未找到`);
+    }
+  });
+
+  // 添加hash变化监听
+  window.addEventListener("hashchange", function () {
+    const hash = location.hash.replace("#", "");
+    console.log("URL hash changed to:", hash);
+
+    // 如果hash对应某个视图名称，切换到该视图
+    if (
+      hash &&
+      ["home", "analysis", "recipe", "pricing", "history", "auth"].includes(
+        hash
+      )
+    ) {
+      showView(hash);
+    }
+  });
+
+  // 检查初始hash
+  const initialHash = location.hash.replace("#", "");
+  if (
+    initialHash &&
+    ["home", "analysis", "recipe", "pricing", "history", "auth"].includes(
+      initialHash
+    )
+  ) {
+    showView(initialHash);
+  }
+
   // Check for existing user
   const storedUser = localStorage.getItem("healthyDietUser");
   if (storedUser) {
@@ -1642,6 +1999,8 @@ function init() {
   setupLogoutButton();
   setupHistoryPageEvents(); // 添加历史记录页面事件处理
 
+  console.log("应用程序初始化完成");
+
   // 为History导航链接添加点击事件
   console.log("为History导航链接添加点击事件");
   const historyLinks = document.querySelectorAll(".nav-history");
@@ -1653,6 +2012,12 @@ function init() {
       showView("history");
       updateHistoryView();
     });
+  });
+
+  // 添加自定义事件监听
+  window.addEventListener("analysisReady", function () {
+    console.log("收到analysisReady事件，准备切换到分析视图");
+    showView("analysis");
   });
 }
 
