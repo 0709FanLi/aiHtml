@@ -1538,16 +1538,33 @@ async function deleteHistoryItemFromAPI(id) {
   }
 
   try {
-    const url = `/api/v1/gourmet/record/${id}`;
+    // 使用正确的API地址
+    const url = "http://web.aigastronome.com/api/v1/gourmet/delete";
+
+    console.log("调用删除API，参数id:", id);
+    console.log("请求地址:", url);
+    console.log(
+      "请求头Authorization:",
+      `Bearer ${state.user.access_token.substring(0, 10)}...`
+    );
+
+    const requestBody = {
+      id: id, // 将id作为请求体参数
+    };
+    console.log("请求体:", JSON.stringify(requestBody));
+
     const response = await fetch(url, {
-      method: "DELETE",
+      method: "POST", // 使用POST请求
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${state.user.access_token}`,
       },
+      body: JSON.stringify(requestBody),
     });
 
+    console.log("API响应状态:", response.status);
     const data = await response.json();
+    console.log("API响应内容:", data);
 
     if (data.ok !== 1) {
       console.error("API error:", data.message);
@@ -1739,9 +1756,27 @@ async function updateHistoryView() {
           });
       });
 
+      // 改进后的删除按钮事件处理
       deleteItemBtn.addEventListener("click", function (e) {
         e.stopPropagation(); // 防止冒泡到卡片
-        showDeleteConfirmModal(item.id);
+
+        // 添加点击反馈动画
+        const button = this;
+        button.classList.add("btn-pulse");
+
+        // 震动动画效果
+        button.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          button.style.transform = "scale(1)";
+          button.classList.remove("btn-pulse");
+        }, 200);
+
+        // 记录要删除项的ID和标题
+        const itemTitle = item.food_name || "Analyzed Food";
+        const itemId = item.id;
+
+        // 显示删除确认弹窗，并传递更多信息
+        showDeleteConfirmModal(itemId, itemTitle);
       });
     });
   } else {
@@ -1846,20 +1881,59 @@ function setupHistoryPageEvents() {
 
   if (confirmDeleteBtn && cancelDeleteBtn) {
     confirmDeleteBtn.addEventListener("click", async function () {
-      const modal = document.getElementById("deleteConfirmModal");
-      modal.style.display = "none";
+      // 显示按钮的加载状态
+      const originalText = confirmDeleteBtn.textContent;
+      confirmDeleteBtn.disabled = true;
+      confirmDeleteBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin" style="margin-right: 5px;"></i> Deleting...';
+
+      // 禁用取消按钮
+      const cancelBtn = document.getElementById("cancelDeleteBtn");
+      if (cancelBtn) cancelBtn.disabled = true;
 
       if (state.itemToDelete) {
-        const success = await deleteHistoryItemFromAPI(state.itemToDelete);
-        if (success) {
-          showNotification("Record deleted successfully", "success");
-          if (state.historyTotal > 0) state.historyTotal--;
-          updateHistoryView();
-        } else {
-          showNotification("Failed to delete record", "error");
+        try {
+          const success = await deleteHistoryItemFromAPI(state.itemToDelete);
+
+          // 隐藏弹窗
+          const modal = document.getElementById("deleteConfirmModal");
+          modal.style.display = "none";
+
+          if (success) {
+            showNotification("Record deleted successfully", "success");
+            // 更新总记录数
+            if (state.historyTotal > 0) state.historyTotal--;
+            // 刷新历史记录视图
+            updateHistoryView();
+          } else {
+            showNotification("Failed to delete record", "error");
+          }
+        } catch (error) {
+          console.error("Error during delete operation:", error);
+          showNotification(
+            "An error occurred while deleting the record",
+            "error"
+          );
+
+          // 隐藏弹窗
+          const modal = document.getElementById("deleteConfirmModal");
+          modal.style.display = "none";
         }
+
+        // 重置状态
         state.itemToDelete = null;
+      } else {
+        // 隐藏弹窗
+        const modal = document.getElementById("deleteConfirmModal");
+        modal.style.display = "none";
+
+        showNotification("No record selected for deletion", "warning");
       }
+
+      // 恢复按钮状态
+      confirmDeleteBtn.disabled = false;
+      confirmDeleteBtn.textContent = originalText;
+      if (cancelBtn) cancelBtn.disabled = false;
     });
 
     cancelDeleteBtn.addEventListener("click", function () {
@@ -1884,11 +1958,35 @@ if (!state.historyTotal) {
   state.historyTotal = 0;
 }
 
-// 显示删除确认弹窗
-function showDeleteConfirmModal(itemId) {
+// 显示删除确认弹窗（旧版本，已被改进版替代）
+// function showDeleteConfirmModal(itemId) {
+//   state.itemToDelete = itemId;
+//   const modal = document.getElementById("deleteConfirmModal");
+//   modal.style.display = "flex";
+// }
+
+// 显示删除确认弹窗 - 改进版
+function showDeleteConfirmModal(itemId, itemTitle = "this record") {
   state.itemToDelete = itemId;
+
   const modal = document.getElementById("deleteConfirmModal");
+  if (!modal) return;
+
+  // 更新确认消息，包含记录标题
+  const messageElement = modal.querySelector("p");
+  if (messageElement) {
+    messageElement.innerHTML = `Are you sure you want to delete <strong>${itemTitle}</strong>? This action cannot be undone.`;
+  }
+
+  // 显示弹窗，带有淡入效果
+  modal.style.opacity = "0";
   modal.style.display = "flex";
+
+  // 添加淡入效果
+  setTimeout(() => {
+    modal.style.transition = "opacity 0.3s ease";
+    modal.style.opacity = "1";
+  }, 10);
 }
 
 // 修改显示历史记录详情弹窗函数
