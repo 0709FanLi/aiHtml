@@ -444,6 +444,55 @@ function handleSignup(e) {
 
 // Handle Logout
 function handleLogout() {
+  // 获取令牌
+  const accessToken = localStorage.getItem("accessToken");
+
+  // 如果有令牌则调用登出API
+  if (accessToken) {
+    // 显示加载状态
+    logoutBtn.disabled = true;
+    logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    // 调用登出API
+    fetch("http://web.doaitravel.com/api/v1/auth/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("登出失败，请稍后重试");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("登出成功:", data);
+        completeLogout();
+      })
+      .catch((error) => {
+        console.error("登出错误:", error);
+        // 即使API调用失败，也应当完成本地登出
+        completeLogout();
+        showToast(
+          error.message || "登出过程中出现错误，但已清除本地登录状态",
+          "warning"
+        );
+      })
+      .finally(() => {
+        // 恢复按钮状态
+        logoutBtn.disabled = false;
+        logoutBtn.innerHTML = "Logout";
+      });
+  } else {
+    // 没有令牌直接完成登出
+    completeLogout();
+  }
+}
+
+// 完成登出过程的辅助函数
+function completeLogout() {
   // Update state
   isLoggedIn = false;
   userData = null;
