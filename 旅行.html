@@ -469,56 +469,64 @@
           <form id="forgotPasswordForm" class="forgot-password-form" novalidate>
             <div class="form-group">
               <label for="resetEmail">Email</label>
-              <input
-                type="email"
-                id="resetEmail"
-                class="form-control"
-                required
-              />
+              <div class="input-action-group">
+                <input
+                  type="email"
+                  id="resetEmail"
+                  class="form-control"
+                  required
+                  placeholder="Enter your email address"
+                />
+                <button
+                  type="button"
+                  id="requestCodeBtn"
+                  class="btn btn-outline"
+                >
+                  Request Code
+                </button>
+              </div>
               <div class="error-message" id="resetEmailError">
                 Please enter a valid email address
               </div>
-              <button type="button" id="requestCodeBtn" class="btn btn-outline">
-                Request Verification Code
-              </button>
             </div>
-            <div id="verificationCodeSection" style="display: none">
-              <div class="form-group">
-                <label for="verificationCode">Verification Code</label>
-                <input
-                  type="text"
-                  id="verificationCode"
-                  class="form-control"
-                  required
-                />
-                <div class="error-message" id="verificationCodeError">
-                  Please enter the verification code
-                </div>
+            <div class="form-group">
+              <label for="verificationCode">Verification Code</label>
+              <input
+                type="text"
+                id="verificationCode"
+                class="form-control"
+                required
+                placeholder="Enter verification code"
+              />
+              <div class="error-message" id="verificationCodeError">
+                Please enter the verification code
               </div>
-              <div class="form-group">
-                <label for="newPassword">New Password</label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  class="form-control"
-                  required
-                  minlength="6"
-                />
-                <div class="error-message" id="newPasswordError">
-                  Password must be at least 6 characters
-                </div>
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input
+                type="password"
+                id="newPassword"
+                class="form-control"
+                required
+                minlength="6"
+                placeholder="Enter new password"
+              />
+              <div class="error-message" id="newPasswordError">
+                Password must be at least 6 characters
               </div>
-              <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  class="form-control"
-                  required
-                />
-                <div class="error-message" id="confirmPasswordError">
-                  Passwords do not match
-                </div>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-control"
+                required
+                placeholder="Confirm new password"
+              />
+              <div class="error-message" id="confirmPasswordError">
+                Passwords do not match
               </div>
             </div>
             <div class="form-buttons">

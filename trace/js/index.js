@@ -1141,86 +1141,78 @@ function backToLoginForm(e) {
 function requestVerificationCode() {
   const email = document.getElementById("resetEmail").value;
 
-  if (!email) {
-    showToast("Please enter your email address", "error");
+  if (!email || !isValidEmail(email)) {
+    showNotification("Please enter a valid email address", "warning");
     return;
   }
 
-  // Simulate API call to send verification code
+  // 禁用按钮避免重复请求
+  const button = document.getElementById("requestCodeBtn");
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+  // 模拟API调用发送验证码
   setTimeout(() => {
-    document.getElementById("verificationCodeSection").style.display = "block";
-    document.getElementById("requestCodeBtn").style.display = "none";
-    showToast("Verification code sent to your email", "success");
-  }, 1000);
+    button.disabled = false;
+    button.textContent = originalText;
+    showNotification("Verification code sent to your email", "success");
+  }, 1500);
 }
 
 // Reset Password
 function resetPassword(e) {
   e.preventDefault();
 
-  // Clear previous errors
-  clearFormErrors(forgotPasswordForm);
+  const email = document.getElementById("resetEmail").value;
+  const code = document.getElementById("verificationCode").value;
+  const newPassword = document.getElementById("newPassword").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
 
-  const email = document.getElementById("resetEmail");
-  const code = document.getElementById("verificationCode");
-  const newPassword = document.getElementById("newPassword");
-  const confirmPassword = document.getElementById("confirmPassword");
-
-  // Validate form
-  let isValid = true;
-
-  if (!email.value || !isValidEmail(email.value)) {
-    showError(email, "resetEmailError");
-    isValid = false;
+  // 验证输入
+  if (!email || !isValidEmail(email)) {
+    showNotification("Please enter a valid email address", "warning");
+    return;
   }
 
-  if (!code.value) {
-    showError(code, "verificationCodeError");
-    isValid = false;
+  if (!code) {
+    showNotification("Please enter the verification code", "warning");
+    return;
   }
 
-  if (!newPassword.value || newPassword.value.length < 6) {
-    showError(newPassword, "newPasswordError");
-    isValid = false;
+  if (!newPassword || newPassword.length < 6) {
+    showNotification("Password must be at least 6 characters", "warning");
+    return;
   }
 
-  if (!confirmPassword.value) {
-    showError(confirmPassword, "confirmPasswordError");
-    isValid = false;
-  } else if (newPassword.value !== confirmPassword.value) {
-    showError(confirmPassword, "confirmPasswordError");
-    isValid = false;
+  if (newPassword !== confirmPassword) {
+    showNotification("Passwords do not match", "warning");
+    return;
   }
 
-  if (!isValid) return;
+  // 禁用提交按钮
+  const submitBtn = forgotPasswordForm.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
 
-  // Simulate API call to reset password
+  // 哈希密码
+  const hashedPassword = md5(newPassword);
+
+  // 模拟API调用重置密码
   setTimeout(() => {
-    // Success
-    showToast("Password reset successfully", "success");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Reset Password";
+
+    // 重置成功
+    showNotification("Password reset successfully", "success");
     backToLoginForm(e);
-  }, 1000);
+  }, 1500);
 }
 
 // Helper functions for form validation
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
-}
-
-function showError(input, errorId) {
-  input.classList.add("invalid");
-  document.getElementById(errorId).classList.add("active");
-}
-
-function clearFormErrors(form) {
-  form.querySelectorAll(".form-control").forEach((input) => {
-    input.classList.remove("invalid");
-  });
-
-  form.querySelectorAll(".error-message").forEach((error) => {
-    error.classList.remove("active");
-  });
 }
 
 // 添加注册事件处理

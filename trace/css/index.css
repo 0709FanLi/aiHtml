@@ -9,6 +9,7 @@
   --warning-color: #ffa502;
   --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  --primary-color-rgb: 255, 107, 129;
 }
 
 * {
@@ -963,6 +964,56 @@ footer {
 
 .forgot-password-form.active {
   display: block;
+}
+
+/* 输入框和按钮同行的样式 */
+.input-action-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.input-action-group .form-control {
+  flex: 1;
+}
+
+.input-action-group .btn {
+  white-space: nowrap;
+  padding: 8px 16px;
+  align-self: flex-start;
+  height: 43px; /* 保持与输入框高度一致 */
+}
+
+/* 忘记密码表单样式美化 */
+.forgot-password-form .form-group {
+  margin-bottom: 20px;
+}
+
+.forgot-password-form .form-control {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.forgot-password-form .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.forgot-password-form .form-buttons {
+  margin-top: 25px;
+}
+
+.forgot-password-form .form-buttons .btn {
+  width: 100%;
+  padding: 12px;
+}
+
+.forgot-password-form .form-switch {
+  text-align: center;
+  margin-top: 15px;
 }
 
 /* Form validation styles */
