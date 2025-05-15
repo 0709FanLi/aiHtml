@@ -147,6 +147,19 @@ header {
   color: white;
 }
 
+.btn.btn-outline#logoutBtn,
+#logoutBtn.btn.btn-outline {
+  color: #fff;
+  border: 1.5px solid #fff;
+  background: transparent;
+  transition: background 0.2s, color 0.2s;
+}
+#logoutBtn.btn.btn-outline:hover {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: #fff;
+}
+
 /* Card styles */
 .card {
   background-color: var(--card-color);

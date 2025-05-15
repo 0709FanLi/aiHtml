@@ -635,7 +635,6 @@ function doLogin(email, name = null, user = null) {
 // Update user display
 function updateUserDisplay() {
   let userObj = state.user;
-  // 兼容新老结构
   if (!userObj) {
     const stored = localStorage.getItem("healthyDietUser");
     if (stored) {
@@ -645,19 +644,57 @@ function updateUserDisplay() {
       } catch {}
     }
   }
+  const logoutBtn = document.getElementById("logoutBtn");
   if (userObj) {
     elements.nav.login.style.display = "none";
     elements.user.info.style.display = "flex";
     elements.user.credits.textContent =
       typeof userObj.credits === "number" ? userObj.credits : 0;
-    // Set first letter of name as avatar
     const userAvatar = document.querySelector(".user-avatar");
     userAvatar.textContent = (userObj.name || userObj.email || "U")
       .charAt(0)
       .toUpperCase();
+    if (logoutBtn) {
+      logoutBtn.style.display = "inline-block";
+      // 重新绑定事件，防止丢失
+      logoutBtn.onclick = null;
+      logoutBtn.onclick = function () {
+        let token = null;
+        const stored = localStorage.getItem("healthyDietUser");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            token = parsed.access_token || null;
+          } catch {}
+        }
+        if (token) {
+          fetch("http://web.aigastronome.com/api/v1/auth/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: "omit",
+          }).finally(() => {
+            localStorage.clear();
+            state.user = null;
+            state.creditsUsed = 0;
+            updateUserDisplay();
+            showView("home");
+          });
+        } else {
+          localStorage.clear();
+          state.user = null;
+          state.creditsUsed = 0;
+          updateUserDisplay();
+          showView("home");
+        }
+      };
+    }
   } else {
     elements.nav.login.style.display = "block";
     elements.user.info.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "none";
   }
 }
 
@@ -796,6 +833,7 @@ function init() {
   }
 
   initEventListeners();
+  setupLogoutButton();
 }
 
 // Run initialization when DOM is loaded
@@ -1132,3 +1170,44 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// 1. 初始化时绑定Logout按钮事件
+function setupLogoutButton() {
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (!logoutBtn) return;
+  logoutBtn.onclick = function () {
+    // 1. 获取token
+    let token = null;
+    const stored = localStorage.getItem("healthyDietUser");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        token = parsed.access_token || null;
+      } catch {}
+    }
+    // 2. 调用后端登出接口
+    if (token) {
+      fetch("http://web.aigastronome.com/api/v1/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "omit",
+      }).finally(() => {
+        localStorage.clear();
+        state.user = null;
+        state.creditsUsed = 0;
+        updateUserDisplay();
+        showView("home");
+      });
+    } else {
+      // 没有token直接本地登出
+      localStorage.clear();
+      state.user = null;
+      state.creditsUsed = 0;
+      updateUserDisplay();
+      showView("home");
+    }
+  };
+}
