@@ -1152,12 +1152,48 @@ function requestVerificationCode() {
   button.disabled = true;
   button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
-  // 模拟API调用发送验证码
-  setTimeout(() => {
-    button.disabled = false;
-    button.textContent = originalText;
-    showNotification("Verification code sent to your email", "success");
-  }, 1500);
+  // 发送验证码的API调用
+  fetch("http://web.doaitravel.com/api/v1/auth/email-verification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+    credentials: "omit",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.ok === 1) {
+        // 倒计时效果，防止频繁发送验证码
+        showNotification("Verification code sent to your email", "success");
+        let countdown = 60;
+        button.textContent = `Resend (${countdown}s)`;
+        const timer = setInterval(() => {
+          countdown--;
+          if (countdown <= 0) {
+            clearInterval(timer);
+            button.disabled = false;
+            button.textContent = originalText;
+          } else {
+            button.textContent = `Resend (${countdown}s)`;
+          }
+        }, 1000);
+      } else {
+        button.disabled = false;
+        button.textContent = originalText;
+        showNotification(
+          data.message || "Failed to send verification code",
+          "error"
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("Error sending verification code:", error);
+      button.disabled = false;
+      button.textContent = originalText;
+      showNotification(
+        "An error occurred while sending verification code",
+        "error"
+      );
+    });
 }
 
 // Reset Password
@@ -1195,18 +1231,50 @@ function resetPassword(e) {
   submitBtn.disabled = true;
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
 
-  // 哈希密码
+  // 使用MD5加密密码和验证码
   const hashedPassword = md5(newPassword);
+  const hashedConfirmPassword = md5(confirmPassword);
 
-  // 模拟API调用重置密码
-  setTimeout(() => {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Reset Password";
+  // 忘记密码的API调用
+  fetch("http://web.doaitravel.com/api/v1/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: email,
+      verification_code: code,
+      password: hashedPassword,
+      password_confirm: hashedConfirmPassword,
+    }),
+    credentials: "omit",
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Reset Password";
 
-    // 重置成功
-    showNotification("Password reset successfully", "success");
-    backToLoginForm(e);
-  }, 1500);
+      if (data.ok === 1) {
+        // 重置成功
+        showNotification(
+          "Password reset successfully. You can now login with your new password.",
+          "success"
+        );
+        backToLoginForm(e);
+
+        // 在登录表单中自动填入邮箱
+        document.getElementById("loginEmail").value = email;
+      } else {
+        showNotification(
+          data.message || "Failed to reset password. Please try again.",
+          "error"
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("Error resetting password:", error);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Reset Password";
+      showNotification("An error occurred while resetting password", "error");
+    });
 }
 
 // Helper functions for form validation
