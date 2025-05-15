@@ -634,14 +634,27 @@ function doLogin(email, name = null, user = null) {
 
 // Update user display
 function updateUserDisplay() {
-  if (state.user) {
+  let userObj = state.user;
+  // 兼容新老结构
+  if (!userObj) {
+    const stored = localStorage.getItem("healthyDietUser");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        userObj = parsed.user || parsed;
+      } catch {}
+    }
+  }
+  if (userObj) {
     elements.nav.login.style.display = "none";
     elements.user.info.style.display = "flex";
-    elements.user.credits.textContent = state.user.credits;
-
+    elements.user.credits.textContent =
+      typeof userObj.credits === "number" ? userObj.credits : 0;
     // Set first letter of name as avatar
     const userAvatar = document.querySelector(".user-avatar");
-    userAvatar.textContent = state.user.name.charAt(0).toUpperCase();
+    userAvatar.textContent = (userObj.name || userObj.email || "U")
+      .charAt(0)
+      .toUpperCase();
   } else {
     elements.nav.login.style.display = "block";
     elements.user.info.style.display = "none";
@@ -1028,54 +1041,37 @@ function showNotification(message, type = "success", duration = 3000) {
   }
 }
 
-// 注册表单提交事件（md5加密密码）
+// 登录表单提交事件（md5加密密码）
 document.addEventListener("DOMContentLoaded", function () {
-  const signupBtn = document.getElementById("doSignupBtn");
-  if (signupBtn) {
-    signupBtn.addEventListener("click", function (e) {
+  const loginBtn = document.getElementById("doLoginBtn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", function (e) {
       e.preventDefault();
-      const agreement = document.getElementById("signupAgreementCheckbox");
+      const agreement = document.getElementById("loginAgreementCheckbox");
       if (agreement && !agreement.checked) {
         showNotification(
-          "You must agree to the Terms of Use and Privacy Policy before signing up.",
+          "You must agree to the Terms of Use and Privacy Policy before logging in.",
           "warning"
         );
         return;
       }
-      const name = document.getElementById("signupName").value;
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
-      const confirmPassword = document.getElementById(
-        "signupPasswordConfirm"
-      ).value;
-      document.getElementById("passwordMatchError").style.display = "none";
-      if (!name || !email || !password || !confirmPassword) {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      if (!email || !password) {
         showNotification("Please fill in all required fields.", "warning");
         return;
       }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        showNotification("Please enter a valid email address.", "warning");
-        return;
-      }
-      if (password !== confirmPassword) {
-        document.getElementById("passwordMatchError").style.display = "block";
-        return;
-      }
-      const submitBtn = document.getElementById("doSignupBtn");
+      const submitBtn = document.getElementById("doLoginBtn");
       const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
-      submitBtn.textContent = "Signing up...";
+      submitBtn.textContent = "Logging in...";
       // md5加密
       const md5Password = md5(password);
-      const md5ConfirmPassword = md5(confirmPassword);
       const requestData = {
         email: email,
-        name: name,
         password: md5Password,
-        password_confirm: md5ConfirmPassword,
       };
-      fetch("http://web.aigastronome.com/api/v1/auth/register", {
+      fetch("http://web.aigastronome.com/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1088,29 +1084,46 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
           } else {
             return response.json().then((data) => {
-              throw new Error(data.message || "Registration failed");
+              throw new Error(data.message || "Login failed");
             });
           }
         })
         .then((data) => {
-          showNotification(
-            "Registration successful! Please login with your email and password.",
-            "success"
-          );
-          document.getElementById("loginEmail").value = email;
-          document.getElementById("signupForm").style.display = "none";
-          document.getElementById("loginForm").style.display = "block";
-          document.getElementById("signupName").value = "";
-          document.getElementById("signupEmail").value = "";
-          document.getElementById("signupPassword").value = "";
-          document.getElementById("signupPasswordConfirm").value = "";
+          showNotification("Login successful!", "success");
+          // 维护本地存储和登录状态
+          if (data && data.data) {
+            const userData = data.data.user || {};
+            const credits =
+              typeof userData.credits === "number" ? userData.credits : 0;
+            const loginInfo = {
+              access_token: data.data.access_token,
+              refresh_token: data.data.refresh_token,
+              token_type: data.data.token_type,
+              access_token_expires: data.data.access_token_expires,
+              refresh_token_expires: data.data.refresh_token_expires,
+              user: {
+                id: userData.id,
+                name: userData.name || userData.email || "",
+                email: userData.email || "",
+                avatar_url: userData.avatar_url || "",
+                created_at: userData.created_at,
+                last_login_at: userData.last_login_at,
+                credits: credits,
+              },
+            };
+            localStorage.setItem("healthyDietUser", JSON.stringify(loginInfo));
+            // 更新全局state.user
+            state.user = loginInfo.user;
+            updateUserDisplay();
+          }
+          if (typeof doLogin === "function") {
+            doLogin(email, data.data.user?.name, data.data.user);
+          }
+          document.getElementById("authView").classList.remove("active");
+          document.getElementById("homeView").classList.add("active");
         })
         .catch((error) => {
-          showNotification(
-            "Registration error: " + error.message,
-            "error",
-            4000
-          );
+          showNotification("Login error: " + error.message, "error", 4000);
         })
         .finally(() => {
           submitBtn.disabled = false;
