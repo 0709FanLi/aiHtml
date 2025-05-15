@@ -276,8 +276,6 @@
                 </p>
               </div>
 
-              
-
               <div class="value-item">
                 <i class="fas fa-lock"></i>
                 <h4>Privacy</h4>
@@ -1272,6 +1270,31 @@
             <button class="btn btn-danger" id="confirm-delete-btn">
               Delete
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 代码查看弹框 -->
+    <div class="code-modal-backdrop" id="code-view-modal">
+      <div class="code-modal">
+        <div class="code-modal-header">
+          <h3 class="code-modal-title">查看代码</h3>
+          <div class="code-modal-actions">
+            <button class="btn btn-primary" id="modal-copy-btn">
+              <i class="fas fa-copy"></i> 复制
+            </button>
+            <button class="btn btn-success" id="modal-download-btn">
+              <i class="fas fa-download"></i> 下载
+            </button>
+            <button class="code-modal-close">&times;</button>
+          </div>
+        </div>
+        <div class="code-modal-body">
+          <div class="code-modal-content">
+            <div class="code-modal-display" id="modal-code-display">
+              <!-- 代码内容将动态添加到这里 -->
+            </div>
           </div>
         </div>
       </div>

@@ -397,72 +397,92 @@ document.addEventListener("DOMContentLoaded", function () {
     const record = codeRecords.items.find((item) => item.id == recordId);
 
     if (record && record.content) {
-      // 显示结果卡片
-      const resultsCard = document.getElementById("results-card");
-      if (resultsCard) {
-        // 显示卡片
-        resultsCard.style.display = "block";
+      // 获取弹框元素
+      const codeModal = document.getElementById("code-view-modal");
+      const codeDisplay = document.getElementById("modal-code-display");
+      const modalTitle = codeModal.querySelector(".code-modal-title");
+      const modalCloseBtn = codeModal.querySelector(".code-modal-close");
+      const modalCopyBtn = document.getElementById("modal-copy-btn");
+      const modalDownloadBtn = document.getElementById("modal-download-btn");
 
-        // 隐藏原始代码面板
-        const originalPanel = document.querySelector(".code-panel:first-child");
-        if (originalPanel) {
-          originalPanel.style.display = "none";
-        }
+      // 清空之前的内容
+      if (codeDisplay) {
+        codeDisplay.innerHTML = "";
+      }
 
-        // 让注释代码面板占据全部宽度
-        const annotatedPanel = document.querySelector(".code-panel:last-child");
-        if (annotatedPanel) {
-          annotatedPanel.style.flexBasis = "100%";
-        }
+      // 设置弹框标题
+      if (modalTitle) {
+        modalTitle.textContent = `Record #${record.id}`;
+      }
 
-        // 获取注释代码容器并设置内容
-        const annotatedCode = document.getElementById("annotated-code");
-        if (annotatedCode) {
-          // 清空之前的内容
-          annotatedCode.innerHTML = "";
+      // 设置代码内容
+      try {
+        // 设置新内容
+        codeDisplay.innerHTML = record.content;
 
-          try {
-            // 设置新内容
-            annotatedCode.innerHTML = record.content;
+        // 确保预标签内容显示正确
+        const preElements = codeDisplay.querySelectorAll("pre");
+        if (preElements.length > 0) {
+          preElements.forEach((pre) => {
+            pre.style.maxWidth = "100%";
+            pre.style.overflow = "auto";
+            pre.style.whiteSpace = "pre-wrap";
+            pre.style.wordBreak = "break-word";
+            pre.style.margin = "0 auto";
+            pre.style.boxSizing = "border-box";
 
-            // 添加样式确保代码显示正确
-            const preElements = annotatedCode.querySelectorAll("pre");
-            if (preElements.length > 0) {
-              preElements.forEach((pre) => {
-                pre.style.maxWidth = "100%";
-                pre.style.overflow = "auto";
-                pre.style.whiteSpace = "pre-wrap";
-                pre.style.wordBreak = "break-word";
-                pre.style.margin = "0 auto";
-                pre.style.boxSizing = "border-box";
-
-                // 如果有code标签，应用样式
-                const codeElement = pre.querySelector("code");
-                if (codeElement) {
-                  codeElement.style.display = "block";
-                  codeElement.style.padding = "0 15px";
-                  codeElement.style.fontFamily = "var(--font-mono)";
-                }
-              });
+            // 如果有code标签，应用样式
+            const codeElement = pre.querySelector("code");
+            if (codeElement) {
+              codeElement.style.display = "block";
+              codeElement.style.padding = "0 15px";
+              codeElement.style.fontFamily = "var(--font-mono)";
             }
-
-            // 滚动到结果卡片
-            resultsCard.scrollIntoView({ behavior: "smooth" });
-
-            showToast(
-              "success",
-              "Record Loaded",
-              "Code record has been loaded successfully."
-            );
-          } catch (error) {
-            console.error("Error displaying code record:", error);
-            showToast(
-              "error",
-              "Display Error",
-              "There was a problem displaying the code record."
-            );
-          }
+          });
         }
+
+        // 显示弹框
+        codeModal.style.display = "flex";
+
+        // 绑定关闭按钮事件
+        if (modalCloseBtn) {
+          modalCloseBtn.onclick = function () {
+            codeModal.style.display = "none";
+          };
+        }
+
+        // 点击弹框背景关闭弹框
+        // 移除之前可能存在的点击事件处理器
+        codeModal.removeEventListener("click", closeModalOnBackgroundClick);
+        // 添加新的点击事件处理器
+        codeModal.addEventListener("click", closeModalOnBackgroundClick);
+
+        // 复制按钮事件
+        if (modalCopyBtn) {
+          modalCopyBtn.onclick = function () {
+            copyCodeToClipboard(codeDisplay);
+          };
+        }
+
+        // 下载按钮事件
+        if (modalDownloadBtn) {
+          modalDownloadBtn.onclick = function () {
+            downloadCode(codeDisplay, `code_record_${record.id}.txt`);
+          };
+        }
+
+        showToast(
+          "success",
+          "Record Loaded",
+          "Code record has been loaded successfully."
+        );
+      } catch (error) {
+        console.error("Error displaying code record:", error);
+        showToast(
+          "error",
+          "Display Error",
+          "There was a problem displaying the code record."
+        );
       }
     } else {
       showToast(
@@ -471,6 +491,104 @@ document.addEventListener("DOMContentLoaded", function () {
         "Could not find the requested code record."
       );
     }
+  }
+
+  // 关闭弹框的辅助函数
+  function closeModalOnBackgroundClick(e) {
+    if (e.target === this) {
+      this.style.display = "none";
+    }
+  }
+
+  // 复制代码到剪贴板
+  function copyCodeToClipboard(codeContainer) {
+    if (!codeContainer) return;
+
+    // 获取代码内容
+    let codeContent = "";
+
+    if (codeContainer.querySelector("pre code")) {
+      // 如果有pre/code标签，获取code标签中的纯文本内容
+      const codeElement = codeContainer.querySelector("pre code");
+      // 获取纯文本
+      codeContent = codeElement.textContent || codeElement.innerText;
+    } else if (codeContainer.innerHTML.includes("<pre")) {
+      // 备用方案：如果找不到code元素但有pre标签
+      const tempElement = document.createElement("div");
+      tempElement.innerHTML = codeContainer.innerHTML;
+      const preElement = tempElement.querySelector("pre");
+      if (preElement) {
+        codeContent = preElement.textContent || preElement.innerText;
+      } else {
+        codeContent = tempElement.textContent || tempElement.innerText;
+      }
+    } else {
+      // 否则获取普通文本内容
+      codeContent = codeContainer.textContent || codeContainer.innerText;
+    }
+
+    // 解码HTML实体
+    codeContent = decodeHtmlEntities(codeContent);
+
+    // 复制到剪贴板
+    navigator.clipboard
+      .writeText(codeContent)
+      .then(() => {
+        showToast(
+          "success",
+          "Copy Successful",
+          "Code has been copied to clipboard."
+        );
+      })
+      .catch((err) => {
+        console.error("Could not copy text: ", err);
+        showToast("error", "Copy Failed", "Failed to copy code.");
+      });
+  }
+
+  // 下载代码
+  function downloadCode(codeContainer, filename) {
+    if (!codeContainer) return;
+
+    // 获取代码内容
+    let codeContent = "";
+
+    if (codeContainer.querySelector("pre code")) {
+      // 如果有pre/code标签，获取code标签中的纯文本内容
+      const codeElement = codeContainer.querySelector("pre code");
+      // 获取纯文本
+      codeContent = codeElement.textContent || codeElement.innerText;
+    } else if (codeContainer.innerHTML.includes("<pre")) {
+      // 备用方案：如果找不到code元素但有pre标签
+      const tempElement = document.createElement("div");
+      tempElement.innerHTML = codeContainer.innerHTML;
+      const preElement = tempElement.querySelector("pre");
+      if (preElement) {
+        codeContent = preElement.textContent || preElement.innerText;
+      } else {
+        codeContent = tempElement.textContent || tempElement.innerText;
+      }
+    } else {
+      // 否则获取普通文本内容
+      codeContent = codeContainer.textContent || codeContainer.innerText;
+    }
+
+    // 解码HTML实体
+    codeContent = decodeHtmlEntities(codeContent);
+
+    // 创建下载文件
+    const blob = new Blob([codeContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // 显示成功提示
+    showToast("success", "Download Complete", "Your code has been downloaded");
   }
 
   // 删除代码历史记录
@@ -1220,9 +1338,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 辅助函数：解码HTML实体
   function decodeHtmlEntities(text) {
-    const textArea = document.createElement("textarea");
-    textArea.innerHTML = text;
-    return textArea.value;
+    if (!text) return "";
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = text;
+    return textarea.value;
   }
 
   // 监听代码输入和文件上传互斥逻辑
