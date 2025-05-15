@@ -323,59 +323,87 @@ document.addEventListener("DOMContentLoaded", function () {
   function deleteCodeRecord(recordId) {
     if (!recordId) return;
 
-    // 确认删除
-    if (
-      !confirm(
-        "Are you sure you want to delete this record? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
+    // 显示删除确认模态框
+    const deleteModal = document.getElementById("delete-confirm-modal");
+    const cancelBtn = document.getElementById("cancel-delete-btn");
+    const confirmBtn = document.getElementById("confirm-delete-btn");
+    const closeBtn = deleteModal.querySelector(".modal-close");
 
-    // 获取token
-    const token = localStorage.getItem("token");
-    const tokenType = localStorage.getItem("token_type") || "bearer";
+    // 显示模态框
+    deleteModal.style.display = "flex";
 
-    // 显示正在删除的提示
-    showToast("info", "Deleting Record", "Processing your request...");
+    // 处理取消删除
+    const hideModal = () => {
+      deleteModal.style.display = "none";
+    };
 
-    // 发送删除请求
-    fetch(`http://web.codecommont.com/api/v1/code/record/${recordId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${tokenType} ${token}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API responded with status ${response.status}`);
-        }
-        return response.json();
+    // 绑定关闭事件
+    cancelBtn.onclick = hideModal;
+    closeBtn.onclick = hideModal;
+
+    // 点击模态框背景时关闭
+    deleteModal.addEventListener("click", function (e) {
+      if (e.target === deleteModal) {
+        hideModal();
+      }
+    });
+
+    // 处理确认删除
+    confirmBtn.onclick = function () {
+      // 隐藏模态框
+      hideModal();
+
+      // 获取token
+      const token = localStorage.getItem("token");
+      const tokenType = localStorage.getItem("token_type") || "bearer";
+
+      // 显示正在删除的提示
+      showToast("info", "Deleting Record", "Processing your request...");
+
+      // 发送删除请求 - 使用POST请求，使用/api/v1/code/delete路径
+      fetch(`http://web.codecommont.com/api/v1/code/delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${tokenType} ${token}`,
+        },
+        body: JSON.stringify({
+          id: recordId,
+        }),
       })
-      .then((data) => {
-        if (data.ok === 1) {
-          // 删除成功
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to delete record");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.ok) {
+            showToast(
+              "success",
+              "Delete Successful",
+              "The record has been deleted successfully."
+            );
+
+            // 刷新当前页的历史记录
+            fetchCodeRecords(codeRecords.currentPage, 10);
+          } else {
+            showToast(
+              "error",
+              "Delete Failed",
+              data.message || "Failed to delete the record"
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting record:", error);
           showToast(
-            "success",
-            "Record Deleted",
-            "The record has been successfully deleted."
+            "error",
+            "Delete Failed",
+            "An error occurred while deleting the record"
           );
-
-          // 重新加载当前页面的历史记录
-          fetchCodeRecords(codeRecords.currentPage, 10);
-        } else {
-          throw new Error(data.message || "Failed to delete record");
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting record:", error);
-        showToast(
-          "error",
-          "Delete Failed",
-          "Failed to delete the record. Please try again later."
-        );
-      });
+        });
+    };
   }
 
   // 初始化 - 检查用户登录状态
