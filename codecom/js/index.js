@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         // 保存数据
         if (data.ok === 1) {
+          console.log("API返回的历史记录数据:", data);
           if (page === 1 && data.data.total !== undefined) {
             codeRecords.total = data.data.total;
           }
@@ -177,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!container) return;
 
     // 如果没有记录
-    if (!codeRecords.items.length) {
+    if (!codeRecords.items || !codeRecords.items.length) {
       container.innerHTML = `
         <div class="history-empty">
           <p>You don't have any code annotation history yet.</p>
@@ -186,54 +187,114 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // 构建历史记录HTML
-    let historyHTML = '<div class="history-list">';
+    // 清空容器
+    container.innerHTML = "";
 
-    // 遍历历史记录项
+    // 遍历历史记录项创建DOM元素
     codeRecords.items.forEach((record) => {
+      // 创建历史记录项容器
+      const historyItem = document.createElement("div");
+      historyItem.className = "history-item";
+      historyItem.setAttribute("data-id", record.id);
+
       // 格式化日期
       const date = new Date(record.created_at);
       const formattedDate =
         date.toLocaleDateString() + " " + date.toLocaleTimeString();
 
-      historyHTML += `
-        <div class="history-item" data-id="${record.id}">
-          <div class="history-header">
-            <div class="history-title">${record.file_name}</div>
-            <div class="history-date">${formattedDate}</div>
-          </div>
-          <div class="history-actions">
-            <button class="btn btn-sm btn-primary view-history-btn">
-              <i class="fas fa-eye"></i> View
-            </button>
-            <button class="btn btn-sm btn-danger delete-history-btn">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
-        </div>
-      `;
-    });
+      // 创建标题和日期
+      const header = document.createElement("div");
+      header.className = "history-header";
 
-    historyHTML += "</div>";
+      const title = document.createElement("div");
+      title.className = "history-title";
+      title.textContent = `Record #${record.id}`;
+
+      const dateEl = document.createElement("div");
+      dateEl.className = "history-date";
+      dateEl.textContent = formattedDate;
+
+      header.appendChild(title);
+      header.appendChild(dateEl);
+      historyItem.appendChild(header);
+
+      // 提取代码预览
+      const preview = document.createElement("div");
+      preview.className = "history-preview";
+
+      let previewText = "No preview available";
+      if (record.content) {
+        // 解析HTML内容
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = record.content;
+
+        // 获取代码元素
+        const codeEl = tempDiv.querySelector("code");
+        if (codeEl) {
+          // 获取纯文本内容
+          const codeText = codeEl.textContent || codeEl.innerText || "";
+          // 分割成行并找到第一个非空行
+          const lines = codeText.split("\n");
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed) {
+              previewText =
+                trimmed.length > 100
+                  ? trimmed.substring(0, 100) + "..."
+                  : trimmed;
+              break;
+            }
+          }
+        }
+      }
+      preview.textContent = previewText;
+      historyItem.appendChild(preview);
+
+      // 创建操作按钮
+      const actions = document.createElement("div");
+      actions.className = "history-actions";
+
+      // 查看按钮
+      const viewBtn = document.createElement("button");
+      viewBtn.className = "btn btn-sm btn-primary view-history-btn";
+      viewBtn.innerHTML = '<i class="fas fa-eye"></i> View';
+      viewBtn.addEventListener("click", () => viewCodeRecord(record.id));
+
+      // 删除按钮
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "btn btn-sm btn-danger delete-history-btn";
+      deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+      deleteBtn.addEventListener("click", () => deleteCodeRecord(record.id));
+
+      actions.appendChild(viewBtn);
+      actions.appendChild(deleteBtn);
+      historyItem.appendChild(actions);
+
+      // 添加历史记录项到容器
+      container.appendChild(historyItem);
+    });
 
     // 添加分页控件
     if (codeRecords.total > 0) {
       const totalPages = Math.ceil(codeRecords.total / 10);
 
-      historyHTML += `
-        <div class="pagination-container">
-          <div class="pagination">
-      `;
+      // 创建分页容器
+      const paginationContainer = document.createElement("div");
+      paginationContainer.className = "pagination-container";
+
+      const pagination = document.createElement("div");
+      pagination.className = "pagination";
 
       // 上一页按钮
       if (codeRecords.currentPage > 1) {
-        historyHTML += `
-          <button class="pagination-btn prev-page" data-page="${
-            codeRecords.currentPage - 1
-          }">
-            <i class="fas fa-chevron-left"></i> Previous
-          </button>
-        `;
+        const prevBtn = document.createElement("button");
+        prevBtn.className = "pagination-btn prev-page";
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+        prevBtn.setAttribute("data-page", codeRecords.currentPage - 1);
+        prevBtn.addEventListener("click", () =>
+          fetchCodeRecords(codeRecords.currentPage - 1, 10)
+        );
+        pagination.appendChild(prevBtn);
       }
 
       // 页码按钮
@@ -241,43 +302,41 @@ document.addEventListener("DOMContentLoaded", function () {
       const endPage = Math.min(totalPages, codeRecords.currentPage + 2);
 
       for (let i = startPage; i <= endPage; i++) {
-        historyHTML += `
-          <button class="pagination-btn page-num ${
-            i === codeRecords.currentPage ? "active" : ""
-          }" data-page="${i}">
-            ${i}
-          </button>
-        `;
+        const pageBtn = document.createElement("button");
+        pageBtn.className = `pagination-btn page-num ${
+          i === codeRecords.currentPage ? "active" : ""
+        }`;
+        pageBtn.textContent = i;
+        pageBtn.setAttribute("data-page", i);
+        pageBtn.addEventListener("click", () => fetchCodeRecords(i, 10));
+        pagination.appendChild(pageBtn);
       }
 
       // 下一页按钮
       if (codeRecords.currentPage < totalPages) {
-        historyHTML += `
-          <button class="pagination-btn next-page" data-page="${
-            codeRecords.currentPage + 1
-          }">
-            Next <i class="fas fa-chevron-right"></i>
-          </button>
-        `;
+        const nextBtn = document.createElement("button");
+        nextBtn.className = "pagination-btn next-page";
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        nextBtn.setAttribute("data-page", codeRecords.currentPage + 1);
+        nextBtn.addEventListener("click", () =>
+          fetchCodeRecords(codeRecords.currentPage + 1, 10)
+        );
+        pagination.appendChild(nextBtn);
       }
 
-      historyHTML += `
-          </div>
-          <div class="pagination-info">
-            Showing ${(codeRecords.currentPage - 1) * 10 + 1}-${Math.min(
-        codeRecords.currentPage * 10,
-        codeRecords.total
-      )} of ${codeRecords.total} records
-          </div>
-        </div>
-      `;
+      paginationContainer.appendChild(pagination);
+
+      // 分页信息
+      const paginationInfo = document.createElement("div");
+      paginationInfo.className = "pagination-info";
+      const start = (codeRecords.currentPage - 1) * 10 + 1;
+      const end = Math.min(codeRecords.currentPage * 10, codeRecords.total);
+      paginationInfo.textContent = `Showing ${start}-${end} of ${codeRecords.total} records`;
+      paginationContainer.appendChild(paginationInfo);
+
+      // 添加分页到容器
+      container.appendChild(paginationContainer);
     }
-
-    // 更新容器内容
-    container.innerHTML = historyHTML;
-
-    // 添加事件监听器
-    addHistoryEventListeners(container);
   }
 
   // 添加历史记录事件监听器
@@ -290,12 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.addEventListener("click", function () {
         const historyItem = this.closest(".history-item");
         const recordId = historyItem.getAttribute("data-id");
-        // TODO: 实现查看具体代码的功能
-        showToast(
-          "info",
-          "Feature Coming Soon",
-          "View feature will be available soon."
-        );
+        viewCodeRecord(recordId);
       });
     });
 
@@ -317,6 +371,76 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchCodeRecords(page, 10);
       });
     });
+  }
+
+  // 查看代码记录详情
+  function viewCodeRecord(recordId) {
+    if (!recordId) return;
+
+    // 显示加载提示
+    showToast("info", "Loading", "Retrieving code record...");
+
+    // 查找缓存中的记录
+    const record = codeRecords.items.find((item) => item.id == recordId);
+
+    if (record && record.content) {
+      // 显示结果卡片
+      const resultsCard = document.getElementById("results-card");
+      if (resultsCard) {
+        // 显示卡片
+        resultsCard.style.display = "block";
+
+        // 隐藏原始代码面板
+        const originalPanel = document.querySelector(".code-panel:first-child");
+        if (originalPanel) {
+          originalPanel.style.display = "none";
+        }
+
+        // 让注释代码面板占据全部宽度
+        const annotatedPanel = document.querySelector(".code-panel:last-child");
+        if (annotatedPanel) {
+          annotatedPanel.style.flexBasis = "100%";
+        }
+
+        // 获取注释代码容器并设置内容
+        const annotatedCode = document.getElementById("annotated-code");
+        if (annotatedCode) {
+          // 清空之前的内容
+          annotatedCode.innerHTML = "";
+
+          // 设置新内容
+          annotatedCode.innerHTML = record.content;
+
+          // 添加样式确保代码显示正确
+          const preElements = annotatedCode.querySelectorAll("pre");
+          if (preElements.length > 0) {
+            preElements.forEach((pre) => {
+              pre.style.maxWidth = "100%";
+              pre.style.overflow = "auto";
+              pre.style.whiteSpace = "pre-wrap";
+              pre.style.wordBreak = "break-word";
+              pre.style.margin = "0 auto";
+              pre.style.boxSizing = "border-box";
+            });
+          }
+
+          // 滚动到结果卡片
+          resultsCard.scrollIntoView({ behavior: "smooth" });
+
+          showToast(
+            "success",
+            "Record Loaded",
+            "Code record has been loaded successfully."
+          );
+        }
+      }
+    } else {
+      showToast(
+        "error",
+        "Record Not Found",
+        "Could not find the requested code record."
+      );
+    }
   }
 
   // 删除代码历史记录
@@ -721,11 +845,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // 禁用按钮，防止重复提交
       annotateBtn.disabled = true;
 
-      // 准备请求数据
-      const requestData = {
-        file_name: "code_snippet.txt", // 默认文件名
-      };
-
       // 如果有文件，处理文件上传
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
@@ -742,8 +861,10 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        // 更新文件名
-        requestData.file_name = file.name;
+        // 准备请求数据 - 只包含文件相关字段
+        const requestData = {
+          file_name: file.name,
+        };
 
         // 读取文件并转换为Base64
         const reader = new FileReader();
@@ -771,7 +892,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       // 如果有代码输入，直接发送
       else if (codeContent) {
-        requestData.code = codeContent;
+        // 准备请求数据 - 只包含代码字段
+        const requestData = {
+          code: codeContent,
+        };
         sendAnnotationRequest(requestData);
       }
     });
@@ -791,11 +915,24 @@ document.addEventListener("DOMContentLoaded", function () {
         headers["Authorization"] = `${tokenType} ${token}`;
       }
 
+      // 构建请求参数 - 根据不同的输入方式传递不同的参数
+      const apiRequestData = {};
+
+      // 如果有文件，只传base64_file和file_name
+      if (requestData.base64_file) {
+        apiRequestData.base64_file = requestData.base64_file;
+        apiRequestData.file_name = requestData.file_name;
+      }
+      // 如果是输入的代码，只传code
+      else if (requestData.code) {
+        apiRequestData.code = requestData.code;
+      }
+
       // 发送请求到API
       fetch("http://web.codecommont.com/api/v1/code/comment", {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(apiRequestData),
       })
         .then((response) => {
           if (!response.ok) {
@@ -844,6 +981,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   resultsCard.scrollIntoView({ behavior: "smooth" });
                 }
 
+                // 显示成功消息
                 showToast(
                   "success",
                   "Annotation Complete",
@@ -851,8 +989,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
                 // 重置表单状态
+                const codeTextarea = document.querySelector(".code-textarea");
+                if (codeTextarea) {
+                  codeTextarea.value = "";
+                }
+
+                // 清空文件选择
                 const fileInput = document.getElementById("code-file-input");
-                if (fileInput) fileInput.value = "";
+                if (fileInput) {
+                  fileInput.value = "";
+                }
 
                 // 恢复按钮状态
                 annotateBtn.disabled = false;
@@ -866,6 +1012,21 @@ document.addEventListener("DOMContentLoaded", function () {
               data.message || "Failed to annotate code. Please try again."
             );
             annotateBtn.disabled = false;
+          }
+
+          // 自动刷新历史记录 - 不论成功或失败都刷新
+          if (isLoggedIn && currentUser) {
+            // 获取Dashboard中的历史标签页
+            const historyTab = document.querySelector(
+              '[data-dashboard-tab="history"]'
+            );
+            // 如果History标签页是当前可见的，立即刷新
+            if (historyTab && historyTab.classList.contains("active")) {
+              // 延迟一点刷新，确保API操作完成
+              setTimeout(() => {
+                fetchCodeRecords(1, 10);
+              }, 500);
+            }
           }
         })
         .catch((error) => {
