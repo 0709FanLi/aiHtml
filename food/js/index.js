@@ -367,13 +367,21 @@ function initEventListeners() {
       const reader = new FileReader();
 
       reader.onload = function (e) {
+        // 保存完整的base64数据，包括前缀
         state.uploadedImage = e.target.result;
-        // Show preview
+
+        // 显示预览
         elements.upload.area.innerHTML = `
-                            <img src="${state.uploadedImage}" alt="Uploaded Food" style="max-width: 100%; max-height: 200px; margin-bottom: 10px;">
-                            <p class="upload-text">Click to change image</p>
-                        `;
+          <img src="${state.uploadedImage}" alt="Uploaded Food" style="max-width: 100%; max-height: 200px; margin-bottom: 10px;">
+          <p class="upload-text">Click to change image</p>
+        `;
         elements.buttons.analyze.disabled = false;
+
+        // 调试上传的图片格式
+        console.log(
+          "上传的图片base64格式:",
+          state.uploadedImage.substring(0, 50) + "..."
+        );
       };
 
       reader.readAsDataURL(file);
@@ -381,88 +389,243 @@ function initEventListeners() {
   });
 
   // Analyze button
-  elements.buttons.analyze.addEventListener("click", () => {
-    // Check if user has credits
-    if (state.user) {
-      if (state.user.credits <= 0) {
-        alert("You have used up your credits. Please purchase more.");
-        showView("pricing");
-        return;
-      }
-      state.user.credits--;
-      elements.user.credits.textContent = state.user.credits;
-      updateLocalStorage();
-    } else {
-      state.creditsUsed++;
-      if (state.creditsUsed > state.maxFreeCredits) {
-        alert(
-          "You have used up your free credits. Please login or purchase more."
-        );
-        showView("auth");
-        return;
+  elements.buttons.analyze.onclick = async function () {
+    // 检查用户是否登录
+    let token = null;
+    const stored = localStorage.getItem("healthyDietUser");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // 优先使用顶层的token，也兼容user对象内的token
+        token =
+          parsed.access_token ||
+          (parsed.user && parsed.user.access_token) ||
+          null;
+
+        // 确保已登录状态下state.user也是正确的
+        if (token && !state.user) {
+          state.user = parsed.user || parsed;
+          updateUserDisplay();
+          console.log("Analyze按钮恢复用户状态成功，token存在");
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
       }
     }
 
-    // Randomly select a food for analysis
-    const foodKeys = Object.keys(foodAnalysis);
-    const randomFood =
-      foodAnalysis[foodKeys[Math.floor(Math.random() * foodKeys.length)]];
-    state.currentFood = randomFood;
-
-    // Update analysis view
-    elements.analysis.image.src = randomFood.image;
-    elements.analysis.name.textContent = randomFood.name;
-    elements.analysis.caloriesTag.textContent = `${randomFood.calories} Calories`;
-
-    if (randomFood.isHealthy) {
-      elements.analysis.healthTag.textContent = "Healthy Choice";
-      elements.analysis.healthTag.className = "result-tag tag-success";
-    } else {
-      elements.analysis.healthTag.textContent = "Occasional Treat";
-      elements.analysis.healthTag.className = "result-tag tag-warning";
+    // 强制状态检查：即使有token也需要确认state.user存在
+    if (!token || !state.user) {
+      console.log(
+        "分析食物前检查登录状态：token=",
+        !!token,
+        "state.user=",
+        !!state.user
+      );
+      showNotification("Please login before analyzing food.", "warning");
+      showView("auth");
+      return;
     }
 
-    elements.analysis.text.textContent = randomFood.analysis;
+    // 检查图片 - 优先使用state.uploadedImage
+    if (state.uploadedImage) {
+      console.log("使用已上传的图片进行分析");
 
-    // Generate related recipes
-    elements.analysis.recipes.innerHTML = "";
-    randomFood.recommendations.forEach((recId) => {
-      const recipe = recipes.find((r) => r.id === recId);
-      if (recipe) {
-        const recipeCard = document.createElement("div");
-        recipeCard.className = "card recipe-card";
-        recipeCard.dataset.id = recipe.id;
-        recipeCard.innerHTML = `
-                            <img src="${recipe.image}" alt="${recipe.name}" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">${recipe.name}</h3>
-                                <p class="card-text">${recipe.description}</p>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-fire"></i> ${recipe.calories} Calories</span>
-                                    <span><i class="fas fa-clock"></i> ${recipe.time} Minutes</span>
-                                </div>
-                            </div>
-                        `;
-        elements.analysis.recipes.appendChild(recipeCard);
+      // 获取base64字符串，使用完整的data URI格式
+      let base64 = state.uploadedImage;
 
-        // Add click event to recipe card
-        recipeCard.addEventListener("click", () => {
-          showRecipeDetail(recipe.id);
-        });
-      }
-    });
+      // 不再截取前缀部分，保留完整的data URI格式
+      // 输出处理后的base64前缀部分用于调试
+      console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
 
-    // Add to history if logged in
-    if (state.user) {
-      addToHistory({
-        type: "analysis",
-        food: randomFood,
-        date: new Date(),
+      processImageAnalysis(base64, token);
+      return;
+    }
+
+    // 如果state中没有图片，检查input元素
+    const fileInput = document.getElementById("foodImageInput");
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+      showNotification("Please upload a food image.", "warning");
+      return;
+    }
+
+    const file = fileInput.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification("Image size must not exceed 5MB.", "error");
+      return;
+    }
+
+    // 转base64
+    const toBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        // 不再分割data URI，保留完整格式
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
+
+    try {
+      const base64 = await toBase64(file);
+      processImageAnalysis(base64, token);
+    } catch (error) {
+      console.error("转换图片失败:", error);
+      showNotification("Failed to read image.", "error");
+    }
+  };
+
+  // 抽取图片分析处理逻辑为独立函数
+  function processImageAnalysis(base64, token) {
+    elements.buttons.analyze.disabled = true;
+    elements.buttons.analyze.textContent = "Analyzing...";
+    elements.buttons.analyze.style.pointerEvents = "none";
+
+    // 调试输出，查看base64格式
+    console.log("发送的base64格式:", base64.substring(0, 50) + "...");
+
+    // 确保使用完整的base64字符串 (包含data:image前缀)
+    let fullBase64 = base64;
+    if (!base64.startsWith("data:image")) {
+      // 如果没有前缀，添加前缀
+      fullBase64 = "data:image/jpeg;base64," + base64;
     }
 
-    showView("analysis");
-  });
+    console.log("发送完整base64格式:", fullBase64.substring(0, 50) + "...");
+
+    fetch("http://web.aigastronome.com/api/v1/gourmet/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ base64_image: fullBase64 }),
+      credentials: "omit",
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          return response.json().then((data) => {
+            throw new Error(data.message || "Food analysis failed.");
+          });
+        }
+      })
+      .then((data) => {
+        // 处理分析结果，渲染到页面
+        if (data && data.ok === 1 && data.data) {
+          const result = data.data;
+
+          // 将分析结果保存到state
+          state.currentFood = {
+            name: result.analysis_result || "未知食物",
+            calories: result.calorie_content || "未知卡路里",
+            analysis: result.summary || "无分析结果",
+            isHealthy: true, // 默认设置为健康食品
+            image: state.uploadedImage, // 使用上传的图片作为展示图片
+            recommendations: [], // 初始化推荐列表
+          };
+
+          // 显示分析结果
+          elements.analysis.image.src = state.uploadedImage;
+          elements.analysis.name.textContent = state.currentFood.name;
+          elements.analysis.caloriesTag.textContent =
+            state.currentFood.calories;
+          elements.analysis.text.textContent = state.currentFood.analysis;
+
+          // 清空并重建推荐食谱列表
+          elements.analysis.recipes.innerHTML = "";
+
+          // 处理推荐的菜品
+          if (
+            result.diet_recommendations &&
+            result.diet_recommendations.length > 0
+          ) {
+            result.diet_recommendations.forEach((recommendation, index) => {
+              // 为每个推荐创建一个虚拟的食谱对象
+              const recipeId = 1000 + index; // 使用1000以上的ID，避免与预定义食谱冲突
+
+              // 创建新的食谱对象
+              const newRecipe = {
+                id: recipeId,
+                name: recommendation.dish_details.dish_name,
+                image: state.currentFood.image, // 使用当前食物图片
+                description: recommendation.recommendation_reason,
+                calories:
+                  recommendation.dish_details.nutrition_data.calories.replace(
+                    " kcal",
+                    ""
+                  ),
+                protein: recommendation.dish_details.nutrition_data.protein,
+                carbs: recommendation.dish_details.nutrition_data.carbohydrates,
+                fat: recommendation.dish_details.nutrition_data.fat,
+                time: recommendation.dish_details.cooking_time.includes("分钟")
+                  ? recommendation.dish_details.cooking_time.match(
+                      /总计(\d+)分钟/
+                    )[1]
+                  : "15", // 默认15分钟
+                healthTips: recommendation.dish_details.health_tips.join("\n"),
+                ingredients: recommendation.dish_details.ingredients,
+                steps: recommendation.dish_details.steps,
+              };
+
+              // 将新食谱添加到recipes数组中
+              if (!recipes.find((r) => r.id === recipeId)) {
+                recipes.push(newRecipe);
+              }
+
+              // 创建食谱卡片
+              const recipeCard = document.createElement("div");
+              recipeCard.className = "card recipe-card";
+              recipeCard.dataset.id = recipeId;
+              recipeCard.innerHTML = `
+                <img src="${state.uploadedImage}" alt="${newRecipe.name}" class="card-image">
+                <div class="card-content">
+                  <h3 class="card-title">${newRecipe.name}</h3>
+                  <p class="card-text">${newRecipe.description}</p>
+                  <div class="card-meta">
+                    <span><i class="fas fa-fire"></i> ${newRecipe.calories} 卡路里</span>
+                    <span><i class="fas fa-clock"></i> ${newRecipe.time} 分钟</span>
+                  </div>
+                </div>
+              `;
+
+              // 添加点击事件
+              recipeCard.addEventListener("click", () => {
+                showRecipeDetail(recipeId);
+              });
+
+              // 添加到推荐列表
+              elements.analysis.recipes.appendChild(recipeCard);
+
+              // 将推荐ID添加到当前食物的推荐列表中
+              state.currentFood.recommendations.push(recipeId);
+            });
+          }
+
+          // 添加到历史记录
+          if (state.user) {
+            addToHistory({
+              type: "analysis",
+              food: state.currentFood,
+              date: new Date(),
+            });
+          }
+
+          // 显示分析结果页面
+          showView("analysis");
+          showNotification("食物分析成功！", "success");
+        } else {
+          showNotification("API返回数据格式异常", "warning");
+        }
+      })
+      .catch((error) => {
+        showNotification(error.message, "error");
+      })
+      .finally(() => {
+        elements.buttons.analyze.disabled = false;
+        elements.buttons.analyze.textContent = "Analyze Food";
+        elements.buttons.analyze.style.pointerEvents = "auto";
+      });
+  }
 
   // Back buttons
   elements.buttons.backToHome.addEventListener("click", () => {
@@ -610,7 +773,22 @@ function doLogin(email, name = null, user = null) {
     // 原有的本地存储逻辑保留
     const storedUser = localStorage.getItem("healthyDietUser");
     if (storedUser) {
-      state.user = JSON.parse(storedUser);
+      try {
+        const parsed = JSON.parse(storedUser);
+        state.user = parsed.user || parsed;
+        // 由于localStorage中的数据结构可能有两种形式，所以需要特殊处理
+        if (parsed.access_token) {
+          state.user.access_token = parsed.access_token;
+        }
+      } catch (error) {
+        console.error("Error parsing stored user data in doLogin:", error);
+        state.user = {
+          name: name || email.split("@")[0],
+          email: email,
+          credits: 5,
+          history: [],
+        };
+      }
     } else {
       state.user = {
         name: name || email.split("@")[0],
@@ -621,8 +799,29 @@ function doLogin(email, name = null, user = null) {
     }
   }
 
-  // 更新本地存储
-  localStorage.setItem("healthyDietUser", JSON.stringify(state.user));
+  // 更新本地存储 - 确保之前存储的token不会被覆盖
+  const storedData = localStorage.getItem("healthyDietUser");
+  if (storedData) {
+    try {
+      const parsed = JSON.parse(storedData);
+      if (parsed.access_token && !state.user.access_token) {
+        // 保留原有的token
+        state.user.access_token = parsed.access_token;
+      }
+      localStorage.setItem(
+        "healthyDietUser",
+        JSON.stringify({
+          ...parsed,
+          user: state.user,
+        })
+      );
+    } catch (error) {
+      console.error("Error updating local storage:", error);
+      localStorage.setItem("healthyDietUser", JSON.stringify(state.user));
+    }
+  } else {
+    localStorage.setItem("healthyDietUser", JSON.stringify(state.user));
+  }
 
   // 更新UI显示
   updateUserDisplay();
@@ -632,19 +831,73 @@ function doLogin(email, name = null, user = null) {
   showView(state.previousView || "home");
 }
 
-// Update user display
+// 封装登出事件绑定，确保每次都只绑定一次
+function bindLogoutEvent() {
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (!logoutBtn) return;
+  // 先移除所有旧事件
+  logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+  const newLogoutBtn = document.getElementById("logoutBtn");
+  newLogoutBtn.onclick = function () {
+    let token = null;
+    const stored = localStorage.getItem("healthyDietUser");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        token = parsed.access_token || null;
+      } catch {}
+    }
+    if (token) {
+      fetch("http://web.aigastronome.com/api/v1/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "omit",
+      }).finally(() => {
+        localStorage.clear();
+        state.user = null;
+        state.creditsUsed = 0;
+        updateUserDisplay();
+        showView("home");
+      });
+    } else {
+      localStorage.clear();
+      state.user = null;
+      state.creditsUsed = 0;
+      updateUserDisplay();
+      showView("home");
+    }
+  };
+}
+
 function updateUserDisplay() {
   let userObj = state.user;
+  // 如果state中没有用户信息，尝试从localStorage获取
   if (!userObj) {
     const stored = localStorage.getItem("healthyDietUser");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         userObj = parsed.user || parsed;
-      } catch {}
+
+        // 同步更新state.user以确保状态一致
+        state.user = userObj;
+
+        // 在控制台记录状态，帮助调试
+        const hasToken = !!(parsed.access_token || userObj.access_token);
+        console.log("从localStorage恢复用户信息成功，有token:", hasToken);
+      } catch (error) {
+        console.error("解析localStorage中的用户数据出错:", error);
+        userObj = null;
+      }
     }
   }
+
   const logoutBtn = document.getElementById("logoutBtn");
+
+  // 如果有用户信息，显示用户状态
   if (userObj) {
     elements.nav.login.style.display = "none";
     elements.user.info.style.display = "flex";
@@ -656,46 +909,18 @@ function updateUserDisplay() {
       .toUpperCase();
     if (logoutBtn) {
       logoutBtn.style.display = "inline-block";
-      // 重新绑定事件，防止丢失
-      logoutBtn.onclick = null;
-      logoutBtn.onclick = function () {
-        let token = null;
-        const stored = localStorage.getItem("healthyDietUser");
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            token = parsed.access_token || null;
-          } catch {}
-        }
-        if (token) {
-          fetch("http://web.aigastronome.com/api/v1/auth/logout", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            credentials: "omit",
-          }).finally(() => {
-            localStorage.clear();
-            state.user = null;
-            state.creditsUsed = 0;
-            updateUserDisplay();
-            showView("home");
-          });
-        } else {
-          localStorage.clear();
-          state.user = null;
-          state.creditsUsed = 0;
-          updateUserDisplay();
-          showView("home");
-        }
-      };
+      bindLogoutEvent();
     }
   } else {
+    // 没有用户信息时，显示登录按钮
     elements.nav.login.style.display = "block";
     elements.user.info.style.display = "none";
     if (logoutBtn) logoutBtn.style.display = "none";
   }
+}
+
+function setupLogoutButton() {
+  bindLogoutEvent();
 }
 
 // Add item to history
@@ -828,8 +1053,16 @@ function init() {
   // Check for existing user
   const storedUser = localStorage.getItem("healthyDietUser");
   if (storedUser) {
-    state.user = JSON.parse(storedUser);
-    updateUserDisplay();
+    try {
+      const parsed = JSON.parse(storedUser);
+      // 同步state.user和localStorage中的user数据
+      state.user = parsed.user || parsed;
+      updateUserDisplay();
+    } catch (error) {
+      console.error("Error parsing stored user data:", error);
+      localStorage.removeItem("healthyDietUser");
+      state.user = null;
+    }
   }
 
   initEventListeners();
@@ -1137,6 +1370,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const userData = data.data.user || {};
             const credits =
               typeof userData.credits === "number" ? userData.credits : 0;
+            // 确保token直接保存在顶层，也保留在loginInfo.user中以保证兼容性
             const loginInfo = {
               access_token: data.data.access_token,
               refresh_token: data.data.refresh_token,
@@ -1151,16 +1385,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 created_at: userData.created_at,
                 last_login_at: userData.last_login_at,
                 credits: credits,
+                access_token: data.data.access_token, // 也在user对象中存储token以兼容各种情况
+                refresh_token: data.data.refresh_token,
               },
             };
             localStorage.setItem("healthyDietUser", JSON.stringify(loginInfo));
-            // 更新全局state.user
+
+            // 同步更新全局state.user
             state.user = loginInfo.user;
+
+            // 立即更新UI显示
             updateUserDisplay();
+            console.log(
+              "登录成功，access_token已保存",
+              !!data.data.access_token
+            );
           }
+
+          // 原有的登录处理函数，确保兼容性
           if (typeof doLogin === "function") {
             doLogin(email, data.data.user?.name, data.data.user);
           }
+
+          // 返回到主页面
           document.getElementById("authView").classList.remove("active");
           document.getElementById("homeView").classList.add("active");
         })
@@ -1175,43 +1422,83 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// 1. 初始化时绑定Logout按钮事件
-function setupLogoutButton() {
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (!logoutBtn) return;
-  logoutBtn.onclick = function () {
-    // 1. 获取token
-    let token = null;
-    const stored = localStorage.getItem("healthyDietUser");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        token = parsed.access_token || null;
-      } catch {}
+// 注册按钮事件绑定和注册逻辑
+const signupBtn = document.getElementById("doSignupBtn");
+if (signupBtn) {
+  signupBtn.onclick = function (e) {
+    e.preventDefault();
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const confirmPassword = document.getElementById(
+      "signupPasswordConfirm"
+    ).value;
+    const agreement = document.getElementById("signupAgreementCheckbox");
+    // 校验
+    if (!name || !email || !password || !confirmPassword) {
+      showNotification("Please fill in all required fields.", "warning");
+      return;
     }
-    // 2. 调用后端登出接口
-    if (token) {
-      fetch("http://web.aigastronome.com/api/v1/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "omit",
-      }).finally(() => {
-        localStorage.clear();
-        state.user = null;
-        state.creditsUsed = 0;
-        updateUserDisplay();
-        showView("home");
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      showNotification("Please enter a valid email address.", "warning");
+      return;
+    }
+    if (password.length < 6) {
+      showNotification("Password must be at least 6 characters.", "warning");
+      return;
+    }
+    if (password !== confirmPassword) {
+      showNotification("Passwords do not match.", "warning");
+      return;
+    }
+    if (!agreement || !agreement.checked) {
+      showNotification(
+        "You must agree to the Terms of Use and Privacy Policy before signing up.",
+        "warning"
+      );
+      return;
+    }
+    // 禁用按钮防止重复提交
+    signupBtn.disabled = true;
+    signupBtn.textContent = "Signing up...";
+    // md5加密
+    const md5Password = md5(password);
+    const md5Confirm = md5(confirmPassword);
+    // 注册API
+    fetch("http://web.aigastronome.com/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        password: md5Password,
+        password_confirm: md5Confirm,
+      }),
+      credentials: "omit",
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          return response.json().then((data) => {
+            throw new Error(data.message || "Registration failed.");
+          });
+        }
+      })
+      .then((data) => {
+        showNotification("Registration successful! Please login.", "success");
+        // 自动切换到登录并填充邮箱
+        document.getElementById("signupForm").style.display = "none";
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("loginEmail").value = email;
+      })
+      .catch((error) => {
+        showNotification(error.message, "error");
+      })
+      .finally(() => {
+        signupBtn.disabled = false;
+        signupBtn.textContent = "Sign Up";
       });
-    } else {
-      // 没有token直接本地登出
-      localStorage.clear();
-      state.user = null;
-      state.creditsUsed = 0;
-      updateUserDisplay();
-      showView("home");
-    }
   };
 }
