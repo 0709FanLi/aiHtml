@@ -733,6 +733,26 @@ function initEventListeners() {
                 // 检查如果点击的是"查看详情"链接，则不要触发整个卡片的点击事件
                 if (e.target.closest(".view-recipe-details")) {
                   e.preventDefault();
+                  // 获取食谱ID并显示详情
+                  const detailLink = e.target.closest(".view-recipe-details");
+                  const recipeId = detailLink.getAttribute("data-recipe-id");
+                  showRecipeDetailsModal({
+                    id: recipeId,
+                    title: newRecipe.name,
+                    image: newRecipe.image || "",
+                    calories: newRecipe.calories,
+                    protein: newRecipe.protein,
+                    carbs: newRecipe.carbs,
+                    fat: newRecipe.fat,
+                    time: newRecipe.time,
+                    healthTips: newRecipe.healthTips,
+                    ingredients: newRecipe.ingredients.map((ingredient) =>
+                      ingredient.replace(/^\d+\.\s*/, "")
+                    ),
+                    steps: newRecipe.steps.map((step) =>
+                      step.replace(/^\d+\.\s*/, "")
+                    ),
+                  });
                   return;
                 }
                 showRecipeDetail(recipeId);
@@ -1774,7 +1794,9 @@ function showHistoryDetailModal(item) {
     const recipeData = {
       id: item.recipe.id,
       title: item.recipe.name,
-      image: item.recipe.image,
+      image:
+        item.recipe.image ||
+        "https://images.unsplash.com/photo-1484723091739-30a097e8f929", // 默认图片
       calories: item.recipe.calories,
       protein: item.recipe.protein,
       carbs: item.recipe.carbs,
@@ -1981,10 +2003,106 @@ function init() {
       updateHistoryView();
     });
   });
+
+  // 绑定静态页面中的"View Details"按钮
+  console.log("绑定静态的View Details按钮");
+  document.querySelectorAll(".view-recipe-details").forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      const recipeId = this.getAttribute("data-recipe-id");
+      if (recipeId) {
+        // 查找对应的食谱
+        const recipe = recipes.find((r) => r.id == recipeId);
+        if (recipe) {
+          showRecipeDetailsModal({
+            id: recipe.id,
+            title: recipe.name,
+            image: recipe.image || "",
+            calories: recipe.calories,
+            protein: recipe.protein,
+            carbs: recipe.carbs,
+            fat: recipe.fat,
+            time: recipe.time,
+            healthTips: recipe.healthTips,
+            ingredients: recipe.ingredients.map((ingredient) =>
+              ingredient.replace(/^\d+\.\s*/, "")
+            ),
+            steps: recipe.steps.map((step) => step.replace(/^\d+\.\s*/, "")),
+          });
+        }
+      }
+    });
+  });
 }
 
 // Run initialization when DOM is loaded
 document.addEventListener("DOMContentLoaded", init);
+
+// 添加全局事件委托，确保所有View Details按钮都能正确工作
+document.addEventListener("click", function (e) {
+  // 处理所有view-recipe-details按钮点击
+  if (e.target.closest(".view-recipe-details")) {
+    e.preventDefault();
+    const detailLink = e.target.closest(".view-recipe-details");
+    const recipeId = detailLink.getAttribute("data-recipe-id");
+    if (recipeId) {
+      const recipe = recipes.find((r) => r.id == recipeId);
+      if (recipe) {
+        showRecipeDetailsModal({
+          id: recipe.id,
+          title: recipe.name,
+          image: recipe.image || "",
+          calories: recipe.calories,
+          protein: recipe.protein,
+          carbs: recipe.carbs,
+          fat: recipe.fat,
+          time: recipe.time,
+          healthTips: recipe.healthTips,
+          ingredients: recipe.ingredients.map((ingredient) =>
+            ingredient.replace(/^\d+\.\s*/, "")
+          ),
+          steps: recipe.steps.map((step) => step.replace(/^\d+\.\s*/, "")),
+        });
+      }
+    }
+  }
+
+  // 处理历史记录中的详情按钮点击
+  if (e.target.closest(".history-item .view-detail")) {
+    e.preventDefault();
+    e.stopPropagation(); // 防止冒泡到父元素
+
+    const historyItem = e.target.closest(".history-item");
+    if (historyItem) {
+      const itemId = historyItem.getAttribute("data-id");
+
+      // 从历史记录中找到对应的项目
+      if (state.user && state.user.history) {
+        const item = state.user.history.find((item) => {
+          if (item.type === "analysis" && item.food.id === itemId) return true;
+          if (item.type === "recipe" && item.recipe.id == itemId) return true;
+          return false;
+        });
+
+        if (item) {
+          showHistoryDetailModal(item);
+        }
+      }
+    }
+  }
+
+  // 处理食谱详情弹窗关闭按钮点击
+  if (e.target.closest("#recipeDetailsModal button.btn-outline")) {
+    e.preventDefault();
+    document.getElementById("recipeDetailsModal").style.display = "none";
+  }
+
+  // 处理历史记录详情弹窗关闭按钮点击
+  if (e.target.closest("#historyDetailModal #closeDetailBtn")) {
+    e.preventDefault();
+    document.getElementById("historyDetailModal").style.display = "none";
+  }
+});
 
 // 弹窗显示逻辑
 document.getElementById("footerPrivacy").onclick = function (e) {
@@ -2419,3 +2537,66 @@ if (signupBtn) {
       });
   };
 }
+// 初始化时运行
+document.addEventListener("DOMContentLoaded", function () {
+  // 更改界面中的中文文本为英文
+  // 分析结果视图文本修改
+  document.querySelector("#analyzedFoodName").textContent = "Food Name";
+  document.querySelector("#foodHealthTag").textContent = "Healthy Choice";
+  document.querySelector("#foodAnalysisText").textContent =
+    "Analysis results will be displayed here...";
+  document.querySelector("#recommendationsSection h3").textContent =
+    "Recommended Healthy Recipes";
+  document.querySelector("#backToHomeBtn").innerHTML =
+    '<i class="fas fa-arrow-left"></i> Back to Home';
+
+  // 历史记录视图文本修改
+  document.querySelector("#historyView .hero h1").textContent = "Your History";
+  document.querySelector("#historyView .hero p").textContent =
+    "View and access previously analyzed foods and browsed recipes.";
+  document.querySelector("#loginPrompt h2").textContent =
+    "Please Login to View Your History";
+  document.querySelector("#loginPrompt p").textContent =
+    "Login to see all analysis records and browsed recipes";
+  document.querySelector("#historyLoginBtn").textContent = "Login / Register";
+  document.querySelector("#analysisTabBtn").textContent = "Food Analysis";
+  document.querySelector("#recipeTabBtn").textContent = "Recipe Browse";
+  document.querySelector("#historySearchInput").placeholder =
+    "Search history...";
+  document.querySelector("#clearHistoryBtn").innerHTML =
+    '<i class="fas fa-trash"></i> Clear History';
+
+  // 食谱详情视图文本修改
+  document.querySelector(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(2)"
+  ).textContent = "Calories";
+  document.querySelector(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(4)"
+  ).textContent = "Protein";
+  document.querySelector(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(6)"
+  ).textContent = "Carbs";
+  document.querySelector(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(8)"
+  ).textContent = "Fat";
+  document.querySelector(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(10)"
+  ).textContent = "Minutes";
+  document.querySelector(
+    "#recipeDetailView .recipe-section h3:nth-of-type(1)"
+  ).textContent = "Health Tips";
+  document.querySelector(
+    "#recipeDetailView .recipe-section h3:nth-of-type(2)"
+  ).textContent = "Ingredients";
+  document.querySelector(
+    "#recipeDetailView .recipe-section h3:nth-of-type(3)"
+  ).textContent = "Steps";
+  document.querySelector("#backFromRecipeBtn").innerHTML =
+    '<i class="fas fa-arrow-left"></i> Back';
+
+  // 为每页的"View Details"按钮添加英文文本
+  document.querySelectorAll(".view-recipe-details").forEach((button) => {
+    button.textContent = "View Details";
+    // 不在此添加事件监听，让food/js/index.js处理
+  });
+});
