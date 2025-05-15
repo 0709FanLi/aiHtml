@@ -425,8 +425,20 @@ function initEventListeners() {
         "state.user=",
         !!state.user
       );
-      showNotification("Please login before analyzing food.", "warning");
+      showNotification("请先登录后再分析食物", "warning");
       showView("auth");
+      return;
+    }
+
+    // 检查用户积分是否足够
+    const userCredits =
+      typeof state.user.credits === "number" ? state.user.credits : 0;
+    if (userCredits <= 0) {
+      showNotification("Insufficient credits", "warning");
+      // 延迟跳转到价格页面，让用户先看到提示
+      setTimeout(() => {
+        showView("pricing");
+      }, 1500);
       return;
     }
 
@@ -480,7 +492,7 @@ function initEventListeners() {
   // 抽取图片分析处理逻辑为独立函数
   function processImageAnalysis(base64, token) {
     elements.buttons.analyze.disabled = true;
-    elements.buttons.analyze.textContent = "Analyzing...";
+    elements.buttons.analyze.textContent = "分析中...";
     elements.buttons.analyze.style.pointerEvents = "none";
 
     // 调试输出，查看base64格式
@@ -509,7 +521,11 @@ function initEventListeners() {
           return response.json();
         } else {
           return response.json().then((data) => {
-            throw new Error(data.message || "Food analysis failed.");
+            // 特殊处理积分不足的情况
+            if (data.ok === 2 && data.message === "Insufficient credits") {
+              throw new Error("Insufficient credits");
+            }
+            throw new Error(data.message || "Failed to analyze food");
           });
         }
       })
@@ -517,6 +533,7 @@ function initEventListeners() {
         // 处理分析结果，渲染到页面
         if (data && data.ok === 1 && data.data) {
           const result = data.data;
+          console.log("API返回的食物分析数据:", result);
 
           // 将分析结果保存到state
           state.currentFood = {
@@ -547,6 +564,32 @@ function initEventListeners() {
               // 为每个推荐创建一个虚拟的食谱对象
               const recipeId = 1000 + index; // 使用1000以上的ID，避免与预定义食谱冲突
 
+              // 计算大致的烹饪时间（从文本中提取数字）
+              let cookingTime = "15";
+              if (recommendation.dish_details.cooking_time) {
+                const timeMatch =
+                  recommendation.dish_details.cooking_time.match(
+                    /总计(\d+)分钟/
+                  );
+                if (timeMatch && timeMatch[1]) {
+                  cookingTime = timeMatch[1];
+                }
+              }
+
+              // 处理健康提示，从Markdown格式转换为HTML
+              let healthTipsHtml = "";
+              if (
+                recommendation.dish_details.health_tips &&
+                recommendation.dish_details.health_tips.length > 0
+              ) {
+                healthTipsHtml = recommendation.dish_details.health_tips
+                  .map((tip) => {
+                    // 提取加粗部分并应用HTML标签
+                    return tip.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                  })
+                  .join("<br>");
+              }
+
               // 创建新的食谱对象
               const newRecipe = {
                 id: recipeId,
@@ -561,12 +604,8 @@ function initEventListeners() {
                 protein: recommendation.dish_details.nutrition_data.protein,
                 carbs: recommendation.dish_details.nutrition_data.carbohydrates,
                 fat: recommendation.dish_details.nutrition_data.fat,
-                time: recommendation.dish_details.cooking_time.includes("分钟")
-                  ? recommendation.dish_details.cooking_time.match(
-                      /总计(\d+)分钟/
-                    )[1]
-                  : "15", // 默认15分钟
-                healthTips: recommendation.dish_details.health_tips.join("\n"),
+                time: cookingTime,
+                healthTips: healthTipsHtml,
                 ingredients: recommendation.dish_details.ingredients,
                 steps: recommendation.dish_details.steps,
               };
@@ -616,17 +655,37 @@ function initEventListeners() {
 
           // 显示分析结果页面
           showView("analysis");
-          showNotification("食物分析成功！", "success");
+          showNotification("Food analysis successful!", "success");
+        } else if (
+          data &&
+          data.ok === 2 &&
+          data.message === "Insufficient credits"
+        ) {
+          // 积分不足的情况
+          showNotification("Insufficient credits", "warning");
+          // 延迟跳转到价格页面
+          setTimeout(() => {
+            showView("pricing");
+          }, 1500);
         } else {
-          showNotification("API返回数据格式异常", "warning");
+          // 其他异常情况
+          showNotification("Unable to analyze food", "warning");
         }
       })
       .catch((error) => {
-        showNotification(error.message, "error");
+        if (error.message.includes("积分不足")) {
+          showNotification("Insufficient credits", "warning");
+          // 延迟跳转到价格页面，让用户先看到提示
+          setTimeout(() => {
+            showView("pricing");
+          }, 1500);
+        } else {
+          showNotification(error.message, "error");
+        }
       })
       .finally(() => {
         elements.buttons.analyze.disabled = false;
-        elements.buttons.analyze.textContent = "Analyze Food";
+        elements.buttons.analyze.textContent = "分析食物";
         elements.buttons.analyze.style.pointerEvents = "auto";
       });
   }
@@ -686,34 +745,113 @@ function initEventListeners() {
     button.addEventListener("click", () => {
       const plan = button.dataset.plan;
       if (!state.user) {
-        alert("Please login before purchasing credits");
+        showNotification("请先登录后再购买积分", "warning");
+        showView("auth");
+        return;
+      }
+
+      // 获取token，确保用户已登录
+      let token = null;
+      const stored = localStorage.getItem("healthyDietUser");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          token = parsed.access_token || null;
+        } catch (error) {
+          console.error("解析token时出错:", error);
+        }
+      }
+
+      if (!token) {
+        showNotification("登录信息已过期，请重新登录", "warning");
         showView("auth");
         return;
       }
 
       let credits = 0;
+      let amount = 0;
       switch (plan) {
         case "basic":
           credits = 3;
+          amount = 0.99;
           break;
         case "value":
           credits = 8;
+          amount = 1.99;
           break;
         case "monthly":
           credits = 30;
+          amount = 3.99;
           break;
         case "yearly":
           credits = 500;
+          amount = 39.99;
           break;
       }
 
-      // Simulate purchase
-      state.user.credits += credits;
-      elements.user.credits.textContent = state.user.credits;
-      updateLocalStorage();
+      // 禁用按钮，防止重复点击
+      button.disabled = true;
+      button.textContent = "处理中...";
 
-      alert(`Purchase successful! You now have ${state.user.credits} credits.`);
-      showView("home");
+      // 调用API购买积分
+      fetch("http://web.aigastronome.com/api/v1/credits/purchase", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          credits: credits,
+          amount: amount,
+          plan_name: plan,
+        }),
+        credentials: "omit",
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            return response.json().then((data) => {
+              throw new Error(data.message || "购买积分失败");
+            });
+          }
+        })
+        .then((data) => {
+          if (data.ok === 1 && data.data) {
+            // 更新用户积分
+            if (state.user) {
+              state.user.credits =
+                data.data.credits || state.user.credits + credits;
+              elements.user.credits.textContent = state.user.credits;
+              updateLocalStorage();
+            }
+            showNotification(
+              `购买成功！您现在有 ${state.user.credits} 积分`,
+              "success"
+            );
+            // 返回主页
+            showView("home");
+          } else {
+            throw new Error("购买积分失败，请稍后再试");
+          }
+        })
+        .catch((error) => {
+          showNotification(error.message, "error");
+        })
+        .finally(() => {
+          // 恢复按钮状态
+          button.disabled = false;
+          switch (plan) {
+            case "basic":
+            case "value":
+              button.textContent = "Buy";
+              break;
+            case "monthly":
+            case "yearly":
+              button.textContent = "Subscribe";
+              break;
+          }
+        });
     });
   });
 }
@@ -733,7 +871,15 @@ function showRecipeDetail(recipeId) {
   elements.recipe.carbs.textContent = recipe.carbs;
   elements.recipe.fat.textContent = recipe.fat;
   elements.recipe.time.textContent = recipe.time;
-  elements.recipe.healthTips.textContent = recipe.healthTips;
+
+  // 更新健康提示，支持HTML格式
+  if (recipe.healthTips && recipe.healthTips.includes("<strong>")) {
+    // 如果健康提示包含HTML格式
+    elements.recipe.healthTips.innerHTML = recipe.healthTips;
+  } else {
+    // 普通文本格式
+    elements.recipe.healthTips.textContent = recipe.healthTips;
+  }
 
   // Clear and rebuild ingredients list
   elements.recipe.ingredients.innerHTML = "";
@@ -905,8 +1051,24 @@ function updateUserDisplay() {
   if (userObj) {
     elements.nav.login.style.display = "none";
     elements.user.info.style.display = "flex";
-    elements.user.credits.textContent =
+
+    // 更新积分显示，确保正确显示积分数量
+    const creditsValue =
       typeof userObj.credits === "number" ? userObj.credits : 0;
+    elements.user.credits.textContent = creditsValue;
+
+    // 根据积分数量设置不同的颜色
+    const creditsElement = document.getElementById("userCredits");
+    if (creditsElement) {
+      if (creditsValue <= 0) {
+        creditsElement.style.color = "#f44336"; // 红色，表示没有积分
+      } else if (creditsValue < 5) {
+        creditsElement.style.color = "#ff9800"; // 橙色，表示积分较少
+      } else {
+        creditsElement.style.color = "#4caf50"; // 绿色，表示积分充足
+      }
+    }
+
     const userAvatar = document.querySelector(".user-avatar");
     userAvatar.textContent = (userObj.name || userObj.email || "U")
       .charAt(0)

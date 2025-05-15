@@ -184,32 +184,39 @@
             <div class="result-header">
               <img
                 src=""
-                alt="Analyzed Food"
+                alt="已分析食物"
                 class="result-image"
                 id="analyzedFoodImage"
               />
               <div class="result-title">
-                <h3 id="analyzedFoodName">Food Name</h3>
+                <h3 id="analyzedFoodName">食物名称</h3>
                 <div>
                   <span class="result-tag tag-success" id="foodHealthTag"
-                    >Healthy Choice</span
+                    >健康选择</span
                   >
                   <span class="result-tag" id="foodCaloriesTag"
-                    >220 Calories</span
+                    >220 卡路里</span
                   >
                 </div>
               </div>
             </div>
 
             <div class="result-body">
-              <p id="foodAnalysisText">
-                Analysis results will be displayed here...
-              </p>
+              <p id="foodAnalysisText">分析结果将在这里显示...</p>
 
-              <div id="recommendationsSection" style="margin-top: 20px">
-                <h3>Related Healthy Meal Recommendations</h3>
+              <div id="recommendationsSection" style="margin-top: 30px">
+                <h3
+                  style="
+                    margin-bottom: 20px;
+                    color: var(--primary-color);
+                    font-size: 22px;
+                  "
+                >
+                  推荐健康菜谱
+                </h3>
+
                 <div class="grid" id="relatedRecipes">
-                  <!-- Related recipes will be dynamically inserted here -->
+                  <!-- 相关菜谱将在这里动态插入 -->
                 </div>
               </div>
             </div>
@@ -217,7 +224,7 @@
 
           <div style="text-align: center; margin-top: 20px">
             <button class="btn btn-outline" id="backToHomeBtn">
-              <i class="fas fa-arrow-left"></i> Back to Home
+              <i class="fas fa-arrow-left"></i> 返回首页
             </button>
           </div>
         </div>
@@ -228,9 +235,9 @@
         <div class="container">
           <div class="recipe-detail">
             <div class="recipe-header">
-              <img src="" alt="Recipe" id="recipeDetailImage" />
+              <img src="" alt="食谱" id="recipeDetailImage" />
               <div class="recipe-title-container">
-                <h2 id="recipeDetailTitle">Recipe Title</h2>
+                <h2 id="recipeDetailTitle">食谱标题</h2>
               </div>
             </div>
 
@@ -238,44 +245,44 @@
               <div class="recipe-stats">
                 <div class="stat">
                   <div class="stat-value" id="recipeCalories">250</div>
-                  <div class="stat-label">Calories</div>
+                  <div class="stat-label">卡路里</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeProtein">18g</div>
-                  <div class="stat-label">Protein</div>
+                  <div class="stat-label">蛋白质</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeCarbs">30g</div>
-                  <div class="stat-label">Carbohydrates</div>
+                  <div class="stat-label">碳水化合物</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeFat">10g</div>
-                  <div class="stat-label">Fat</div>
+                  <div class="stat-label">脂肪</div>
                 </div>
                 <div class="stat">
                   <div class="stat-value" id="recipeTime">25</div>
-                  <div class="stat-label">Minutes</div>
+                  <div class="stat-label">分钟</div>
                 </div>
               </div>
 
               <div class="recipe-section">
-                <h3>Health Tips</h3>
-                <p id="recipeHealthTips">
-                  Health tips will be displayed here...
-                </p>
+                <h3>健康提示</h3>
+                <div id="recipeHealthTips" class="health-tips-container">
+                  健康提示将在这里显示...
+                </div>
               </div>
 
               <div class="recipe-section">
-                <h3>Ingredients</h3>
+                <h3>食材</h3>
                 <ul class="ingredient-list" id="recipeIngredients">
-                  <!-- Ingredients will be dynamically inserted here -->
+                  <!-- 食材将在这里动态插入 -->
                 </ul>
               </div>
 
               <div class="recipe-section">
-                <h3>Steps</h3>
+                <h3>步骤</h3>
                 <ol class="step-list" id="recipeSteps">
-                  <!-- Steps will be dynamically inserted here -->
+                  <!-- 步骤将在这里动态插入 -->
                 </ol>
               </div>
             </div>
@@ -283,7 +290,7 @@
 
           <div style="text-align: center; margin-top: 20px">
             <button class="btn btn-outline" id="backFromRecipeBtn">
-              <i class="fas fa-arrow-left"></i> Back
+              <i class="fas fa-arrow-left"></i> 返回
             </button>
           </div>
         </div>
