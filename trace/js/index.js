@@ -854,6 +854,42 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
+// 添加通知函数
+function showNotification(message, type = "success", duration = 3000) {
+  const notification = document.getElementById("notification");
+  const notificationMessage = document.getElementById("notificationMessage");
+  notificationMessage.textContent = message;
+
+  // 设置图标样式
+  const notificationIcon = notification.querySelector("i");
+  if (type === "success") {
+    notificationIcon.className = "fas fa-check-circle";
+    notification.className = "toast success";
+  } else if (type === "warning") {
+    notificationIcon.className = "fas fa-exclamation-triangle";
+    notification.className = "toast warning";
+  } else {
+    notificationIcon.className = "fas fa-exclamation-circle";
+    notification.className = "toast error";
+  }
+
+  // 显示通知
+  notification.style.display = "flex";
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 10);
+
+  // 自动关闭
+  if (duration > 0) {
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        notification.style.display = "none";
+      }, 300);
+    }, duration);
+  }
+}
+
 // Animate elements when they come into view
 function animateOnScroll() {
   const fadeElements = document.querySelectorAll(".fade-in");
@@ -1031,3 +1067,197 @@ function clearFormErrors(form) {
     error.classList.remove("active");
   });
 }
+
+// 添加注册事件处理
+document.addEventListener("DOMContentLoaded", function () {
+  // 登录表单提交事件处理
+  const loginBtn = document.getElementById("doLoginBtn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const agreement = document.getElementById("agreeTerms");
+      if (agreement && !agreement.checked) {
+        showNotification(
+          "You must agree to the Terms of Service and Privacy Policy before logging in.",
+          "warning"
+        );
+        return;
+      }
+
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        showNotification("Please fill in all required fields.", "warning");
+        return;
+      }
+
+      const submitBtn = document.getElementById("doLoginBtn");
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Logging in...";
+
+      // md5加密
+      const md5Password = md5(password);
+      const requestData = {
+        email: email,
+        password: md5Password,
+      };
+
+      fetch("http://web.doaitravel.com/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+        credentials: "omit",
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            return response.json().then((data) => {
+              throw new Error(data.message || "Login failed");
+            });
+          }
+        })
+        .then((data) => {
+          showNotification("Login successful!", "success");
+
+          // 保存用户数据和令牌
+          if (data && data.data) {
+            const userData = data.data.user || {};
+            const loginInfo = {
+              access_token: data.data.access_token,
+              refresh_token: data.data.refresh_token,
+              token_type: data.data.token_type,
+              access_token_expires: data.data.access_token_expires,
+              refresh_token_expires: data.data.refresh_token_expires,
+              user: {
+                id: userData.id,
+                name: userData.name || userData.email || "",
+                email: userData.email || "",
+                created_at: userData.created_at,
+                last_login_at: userData.last_login_at,
+                access_token: data.data.access_token,
+                refresh_token: data.data.refresh_token,
+              },
+            };
+
+            localStorage.setItem("tripWeaverUser", JSON.stringify(loginInfo));
+
+            // 更新登录状态
+            isLoggedIn = true;
+            document.body.classList.remove("logged-out");
+            document.body.classList.add("logged-in");
+
+            // 关闭模态框
+            authModal.classList.remove("active");
+
+            // 加载历史记录
+            loadHistory();
+          }
+        })
+        .catch((error) => {
+          showNotification("Login error: " + error.message, "error", 4000);
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        });
+    });
+  }
+
+  // 注册按钮事件处理
+  const signupBtn = document.getElementById("doSignupBtn");
+  if (signupBtn) {
+    signupBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const confirmPassword = document.getElementById(
+        "signupPasswordConfirm"
+      ).value;
+      const agreement = document.getElementById("agreeTermsSignup");
+
+      // 校验
+      if (!name || !email || !password || !confirmPassword) {
+        showNotification("Please fill in all required fields.", "warning");
+        return;
+      }
+
+      const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        showNotification("Please enter a valid email address.", "warning");
+        return;
+      }
+
+      if (password.length < 6) {
+        showNotification("Password must be at least 6 characters.", "warning");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showNotification("Passwords do not match.", "warning");
+        document.getElementById("passwordMatchError").style.display = "block";
+        return;
+      } else {
+        document.getElementById("passwordMatchError").style.display = "none";
+      }
+
+      if (!agreement || !agreement.checked) {
+        showNotification(
+          "You must agree to the Terms of Service and Privacy Policy before signing up.",
+          "warning"
+        );
+        return;
+      }
+
+      // 禁用按钮防止重复提交
+      signupBtn.disabled = true;
+      signupBtn.textContent = "Signing up...";
+
+      // md5加密
+      const md5Password = md5(password);
+      const md5Confirm = md5(confirmPassword);
+
+      // 注册API
+      fetch("http://web.doaitravel.com/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password: md5Password,
+          password_confirm: md5Confirm,
+        }),
+        credentials: "omit",
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            return response.json().then((data) => {
+              throw new Error(data.message || "Registration failed.");
+            });
+          }
+        })
+        .then((data) => {
+          showNotification("Registration successful! Please login.", "success");
+          // 切换到登录表单
+          loginForm.classList.add("active");
+          signupForm.classList.remove("active");
+          authModalTitle.textContent = "Login";
+          document.getElementById("loginEmail").value = email;
+        })
+        .catch((error) => {
+          showNotification(error.message, "error");
+        })
+        .finally(() => {
+          signupBtn.disabled = false;
+          signupBtn.textContent = "Sign Up";
+        });
+    });
+  }
+});
