@@ -12,929 +12,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
-    <style>
-      /* Base Styles */
-      :root {
-        --primary-color: #ff6b81;
-        --secondary-color: #5f27cd;
-        --accent-color: #ff9ff3;
-        --dark-color: #2f3542;
-        --light-color: #f1f2f6;
-        --success-color: #2ed573;
-        --warning-color: #ffa502;
-        --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        --transition: all 0.3s ease;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Poppins", sans-serif;
-        color: var(--dark-color);
-        background-color: var(--light-color);
-        line-height: 1.6;
-        overflow-x: hidden;
-      }
-
-      h1,
-      h2,
-      h3,
-      h4 {
-        font-family: "Playfair Display", serif;
-        font-weight: 700;
-        line-height: 1.2;
-      }
-
-      a {
-        text-decoration: none;
-        color: var(--primary-color);
-        transition: var(--transition);
-      }
-
-      a:hover {
-        color: var(--secondary-color);
-      }
-
-      button {
-        cursor: pointer;
-        font-family: "Poppins", sans-serif;
-        transition: var(--transition);
-      }
-
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-
-      /* Layout */
-      .container {
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 15px;
-      }
-
-      .section {
-        padding: 60px 0;
-      }
-
-      /* Header */
-      header {
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: var(--box-shadow);
-        position: fixed;
-        width: 100%;
-        z-index: 1000;
-      }
-
-      .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 0;
-      }
-
-      .logo {
-        display: flex;
-        align-items: center;
-      }
-
-      .logo i {
-        color: var(--primary-color);
-        font-size: 24px;
-        margin-right: 10px;
-      }
-
-      .logo h2 {
-        color: var(--secondary-color);
-        font-size: 24px;
-      }
-
-      nav ul {
-        display: flex;
-        list-style: none;
-      }
-
-      nav ul li {
-        margin-left: 30px;
-      }
-
-      nav ul li a {
-        color: var(--dark-color);
-        font-weight: 500;
-      }
-
-      nav ul li a:hover {
-        color: var(--primary-color);
-      }
-
-      .auth-buttons {
-        display: flex;
-        gap: 15px;
-      }
-
-      .btn {
-        padding: 10px 20px;
-        border-radius: 30px;
-        border: none;
-        font-weight: 500;
-        text-align: center;
-        display: inline-block;
-        transition: var(--transition);
-      }
-
-      .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-      }
-
-      .btn-primary:hover {
-        background-color: var(--secondary-color);
-        transform: translateY(-3px);
-      }
-
-      .btn-outline {
-        background-color: transparent;
-        color: var(--primary-color);
-        border: 2px solid var(--primary-color);
-      }
-
-      .btn-outline:hover {
-        background-color: var(--primary-color);
-        color: white;
-        transform: translateY(-3px);
-      }
-
-      .menu-toggle {
-        display: none;
-        font-size: 24px;
-        color: var(--dark-color);
-      }
-
-      /* Hero Section */
-      .hero {
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-          url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80");
-        background-size: cover;
-        background-position: center;
-        color: white;
-        position: relative;
-      }
-
-      .hero-content {
-        max-width: 600px;
-        margin-left: 50px;
-      }
-
-      .hero h1 {
-        font-size: 3.5rem;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      }
-
-      .hero p {
-        font-size: 1.2rem;
-        margin-bottom: 30px;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-      }
-
-      .scroll-down {
-        position: absolute;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        animation: bounce 2s infinite;
-        color: white;
-        font-size: 30px;
-      }
-
-      @keyframes bounce {
-        0%,
-        20%,
-        50%,
-        80%,
-        100% {
-          transform: translateY(0) translateX(-50%);
-        }
-        40% {
-          transform: translateY(-30px) translateX(-50%);
-        }
-        60% {
-          transform: translateY(-15px) translateX(-50%);
-        }
-      }
-
-      /* Planner Section */
-      .planner {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: var(--box-shadow);
-        padding: 40px;
-        margin-top: -80px;
-        position: relative;
-        z-index: 10;
-      }
-
-      .section-title {
-        text-align: center;
-        margin-bottom: 40px;
-      }
-
-      .section-title h2 {
-        font-size: 2.5rem;
-        color: var(--secondary-color);
-        margin-bottom: 15px;
-      }
-
-      .section-title p {
-        color: var(--dark-color);
-        max-width: 700px;
-        margin: 0 auto;
-      }
-
-      .planner-form {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-      }
-
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-      }
-
-      .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-family: "Poppins", sans-serif;
-        font-size: 1rem;
-        transition: var(--transition);
-      }
-
-      .form-control:focus {
-        border-color: var(--primary-color);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
-      }
-
-      .form-buttons {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-      }
-
-      .btn-lg {
-        padding: 12px 30px;
-        font-size: 1.1rem;
-      }
-
-      /* Results Section */
-      .results {
-        display: none;
-        margin-top: 40px;
-      }
-
-      .results.active {
-        display: block;
-      }
-
-      .plan-card {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: var(--box-shadow);
-        overflow: hidden;
-        margin-bottom: 30px;
-      }
-
-      .plan-header {
-        background-color: var(--secondary-color);
-        color: white;
-        padding: 20px;
-        text-align: center;
-      }
-
-      .plan-body {
-        padding: 30px;
-      }
-
-      .plan-meta {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #eee;
-      }
-
-      .meta-item {
-        display: flex;
-        align-items: center;
-      }
-
-      .meta-item i {
-        color: var(--primary-color);
-        margin-right: 10px;
-        font-size: 20px;
-      }
-
-      .timeline {
-        position: relative;
-        padding-left: 50px;
-      }
-
-      .timeline::before {
-        content: "";
-        position: absolute;
-        left: 20px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background-color: var(--accent-color);
-      }
-
-      .timeline-item {
-        position: relative;
-        padding-bottom: 30px;
-      }
-
-      .timeline-item:last-child {
-        padding-bottom: 0;
-      }
-
-      .timeline-item::before {
-        content: "";
-        position: absolute;
-        left: -50px;
-        top: 0;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background-color: var(--primary-color);
-        border: 4px solid white;
-        box-shadow: var(--box-shadow);
-      }
-
-      .timeline-time {
-        color: var(--primary-color);
-        font-weight: 600;
-        margin-bottom: 5px;
-      }
-
-      .timeline-title {
-        font-size: 1.2rem;
-        margin-bottom: 5px;
-      }
-
-      .timeline-desc {
-        color: #666;
-      }
-
-      .plan-actions {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-        gap: 10px;
-      }
-
-      /* Pricing Section */
-      .pricing {
-        background-color: var(--light-color);
-      }
-
-      .pricing-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 30px;
-        margin-top: 50px;
-      }
-
-      .pricing-card {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: var(--box-shadow);
-        overflow: hidden;
-        text-align: center;
-        transition: var(--transition);
-      }
-
-      .pricing-card:hover {
-        transform: translateY(-10px);
-      }
-
-      .pricing-header {
-        background-color: var(--secondary-color);
-        color: white;
-        padding: 30px 20px;
-      }
-
-      .pricing-title {
-        font-size: 1.5rem;
-        margin-bottom: 10px;
-      }
-
-      .pricing-price {
-        font-size: 2.5rem;
-        font-weight: 700;
-      }
-
-      .pricing-period {
-        font-size: 0.9rem;
-        opacity: 0.8;
-      }
-
-      .pricing-body {
-        padding: 30px 20px;
-      }
-
-      .pricing-features {
-        list-style: none;
-        margin-bottom: 30px;
-      }
-
-      .pricing-features li {
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-      }
-
-      .pricing-features li:last-child {
-        border-bottom: none;
-      }
-
-      .best-value {
-        position: relative;
-      }
-
-      .best-value::after {
-        content: "Best Value";
-        position: absolute;
-        top: 20px;
-        right: -30px;
-        background-color: var(--success-color);
-        color: white;
-        padding: 5px 30px;
-        transform: rotate(45deg);
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-
-      /* Modal */
-      .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1100;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-      }
-
-      .modal-overlay.active {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .modal {
-        background-color: white;
-        border-radius: 15px;
-        width: 100%;
-        max-width: 500px;
-        padding: 30px;
-        box-shadow: var(--box-shadow);
-        transform: translateY(-50px);
-        transition: all 0.3s ease;
-      }
-
-      .modal-overlay.active .modal {
-        transform: translateY(0);
-      }
-
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      .modal-title {
-        font-size: 1.5rem;
-        color: var(--secondary-color);
-      }
-
-      .modal-close {
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #999;
-        transition: var(--transition);
-      }
-
-      .modal-close:hover {
-        color: var(--primary-color);
-      }
-
-      .modal-body {
-        margin-bottom: 20px;
-      }
-
-      .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-
-      .login-form,
-      .signup-form {
-        display: none;
-      }
-
-      .login-form.active,
-      .signup-form.active {
-        display: block;
-      }
-
-      .form-switch {
-        text-align: center;
-        margin-top: 20px;
-      }
-
-      /* History Section */
-      .history {
-        display: none;
-      }
-
-      .history.active {
-        display: block;
-      }
-
-      .history-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-      }
-
-      .history-card {
-        background-color: white;
-        border-radius: 15px;
-        box-shadow: var(--box-shadow);
-        overflow: hidden;
-        transition: var(--transition);
-      }
-
-      .history-card:hover {
-        transform: translateY(-5px);
-      }
-
-      .history-header {
-        padding: 15px;
-        background-color: var(--secondary-color);
-        color: white;
-      }
-
-      .history-body {
-        padding: 20px;
-      }
-
-      .history-meta {
-        margin-bottom: 15px;
-        font-size: 0.9rem;
-        color: #666;
-      }
-
-      .history-meta span {
-        margin-right: 15px;
-      }
-
-      .history-meta i {
-        margin-right: 5px;
-        color: var(--primary-color);
-      }
-
-      /* Footer */
-      footer {
-        background-color: var(--dark-color);
-        color: white;
-        padding: 50px 0 20px;
-      }
-
-      .footer-content {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
-      }
-
-      .footer-column h3 {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        color: var(--accent-color);
-      }
-
-      .footer-links {
-        list-style: none;
-      }
-
-      .footer-links li {
-        margin-bottom: 10px;
-      }
-
-      .footer-links a {
-        color: #ddd;
-      }
-
-      .footer-links a:hover {
-        color: var(--primary-color);
-      }
-
-      .social-links {
-        display: flex;
-        gap: 15px;
-      }
-
-      .social-links a {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.1);
-        color: white;
-        transition: var(--transition);
-      }
-
-      .social-links a:hover {
-        background-color: var(--primary-color);
-        transform: translateY(-3px);
-      }
-
-      .copyright {
-        text-align: center;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 0.9rem;
-        color: #aaa;
-      }
-
-      /* Responsive Styles */
-      @media (max-width: 991px) {
-        .hero h1 {
-          font-size: 2.8rem;
-        }
-
-        .section {
-          padding: 50px 0;
-        }
-
-        .planner {
-          margin-top: -60px;
-          padding: 30px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .menu-toggle {
-          display: block;
-        }
-
-        nav ul {
-          position: fixed;
-          top: 80px;
-          left: -100%;
-          width: 80%;
-          height: calc(100vh - 80px);
-          background-color: white;
-          flex-direction: column;
-          padding: 20px;
-          transition: var(--transition);
-          box-shadow: var(--box-shadow);
-        }
-
-        nav ul.active {
-          left: 0;
-        }
-
-        nav ul li {
-          margin: 15px 0;
-        }
-
-        .hero-content {
-          margin-left: 0;
-          text-align: center;
-          padding: 0 20px;
-        }
-
-        .hero h1 {
-          font-size: 2.2rem;
-        }
-
-        .section-title h2 {
-          font-size: 2rem;
-        }
-
-        .planner {
-          margin-top: -40px;
-          padding: 20px;
-        }
-
-        .plan-meta {
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .timeline {
-          padding-left: 30px;
-        }
-
-        .timeline::before {
-          left: 10px;
-        }
-
-        .timeline-item::before {
-          left: -30px;
-          width: 15px;
-          height: 15px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hero h1 {
-          font-size: 1.8rem;
-        }
-
-        .hero p {
-          font-size: 1rem;
-        }
-
-        .section-title h2 {
-          font-size: 1.5rem;
-        }
-
-        .btn {
-          padding: 8px 16px;
-          font-size: 0.9rem;
-        }
-
-        .btn-lg {
-          padding: 10px 20px;
-          font-size: 1rem;
-        }
-
-        .pricing-price {
-          font-size: 2rem;
-        }
-      }
-
-      /* Animation Classes */
-      .fade-in {
-        animation: fadeIn 0.5s ease-in-out;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* User States */
-      .logged-out .logged-in-content {
-        display: none;
-      }
-
-      .logged-in .logged-out-content {
-        display: none;
-      }
-
-      /* Toast Notification */
-      .toast {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: white;
-        color: var(--dark-color);
-        padding: 15px 25px;
-        border-radius: 8px;
-        box-shadow: var(--box-shadow);
-        display: flex;
-        align-items: center;
-        transform: translateY(100px);
-        opacity: 0;
-        transition: all 0.3s ease;
-        z-index: 1100;
-      }
-
-      .toast.active {
-        transform: translateY(0);
-        opacity: 1;
-      }
-
-      .toast i {
-        margin-right: 10px;
-        font-size: 20px;
-      }
-
-      .toast.success i {
-        color: var(--success-color);
-      }
-
-      .toast.error i {
-        color: var(--primary-color);
-      }
-
-      /* Loading Animation */
-      .loader {
-        display: none;
-        justify-content: center;
-        align-items: center;
-        height: 100px;
-      }
-
-      .loader.active {
-        display: flex;
-      }
-
-      .loader-circle {
-        width: 15px;
-        height: 15px;
-        background-color: var(--primary-color);
-        border-radius: 50%;
-        margin: 0 5px;
-        animation: bounce 0.5s ease-in-out infinite alternate;
-      }
-
-      .loader-circle:nth-child(2) {
-        animation-delay: 0.15s;
-        background-color: var(--secondary-color);
-      }
-
-      .loader-circle:nth-child(3) {
-        animation-delay: 0.3s;
-        background-color: var(--accent-color);
-      }
-
-      /* Form Check Styles */
-      .form-check {
-        display: flex;
-        align-items: flex-start;
-        margin-bottom: 15px;
-      }
-
-      .form-check-input {
-        margin-top: 6px;
-        margin-right: 10px;
-      }
-
-      .form-check-label {
-        font-size: 0.9rem;
-      }
-
-      .forgot-password-form {
-        display: none;
-      }
-
-      .forgot-password-form.active {
-        display: block;
-      }
-
-      /* Form validation styles */
-      .form-control:invalid {
-        border-color: var(--primary-color);
-      }
-
-      .error-message {
-        color: var(--primary-color);
-        font-size: 0.85rem;
-        margin-top: 5px;
-        display: none;
-      }
-
-      .error-message.active {
-        display: block;
-      }
-    </style>
+    <link rel="stylesheet" href="trace/css/index.css" />
   </head>
   <body class="logged-out">
     <!-- Header -->
@@ -1366,8 +444,11 @@
               <div class="error-message" id="resetEmailError">
                 Please enter a valid email address
               </div>
+              <button type="button" id="requestCodeBtn" class="btn btn-outline">
+                Request Verification Code
+              </button>
             </div>
-            <div id="verificationCodeSection">
+            <div id="verificationCodeSection" style="display: none">
               <div class="form-group">
                 <label for="verificationCode">Verification Code</label>
                 <input
@@ -1429,78 +510,186 @@
           <span class="modal-close" id="closeTermsModal">&times;</span>
         </div>
         <div class="modal-body" style="max-height: 400px; overflow-y: auto">
+          <p class="effective-date">Effective Date: January 1, 2024</p>
+
           <h4>1. Acceptance of Terms</h4>
           <p>
-            By accessing or using TripWeaver's services, you agree to be bound
-            by these Terms of Service and all applicable laws and regulations.
-            If you do not agree with any of these terms, you are prohibited from
-            using or accessing this site.
+            By accessing or using TripWeaver's website, mobile application, API,
+            or any related services (collectively, the "Services"), you agree to
+            be bound by these Terms of Service ("Terms") and all applicable laws
+            and regulations. If you do not agree with any of these terms, you
+            are prohibited from using or accessing the Services. These Terms
+            constitute a legally binding agreement between you and TripWeaver
+            Inc. ("TripWeaver," "we," "us," or "our").
           </p>
 
           <h4>2. Use License</h4>
           <p>
-            Permission is granted to temporarily use TripWeaver's services for
-            personal, non-commercial purposes. This is the grant of a license,
-            not a transfer of title.
+            Subject to your compliance with these Terms, TripWeaver grants you a
+            limited, non-exclusive, non-transferable, revocable license to
+            access and use the Services for personal, non-commercial purposes.
+            This license does not include: (a) any resale or commercial use of
+            the Services; (b) modifying, copying, or creating derivative works
+            based on the Services; (c) using data mining, robots, or similar
+            data gathering methods; (d) downloading or copying any account
+            information for the benefit of another merchant; or (e) any use of
+            the Services that exceeds the scope or violates these Terms.
           </p>
 
           <h4>3. User Accounts</h4>
           <p>
             To access certain features of TripWeaver, you may be required to
-            create an account. You are responsible for maintaining the
-            confidentiality of your account information and for all activities
-            that occur under your account.
+            create an account. You agree to provide accurate, current, and
+            complete information during the registration process and to update
+            such information to keep it accurate, current, and complete. You are
+            solely responsible for safeguarding your password and for all
+            activities that occur under your account. You agree to notify
+            TripWeaver immediately of any unauthorized use of your account or
+            any other breach of security. TripWeaver will not be liable for any
+            loss or damage arising from your failure to comply with this
+            section.
           </p>
 
           <h4>4. Service Description</h4>
           <p>
             TripWeaver provides AI-generated travel itineraries and planning
-            services. We strive to provide accurate and useful information but
-            do not guarantee the accuracy, completeness, or usefulness of any
-            itineraries or information generated.
+            services ("Travel Content"). While we strive to provide accurate and
+            useful information, we do not guarantee the accuracy, completeness,
+            reliability, or usefulness of any Travel Content. Travel Content is
+            provided for general informational purposes only and should not be
+            relied upon as the sole basis for travel decisions. You acknowledge
+            that actual travel conditions, availability, pricing, and options
+            may differ from the Travel Content provided.
           </p>
 
           <h4>5. Payment and Subscription</h4>
           <p>
-            Some features of TripWeaver require payment. By purchasing a
-            subscription or credits, you agree to pay the specified amount. All
-            payments are non-refundable unless otherwise specified.
+            Some features of TripWeaver require payment through a subscription
+            plan or one-time purchases. By selecting a payment plan and
+            providing payment information, you agree to pay the specified amount
+            according to the terms displayed to you at the time of purchase. All
+            payments are non-refundable unless otherwise specified or required
+            by applicable law. If you choose a subscription plan, you authorize
+            TripWeaver to charge your payment method on a recurring basis until
+            you cancel. You may cancel your subscription at any time through
+            your account settings. Cancellation will be effective at the end of
+            your current billing period.
           </p>
 
-          <h4>6. Limitations</h4>
+          <h4>6. Limitations of Liability</h4>
           <p>
-            In no event shall TripWeaver be liable for any damages arising out
-            of the use or inability to use our services, even if we have been
-            notified of the possibility of such damages.
+            To the maximum extent permitted by law, in no event shall
+            TripWeaver, its directors, employees, partners, agents, suppliers,
+            or affiliates be liable for any indirect, incidental, special,
+            consequential, or punitive damages, including without limitation,
+            loss of profits, data, use, goodwill, or other intangible losses,
+            resulting from: (a) your access to or use of or inability to access
+            or use the Services; (b) any conduct or content of any third party
+            on the Services; (c) any content obtained from the Services; and (d)
+            unauthorized access, use, or alteration of your transmissions or
+            content, whether based on warranty, contract, tort (including
+            negligence), or any other legal theory, whether or not we have been
+            informed of the possibility of such damage.
           </p>
 
-          <h4>7. Content</h4>
+          <h4>7. Content and Intellectual Property</h4>
           <p>
             All content generated by our AI service is provided for
-            informational purposes only. TripWeaver does not guarantee the
-            accuracy of any content and is not responsible for any actions taken
-            based on the information provided.
+            informational purposes only. TripWeaver retains all right, title,
+            and interest in and to the Services, including all related
+            intellectual property rights. The TripWeaver name, logo, and all
+            related names, logos, product and service names, designs, and
+            slogans are trademarks of TripWeaver or its affiliates or licensors.
+            You may not use such marks without the prior written permission of
+            TripWeaver. You retain all rights to any content you submit, post,
+            or display on or through the Services. By submitting, posting, or
+            displaying content on or through the Services, you grant us a
+            worldwide, non-exclusive, royalty-free license to use, reproduce,
+            adapt, modify, publish, and distribute such content for the purpose
+            of providing and improving the Services.
           </p>
 
           <h4>8. Changes to Terms</h4>
           <p>
-            TripWeaver reserves the right to modify these terms at any time. We
-            will provide notice of significant changes to these terms by posting
-            the new terms on our site.
+            TripWeaver reserves the right to modify these Terms at any time at
+            our sole discretion. If we make material changes to these Terms, we
+            will provide notice through the Services, or by other means, to
+            provide you the opportunity to review the changes before they become
+            effective. Your continued use of the Services after the effective
+            date of any changes constitutes your acceptance of the modified
+            Terms.
           </p>
 
-          <h4>9. Governing Law</h4>
+          <h4>9. Governing Law and Dispute Resolution</h4>
           <p>
-            These terms shall be governed by and construed in accordance with
+            These Terms shall be governed by and construed in accordance with
             the laws of the jurisdiction in which TripWeaver operates, without
-            regard to its conflict of law provisions.
+            regard to its conflict of law provisions. Any dispute arising from
+            or relating to the subject matter of these Terms shall be finally
+            settled by arbitration, using the English language, administered by
+            the American Arbitration Association (AAA) under its Consumer
+            Arbitration Rules then in effect. The arbitration proceedings shall
+            take place in the city where TripWeaver's headquarters are located,
+            before one arbitrator to be appointed in accordance with AAA rules.
           </p>
 
           <h4>10. Termination</h4>
           <p>
-            TripWeaver may terminate your access to the service, without cause
-            or notice, which may result in the forfeiture and destruction of all
-            information associated with your account.
+            TripWeaver may terminate or suspend your account and access to the
+            Services immediately, without prior notice or liability, for any
+            reason whatsoever, including without limitation if you breach the
+            Terms. Upon termination, your right to use the Services will
+            immediately cease. All provisions of the Terms which by their nature
+            should survive termination shall survive termination, including,
+            without limitation, ownership provisions, warranty disclaimers,
+            indemnity, and limitations of liability.
+          </p>
+
+          <h4>11. User Conduct</h4>
+          <p>
+            You agree not to use the Services to: (a) violate any applicable law
+            or regulation; (b) infringe the rights of any third party; (c)
+            harass, abuse, or harm another person; (d) interfere with or disrupt
+            the Services or servers or networks connected to the Services; (e)
+            attempt to gain unauthorized access to the Services; or (f) use the
+            Services for any fraudulent or unlawful purpose.
+          </p>
+
+          <h4>12. Disclaimer of Warranties</h4>
+          <p>
+            The Services are provided on an "as is" and "as available" basis
+            without any warranties of any kind, either express or implied.
+            TripWeaver disclaims all warranties, including but not limited to
+            the implied warranties of merchantability, fitness for a particular
+            purpose, and non-infringement.
+          </p>
+
+          <h4>13. Geographic Restrictions</h4>
+          <p>
+            TripWeaver makes no representation that the Services are appropriate
+            or available for use in all locations. Accessing the Services from
+            territories where its contents are illegal or unlawful is
+            prohibited. If you choose to access the Services from locations
+            outside the United States, you do so on your own initiative and are
+            responsible for compliance with local laws.
+          </p>
+
+          <h4>14. Entire Agreement</h4>
+          <p>
+            These Terms, together with the Privacy Policy and any other legal
+            notices published by TripWeaver on the Services, shall constitute
+            the entire agreement between you and TripWeaver concerning the
+            Services. If any provision of these Terms is deemed invalid by a
+            court of competent jurisdiction, the invalidity of such provision
+            shall not affect the validity of the remaining provisions of these
+            Terms, which shall remain in full force and effect.
+          </p>
+
+          <h4>15. Contact Information</h4>
+          <p>
+            If you have any questions about these Terms, please contact us at
+            legal@tripweaver.com or by mail at TripWeaver Inc., 123 Travel
+            Street, Suite 500, San Francisco, CA 94107, USA.
           </p>
         </div>
         <div class="modal-footer">
@@ -1517,56 +706,185 @@
           <span class="modal-close" id="closePrivacyModal">&times;</span>
         </div>
         <div class="modal-body" style="max-height: 400px; overflow-y: auto">
+          <p class="effective-date">Effective Date: January 1, 2024</p>
+
           <h4>1. Information We Collect</h4>
           <p>
-            TripWeaver collects information you provide directly, including
-            account information, travel preferences, and payment details. We
-            also collect usage data and device information when you use our
-            services.
+            TripWeaver collects several types of information from and about
+            users of our Services, including:
           </p>
+          <ul>
+            <li>
+              <strong>Personal Information:</strong> Information that identifies
+              you personally, such as your name, email address, telephone
+              number, postal address, payment information, and travel
+              preferences.
+            </li>
+            <li>
+              <strong>Account Information:</strong> Information you provide when
+              creating an account, including your username, password, and
+              profile information.
+            </li>
+            <li>
+              <strong>Travel Information:</strong> Information about your travel
+              plans, destinations, dates, preferences, and requirements that you
+              provide when using our Services.
+            </li>
+            <li>
+              <strong>Usage Data:</strong> Information about how you access and
+              use our Services, including your IP address, browser type, device
+              information, operating system, referring/exit pages, and
+              clickstream data.
+            </li>
+            <li>
+              <strong>Location Data:</strong> With your consent, we may collect
+              precise geolocation data from your mobile device when you use our
+              mobile application.
+            </li>
+            <li>
+              <strong>Communication Data:</strong> Records of your
+              communications with us, including customer support inquiries,
+              feedback, and survey responses.
+            </li>
+          </ul>
 
           <h4>2. How We Use Your Information</h4>
           <p>
-            We use your information to provide, maintain, and improve our
-            services; process transactions; send you notifications; and analyze
-            usage patterns to enhance user experience.
+            We use the information we collect for various purposes, including
+            to:
           </p>
+          <ul>
+            <li>Provide, maintain, and improve our Services</li>
+            <li>Process transactions and manage your account</li>
+            <li>
+              Generate personalized travel itineraries and recommendations
+            </li>
+            <li>
+              Send you notifications, updates, and marketing communications
+            </li>
+            <li>
+              Respond to your comments and questions and provide customer
+              service
+            </li>
+            <li>
+              Monitor and analyze usage patterns, trends, and preferences to
+              enhance user experience
+            </li>
+            <li>
+              Detect, prevent, and address technical issues, fraud, and security
+              breaches
+            </li>
+            <li>
+              Comply with legal obligations and enforce our terms and policies
+            </li>
+          </ul>
 
           <h4>3. Information Sharing</h4>
           <p>
-            We do not sell or rent your personal information to third parties.
-            We may share your information with service providers who perform
-            services on our behalf, or when required by law.
+            We do not sell or rent your personal information to third parties
+            for their marketing purposes. We may share your information in the
+            following circumstances:
           </p>
+          <ul>
+            <li>
+              <strong>Service Providers:</strong> We share information with
+              third-party vendors, consultants, and other service providers who
+              perform services on our behalf, such as payment processing, data
+              analytics, email delivery, hosting, and customer service.
+            </li>
+            <li>
+              <strong>Business Transfers:</strong> If TripWeaver is involved in
+              a merger, acquisition, or sale of all or a portion of its assets,
+              your information may be transferred as part of that transaction.
+            </li>
+            <li>
+              <strong>Legal Requirements:</strong> We may disclose your
+              information if required to do so by law or in response to valid
+              requests by public authorities (e.g., a court or government
+              agency).
+            </li>
+            <li>
+              <strong>Protection of Rights:</strong> We may disclose your
+              information to protect the rights, property, or safety of
+              TripWeaver, our users, or others.
+            </li>
+            <li>
+              <strong>With Your Consent:</strong> We may share your information
+              with third parties when you have given us your consent to do so.
+            </li>
+          </ul>
 
           <h4>4. Data Security</h4>
           <p>
-            We implement appropriate security measures to protect your personal
-            information from unauthorized access or disclosure. However, no
-            internet transmission is completely secure.
+            We implement appropriate technical, administrative, and physical
+            security measures to protect your personal information from
+            unauthorized access, disclosure, alteration, and destruction. These
+            measures include encryption of data in transit and at rest, regular
+            security assessments, and restricted access to personal information.
+            However, please be aware that no method of transmitting or storing
+            data is completely secure. While we strive to protect your
+            information, we cannot guarantee its absolute security. In the event
+            of a data breach that affects your personal information, we will
+            notify you in accordance with applicable laws.
           </p>
 
           <h4>5. Cookies and Tracking Technologies</h4>
           <p>
-            TripWeaver uses cookies and similar technologies to track activity
-            on our service and hold certain information. You can instruct your
-            browser to refuse all cookies or to indicate when a cookie is being
-            sent.
+            TripWeaver uses cookies, web beacons, pixels, and similar
+            technologies to track activity on our Services and to hold certain
+            information. Cookies are small text files that are stored on your
+            device when you visit a website. We use the following types of
+            cookies:
+          </p>
+          <ul>
+            <li>
+              <strong>Essential Cookies:</strong> Necessary for the basic
+              functionality of our Services.
+            </li>
+            <li>
+              <strong>Analytical/Performance Cookies:</strong> Help us analyze
+              how users interact with our Services.
+            </li>
+            <li>
+              <strong>Functionality Cookies:</strong> Allow us to remember
+              choices you make and provide enhanced features.
+            </li>
+            <li>
+              <strong>Targeting/Advertising Cookies:</strong> Used to deliver
+              relevant advertisements and track ad campaign performance.
+            </li>
+          </ul>
+          <p>
+            You can instruct your browser to refuse all cookies or to indicate
+            when a cookie is being sent. However, if you do not accept cookies,
+            you may not be able to use some portions of our Services. For more
+            information about cookies, visit
+            <a href="http://www.allaboutcookies.org" target="_blank"
+              >www.allaboutcookies.org</a
+            >.
           </p>
 
-          <h4>6. Third-Party Links</h4>
+          <h4>6. Third-Party Links and Services</h4>
           <p>
-            Our service may contain links to third-party websites or services
-            that are not owned or controlled by TripWeaver. We have no control
-            over and assume no responsibility for the content, privacy policies,
-            or practices of any third-party websites or services.
+            Our Services may contain links to third-party websites, services, or
+            applications that are not owned or controlled by TripWeaver. This
+            Privacy Policy applies only to our Services. We have no control over
+            and assume no responsibility for the content, privacy policies, or
+            practices of any third-party websites or services. We encourage you
+            to review the privacy policies of any third-party websites or
+            services that you visit.
           </p>
 
           <h4>7. Children's Privacy</h4>
           <p>
-            Our service is not intended for use by children under the age of 13.
+            Our Services are not intended for use by children under the age of
+            13 (or the applicable age of digital consent in your jurisdiction).
             We do not knowingly collect personally identifiable information from
-            children under 13.
+            children under 13. If you are a parent or guardian and you believe
+            your child has provided us with personal information, please contact
+            us. If we become aware that we have collected personal information
+            from children without verification of parental consent, we will take
+            steps to remove that information from our servers.
           </p>
 
           <h4>8. Changes to Privacy Policy</h4>
@@ -1574,21 +892,129 @@
             We may update our Privacy Policy from time to time. We will notify
             you of any changes by posting the new Privacy Policy on this page
             and updating the "effective date" at the top of this Privacy Policy.
+            For significant changes, we will provide additional notice, such as
+            an email notification or a prominent notice within our Services. We
+            encourage you to review this Privacy Policy periodically for any
+            changes. Your continued use of the Services after any changes or
+            revisions to this Privacy Policy shall indicate your agreement with
+            the terms of such revised Privacy Policy.
           </p>
 
           <h4>9. Data Retention</h4>
           <p>
-            We will retain your information for as long as your account is
-            active or as needed to provide you services. We will retain and use
-            your information as necessary to comply with our legal obligations,
-            resolve disputes, and enforce our agreements.
+            We will retain your personal information for as long as necessary to
+            fulfill the purposes outlined in this Privacy Policy, unless a
+            longer retention period is required or permitted by law. The
+            criteria used to determine our retention periods include:
+          </p>
+          <ul>
+            <li>
+              The length of time we have an ongoing relationship with you and
+              provide Services to you
+            </li>
+            <li>Whether there is a legal obligation to which we are subject</li>
+            <li>
+              Whether retention is advisable in light of our legal position
+              (such as for statutes of limitations, litigation, or regulatory
+              investigations)
+            </li>
+          </ul>
+          <p>
+            When we no longer need to use your information for the purposes
+            outlined in this Privacy Policy, we will either delete it from our
+            systems or anonymize it so that it can no longer be associated with
+            you.
           </p>
 
           <h4>10. Your Rights</h4>
           <p>
-            Depending on your location, you may have the right to access,
-            correct, delete, or export your personal information, or object to
-            or restrict the processing of your personal information.
+            Depending on your location, you may have certain rights regarding
+            your personal information, including:
+          </p>
+          <ul>
+            <li>
+              <strong>Access:</strong> The right to access the personal
+              information we hold about you.
+            </li>
+            <li>
+              <strong>Correction:</strong> The right to request correction of
+              inaccurate or incomplete personal information.
+            </li>
+            <li>
+              <strong>Deletion:</strong> The right to request deletion of your
+              personal information in certain circumstances.
+            </li>
+            <li>
+              <strong>Restriction:</strong> The right to request that we
+              restrict the processing of your personal information.
+            </li>
+            <li>
+              <strong>Data Portability:</strong> The right to receive a copy of
+              your personal information in a structured, machine-readable
+              format.
+            </li>
+            <li>
+              <strong>Objection:</strong> The right to object to our processing
+              of your personal information in certain circumstances.
+            </li>
+            <li>
+              <strong>Withdraw Consent:</strong> The right to withdraw consent
+              at any time where we rely on consent to process your personal
+              information.
+            </li>
+          </ul>
+          <p>
+            To exercise these rights, please contact us using the information
+            provided in the "Contact Information" section below. Please note
+            that these rights may be limited in some circumstances by local law
+            requirements. We may ask you to verify your identity before
+            responding to such requests.
+          </p>
+
+          <h4>11. International Data Transfers</h4>
+          <p>
+            Your personal information may be transferred to, and processed in,
+            countries other than the country in which you reside. These
+            countries may have data protection laws that are different from the
+            laws of your country. TripWeaver has implemented appropriate
+            safeguards to ensure that your personal information remains
+            protected in accordance with this Privacy Policy when transferred
+            internationally, including when transferred to countries that may
+            not provide the same level of data protection as your home country.
+          </p>
+
+          <h4>12. Do Not Track Signals</h4>
+          <p>
+            Some browsers offer a "Do Not Track" ("DNT") signal whereby you may
+            indicate your preference regarding tracking of your online
+            activities. We currently do not respond to DNT signals. However, you
+            can set your browser to block certain types of cookies or notify you
+            when they are being used.
+          </p>
+
+          <h4>13. California Privacy Rights</h4>
+          <p>
+            If you are a California resident, the California Consumer Privacy
+            Act (CCPA) grants you specific rights regarding your personal
+            information. For more information about these rights and how to
+            exercise them, please see our California Privacy Notice, which is
+            incorporated into this Privacy Policy by reference.
+          </p>
+
+          <h4>14. Contact Information</h4>
+          <p>
+            If you have any questions, concerns, or requests regarding this
+            Privacy Policy or our privacy practices, please contact us at:
+          </p>
+          <p>
+            Email: privacy@tripweaver.com<br />
+            Postal Address: TripWeaver Inc., 123 Travel Street, Suite 500, San
+            Francisco, CA 94107, USA<br />
+            Phone: +1 800 123 4567
+          </p>
+          <p>
+            We will respond to your request within a reasonable timeframe and in
+            accordance with applicable laws.
           </p>
         </div>
         <div class="modal-footer">
@@ -1603,1053 +1029,6 @@
       <span id="toastMessage">Notification Message</span>
     </div>
 
-    <script>
-      // DOM Elements
-      const menuToggle = document.getElementById("menuToggle");
-      const navMenu = document.getElementById("navMenu");
-      const loginBtn = document.getElementById("loginBtn");
-      const signupBtn = document.getElementById("signupBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const authModal = document.getElementById("authModal");
-      const closeAuthModal = document.getElementById("closeAuthModal");
-      const authModalTitle = document.getElementById("authModalTitle");
-      const loginForm = document.getElementById("loginForm");
-      const signupForm = document.getElementById("signupForm");
-      const switchToSignup = document.getElementById("switchToSignup");
-      const switchToLogin = document.getElementById("switchToLogin");
-      const plannerForm = document.getElementById("plannerForm");
-      const planLoader = document.getElementById("planLoader");
-      const results = document.getElementById("results");
-      const toast = document.getElementById("toast");
-      const planTimeline = document.getElementById("planTimeline");
-      const planTitle = document.getElementById("planTitle");
-      const planLocation = document.getElementById("planLocation");
-      const planTime = document.getElementById("planTime");
-      const planPeople = document.getElementById("planPeople");
-      const historyList = document.getElementById("historyList");
-      const downloadPlan = document.getElementById("downloadPlan");
-      const sharePlan = document.getElementById("sharePlan");
-      const buyPlanButtons = document.querySelectorAll(".buy-plan");
-      const termsModal = document.getElementById("termsModal");
-      const privacyModal = document.getElementById("privacyModal");
-      const closeTermsModal = document.getElementById("closeTermsModal");
-      const closePrivacyModal = document.getElementById("closePrivacyModal");
-      const showTermsLogin = document.getElementById("showTermsLogin");
-      const showPrivacyLogin = document.getElementById("showPrivacyLogin");
-      const showTermsSignup = document.getElementById("showTermsSignup");
-      const showPrivacySignup = document.getElementById("showPrivacySignup");
-      const footerTerms = document.getElementById("footerTerms");
-      const footerPrivacy = document.getElementById("footerPrivacy");
-      let activeModal = null;
-      let sourceElement = null;
-
-      // App State
-      let isLoggedIn = false;
-      let usageCount = 0;
-      let currentPlan = null;
-      let history = [];
-
-      // Sample Data for History
-      const sampleHistory = [
-        {
-          id: 1,
-          title: "A Day in New York City",
-          location: "New York, USA",
-          startTime: "09:00",
-          endTime: "18:00",
-          travelers: 2,
-          date: "2023-05-15",
-        },
-        {
-          id: 2,
-          title: "Tokyo Adventure",
-          location: "Tokyo, Japan",
-          startTime: "10:00",
-          endTime: "20:00",
-          travelers: 1,
-          date: "2023-04-22",
-        },
-        {
-          id: 3,
-          title: "Romantic Paris Getaway",
-          location: "Paris, France",
-          startTime: "11:00",
-          endTime: "22:00",
-          travelers: 2,
-          date: "2023-03-10",
-        },
-      ];
-
-      // Event Listeners
-      window.addEventListener("DOMContentLoaded", initApp);
-      menuToggle.addEventListener("click", toggleMenu);
-      loginBtn.addEventListener("click", openLoginModal);
-      signupBtn.addEventListener("click", openSignupModal);
-      closeAuthModal.addEventListener("click", closeModal);
-      switchToSignup.addEventListener("click", switchToSignupForm);
-      switchToLogin.addEventListener("click", switchToLoginForm);
-      loginForm.addEventListener("submit", handleLogin);
-      signupForm.addEventListener("submit", handleSignup);
-      plannerForm.addEventListener("submit", generatePlan);
-      logoutBtn.addEventListener("click", handleLogout);
-      downloadPlan.addEventListener("click", handleDownloadPlan);
-      sharePlan.addEventListener("click", handleSharePlan);
-      showTermsLogin.addEventListener("click", (e) => showTerms(e, "login"));
-      showPrivacyLogin.addEventListener("click", (e) =>
-        showPrivacy(e, "login")
-      );
-      showTermsSignup.addEventListener("click", (e) => showTerms(e, "signup"));
-      showPrivacySignup.addEventListener("click", (e) =>
-        showPrivacy(e, "signup")
-      );
-      closeTermsModal.addEventListener("click", closeTerms);
-      closePrivacyModal.addEventListener("click", closePrivacy);
-      acceptTerms.addEventListener("click", handleAcceptTerms);
-      acceptPrivacy.addEventListener("click", handleAcceptPrivacy);
-      forgotPassword.addEventListener("click", showForgotPassword);
-      backToLogin.addEventListener("click", backToLoginForm);
-      requestCodeBtn.addEventListener("click", requestVerificationCode);
-      forgotPasswordForm.addEventListener("submit", resetPassword);
-
-      footerTerms.addEventListener("click", (e) => showTerms(e, "footer"));
-      footerPrivacy.addEventListener("click", (e) => showPrivacy(e, "footer"));
-      showTermsLogin.addEventListener("click", (e) => showTerms(e, "login"));
-      showPrivacyLogin.addEventListener("click", (e) =>
-        showPrivacy(e, "login")
-      );
-
-      buyPlanButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const plan = button.getAttribute("data-plan");
-          handleBuyPlan(plan);
-        });
-      });
-
-      // Initialize App
-      function initApp() {
-        // Check if user is logged in (using local storage in this demo)
-        const savedLogin = localStorage.getItem("isLoggedIn");
-        if (savedLogin === "true") {
-          isLoggedIn = true;
-          document.body.classList.remove("logged-out");
-          document.body.classList.add("logged-in");
-
-          // Load history
-          loadHistory();
-
-          // Load usage count
-          const savedUsage = localStorage.getItem("usageCount");
-          if (savedUsage) {
-            usageCount = parseInt(savedUsage);
-          }
-        }
-
-        // Animate elements when they come into view
-        animateOnScroll();
-      }
-
-      // Toggle Menu
-      function toggleMenu() {
-        navMenu.classList.toggle("active");
-      }
-
-      // Open Login Modal
-      function openLoginModal() {
-        authModalTitle.textContent = "Login";
-        loginForm.classList.add("active");
-        signupForm.classList.remove("active");
-        authModal.classList.add("active");
-      }
-
-      // Open Signup Modal
-      function openSignupModal() {
-        authModalTitle.textContent = "Sign Up";
-        signupForm.classList.add("active");
-        loginForm.classList.remove("active");
-        authModal.classList.add("active");
-      }
-
-      // Close Modal
-      function closeModal() {
-        authModal.classList.remove("active");
-      }
-
-      // Switch to Signup Form
-      function switchToSignupForm(e) {
-        e.preventDefault();
-        authModalTitle.textContent = "Sign Up";
-        loginForm.classList.remove("active");
-        signupForm.classList.add("active");
-      }
-
-      // Switch to Login Form
-      function switchToLoginForm(e) {
-        e.preventDefault();
-        authModalTitle.textContent = "Login";
-        signupForm.classList.remove("active");
-        loginForm.classList.add("active");
-      }
-
-      // Handle Login
-      function handleLogin(e) {
-        e.preventDefault();
-
-        // Clear previous errors
-        clearFormErrors(loginForm);
-
-        // Get form values
-        const email = document.getElementById("loginEmail");
-        const password = document.getElementById("loginPassword");
-        const agreeTerms = document.getElementById("agreeTerms");
-
-        // Validate form
-        let isValid = true;
-
-        if (!email.value || !isValidEmail(email.value)) {
-          showError(email, "loginEmailError");
-          isValid = false;
-        }
-
-        if (!password.value) {
-          showError(password, "loginPasswordError");
-          isValid = false;
-        }
-
-        if (!agreeTerms.checked) {
-          showToast(
-            "You must agree to the Terms of Service and Privacy Policy",
-            "error"
-          );
-          isValid = false;
-        }
-
-        if (!isValid) return;
-
-        // Simulate login API call
-        setTimeout(() => {
-          // Success - in a real app, this would check credentials with a server
-          isLoggedIn = true;
-          usageCount = 0; // Reset usage count for demo
-
-          // Save login state to local storage
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("usageCount", usageCount);
-
-          // Update UI
-          document.body.classList.remove("logged-out");
-          document.body.classList.add("logged-in");
-
-          // Load history
-          loadHistory();
-
-          // Close modal
-          closeModal();
-
-          // Show success message
-          showToast("Logged in successfully", "success");
-
-          // Reset form
-          loginForm.reset();
-        }, 1000);
-      }
-
-      // Handle Signup
-      function handleSignup(e) {
-        e.preventDefault();
-
-        // Clear previous errors
-        clearFormErrors(signupForm);
-
-        // Get form values
-        const name = document.getElementById("signupName");
-        const email = document.getElementById("signupEmail");
-        const password = document.getElementById("signupPassword");
-        const agreeTerms = document.getElementById("agreeTermsSignup");
-
-        // Validate form
-        let isValid = true;
-
-        if (!name.value) {
-          showError(name, "signupNameError");
-          isValid = false;
-        }
-
-        if (!email.value || !isValidEmail(email.value)) {
-          showError(email, "signupEmailError");
-          isValid = false;
-        }
-
-        if (!password.value || password.value.length < 6) {
-          showError(password, "signupPasswordError");
-          isValid = false;
-        }
-
-        if (!agreeTerms.checked) {
-          showToast(
-            "You must agree to the Terms of Service and Privacy Policy",
-            "error"
-          );
-          isValid = false;
-        }
-
-        if (!isValid) return;
-
-        // Simulate signup API call
-        setTimeout(() => {
-          // Success - in a real app, this would register the user with a server
-          isLoggedIn = true;
-          usageCount = 0;
-
-          // Save login state to local storage
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("usageCount", usageCount);
-
-          // Update UI
-          document.body.classList.remove("logged-out");
-          document.body.classList.add("logged-in");
-
-          // Close modal
-          closeModal();
-
-          // Show success message
-          showToast("Account created successfully", "success");
-
-          // Reset form
-          signupForm.reset();
-        }, 1000);
-      }
-
-      // Handle Logout
-      function handleLogout() {
-        // Update state
-        isLoggedIn = false;
-
-        // Clear local storage
-        localStorage.removeItem("isLoggedIn");
-
-        // Update UI
-        document.body.classList.remove("logged-in");
-        document.body.classList.add("logged-out");
-
-        // Show message
-        showToast("Logged out successfully", "success");
-      }
-
-      // Generate Plan
-      function generatePlan(e) {
-        e.preventDefault();
-
-        // Check usage limit for non-logged in users
-        if (!isLoggedIn && usageCount >= 1) {
-          showToast(
-            "Free usage limit reached. Please sign up to continue.",
-            "error"
-          );
-          openSignupModal();
-          return;
-        }
-
-        // Get form values
-        const location = document.getElementById("location").value;
-        const startTime = document.getElementById("startTime").value;
-        const endTime = document.getElementById("endTime").value;
-        const travelers = document.getElementById("travelers").value;
-
-        // Basic validation
-        if (!location || !startTime || !endTime || !travelers) {
-          showToast("Please fill in all fields", "error");
-          return;
-        }
-
-        // Show loader, hide results
-        planLoader.classList.add("active");
-        results.classList.remove("active");
-
-        // Increment usage count
-        usageCount++;
-        if (isLoggedIn) {
-          localStorage.setItem("usageCount", usageCount);
-        }
-
-        // Simulate API call to generate plan
-        setTimeout(() => {
-          // Hide loader, show results
-          planLoader.classList.remove("active");
-          results.classList.add("active");
-
-          // Update plan details
-          planTitle.textContent = `Your Perfect Day in ${location}`;
-          planLocation.textContent = location;
-          planTime.textContent = `${formatTime(startTime)} - ${formatTime(
-            endTime
-          )}`;
-          planPeople.textContent = `${travelers} ${
-            travelers == 1 ? "Traveler" : "Travelers"
-          }`;
-
-          // Generate and display timeline
-          const plan = generateTimelinePlan(
-            location,
-            startTime,
-            endTime,
-            travelers
-          );
-          displayTimelinePlan(plan);
-
-          // Save current plan
-          currentPlan = {
-            id: Date.now(),
-            title: `Your Perfect Day in ${location}`,
-            location: location,
-            startTime: startTime,
-            endTime: endTime,
-            travelers: parseInt(travelers),
-            date: new Date().toISOString().split("T")[0],
-            timeline: plan,
-          };
-
-          // Add to history if logged in
-          if (isLoggedIn) {
-            addToHistory(currentPlan);
-          }
-
-          // Scroll to results
-          results.scrollIntoView({ behavior: "smooth", block: "start" });
-
-          // Show success message
-          showToast("Travel plan generated successfully!", "success");
-        }, 2000);
-      }
-
-      // Format time (e.g., "14:30" to "2:30 PM")
-      function formatTime(timeString) {
-        const [hours, minutes] = timeString.split(":");
-        let hour = parseInt(hours);
-        const ampm = hour >= 12 ? "PM" : "AM";
-        hour = hour % 12;
-        hour = hour ? hour : 12; // Convert 0 to 12
-        return `${hour}:${minutes} ${ampm}`;
-      }
-
-      // Generate Timeline Plan (Simulated AI response)
-      function generateTimelinePlan(location, startTime, endTime, travelers) {
-        // Parse start and end times to calculate duration
-        const start = new Date(`2000-01-01T${startTime}`);
-        const end = new Date(`2000-01-01T${endTime}`);
-
-        // If end time is earlier than start time, assume it's the next day
-        if (end < start) {
-          end.setDate(end.getDate() + 1);
-        }
-
-        const durationHours = (end - start) / (1000 * 60 * 60);
-
-        // Generate different plans based on location and duration
-        let activities = [];
-
-        // This would normally be AI-generated but we'll use predefined data for demo
-        if (location.toLowerCase().includes("paris")) {
-          activities = [
-            {
-              time: addHours(start, 0),
-              title: "Breakfast at a Local Café",
-              description:
-                "Start your day with fresh croissants and coffee at a charming Parisian café.",
-            },
-            {
-              time: addHours(start, 1.5),
-              title: "Visit the Eiffel Tower",
-              description:
-                "Experience breathtaking views of Paris from the iconic Eiffel Tower.",
-            },
-            {
-              time: addHours(start, 3.5),
-              title: "Lunch at a Bistro",
-              description:
-                "Enjoy a classic French lunch with wine at a traditional bistro.",
-            },
-            {
-              time: addHours(start, 5),
-              title: "Louvre Museum",
-              description:
-                "Explore world-famous art collections including the Mona Lisa.",
-            },
-            {
-              time: addHours(start, 7.5),
-              title: "Seine River Cruise",
-              description: "Relax on a scenic boat tour along the Seine River.",
-            },
-          ];
-        } else if (
-          location.toLowerCase().includes("new york") ||
-          location.toLowerCase().includes("nyc")
-        ) {
-          activities = [
-            {
-              time: addHours(start, 0),
-              title: "Breakfast at a Deli",
-              description:
-                "Start with a classic New York bagel and coffee at a local deli.",
-            },
-            {
-              time: addHours(start, 1.5),
-              title: "Visit Times Square",
-              description:
-                "Experience the energy and bright lights of this iconic location.",
-            },
-            {
-              time: addHours(start, 3),
-              title: "Lunch in Little Italy",
-              description:
-                "Enjoy authentic Italian cuisine in this historic neighborhood.",
-            },
-            {
-              time: addHours(start, 4.5),
-              title: "Central Park Stroll",
-              description:
-                "Take a relaxing walk through the urban oasis of Central Park.",
-            },
-            {
-              time: addHours(start, 6.5),
-              title: "Empire State Building",
-              description:
-                "Take in spectacular views of the city from this famous skyscraper.",
-            },
-          ];
-        } else if (location.toLowerCase().includes("tokyo")) {
-          activities = [
-            {
-              time: addHours(start, 0),
-              title: "Breakfast at Tsukiji Outer Market",
-              description:
-                "Try fresh Japanese breakfast items at this famous food market.",
-            },
-            {
-              time: addHours(start, 1.5),
-              title: "Visit Senso-ji Temple",
-              description:
-                "Explore Tokyo's oldest and most significant Buddhist temple.",
-            },
-            {
-              time: addHours(start, 3),
-              title: "Lunch at a Ramen Shop",
-              description:
-                "Savor authentic Japanese ramen at a local specialty shop.",
-            },
-            {
-              time: addHours(start, 4.5),
-              title: "Shopping in Shibuya",
-              description:
-                "Experience the famous Shibuya Crossing and shop at trendy stores.",
-            },
-            {
-              time: addHours(start, 6.5),
-              title: "Tokyo Skytree",
-              description:
-                "Enjoy panoramic views of Tokyo from one of the world's tallest towers.",
-            },
-          ];
-        } else {
-          // Generic plan for any location
-          activities = [
-            {
-              time: addHours(start, 0),
-              title: "Breakfast Experience",
-              description: `Start your day with local breakfast specialties in ${location}.`,
-            },
-            {
-              time: addHours(start, 1.5),
-              title: "Morning Exploration",
-              description: `Visit the top attractions in ${location} during the less crowded morning hours.`,
-            },
-            {
-              time: addHours(start, 3.5),
-              title: "Local Lunch",
-              description: `Taste authentic local cuisine at a highly-rated restaurant in ${location}.`,
-            },
-            {
-              time: addHours(start, 5),
-              title: "Afternoon Activity",
-              description: `Experience unique cultural or recreational activities in ${location}.`,
-            },
-            {
-              time: addHours(start, 7),
-              title: "Evening Entertainment",
-              description: `End your day with local entertainment options in ${location}.`,
-            },
-          ];
-        }
-
-        // Ensure activities fit within the time range
-        return activities.filter((activity) => activity.time <= end);
-      }
-
-      // Add hours to a date
-      function addHours(date, hours) {
-        const newDate = new Date(date);
-        newDate.setTime(newDate.getTime() + hours * 60 * 60 * 1000);
-        return newDate;
-      }
-
-      // Display Timeline Plan
-      function displayTimelinePlan(plan) {
-        // Clear previous timeline
-        planTimeline.innerHTML = "";
-
-        // Add each activity to the timeline
-        plan.forEach((activity) => {
-          const timeString = activity.time.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-          const timelineItem = document.createElement("div");
-          timelineItem.className = "timeline-item";
-
-          timelineItem.innerHTML = `
-                    <div class="timeline-time">${timeString}</div>
-                    <h4 class="timeline-title">${activity.title}</h4>
-                    <p class="timeline-desc">${activity.description}</p>
-                `;
-
-          planTimeline.appendChild(timelineItem);
-        });
-      }
-
-      // Add to History
-      function addToHistory(plan) {
-        // Add to local history array
-        history.unshift(plan);
-
-        // Save to localStorage (in a real app, this would be sent to a server)
-        localStorage.setItem("travelHistory", JSON.stringify(history));
-
-        // Update UI
-        loadHistory();
-      }
-
-      // Load History
-      function loadHistory() {
-        // In a real app, this would fetch from a server
-        const savedHistory = localStorage.getItem("travelHistory");
-
-        if (savedHistory) {
-          history = JSON.parse(savedHistory);
-        } else {
-          // Use sample data for demo
-          history = sampleHistory;
-          localStorage.setItem("travelHistory", JSON.stringify(history));
-        }
-
-        // Display history
-        displayHistory();
-
-        // Show history section
-        document.getElementById("history").classList.add("active");
-      }
-
-      // Display History
-      function displayHistory() {
-        // Clear history list
-        historyList.innerHTML = "";
-
-        // Add each item to history list
-        history.forEach((item) => {
-          const historyCard = document.createElement("div");
-          historyCard.className = "history-card";
-
-          historyCard.innerHTML = `
-                    <div class="history-header">
-                        <h4>${item.title}</h4>
-                    </div>
-                    <div class="history-body">
-                        <div class="history-meta">
-                            <span><i class="fas fa-map-marker-alt"></i>${
-                              item.location
-                            }</span>
-                            <span><i class="far fa-calendar"></i>${formatDate(
-                              item.date
-                            )}</span>
-                        </div>
-                        <p>${formatTime(item.startTime)} - ${formatTime(
-            item.endTime
-          )}</p>
-                        <button class="btn btn-outline btn-sm view-plan" data-id="${
-                          item.id
-                        }">View Plan</button>
-                    </div>
-                `;
-
-          historyList.appendChild(historyCard);
-        });
-
-        // Add event listeners to view plan buttons
-        const viewPlanButtons = document.querySelectorAll(".view-plan");
-        viewPlanButtons.forEach((button) => {
-          button.addEventListener("click", () => {
-            const planId = parseInt(button.getAttribute("data-id"));
-            viewHistoryPlan(planId);
-          });
-        });
-      }
-
-      // Format Date (e.g., "2023-05-15" to "May 15, 2023")
-      function formatDate(dateString) {
-        const options = { year: "numeric", month: "short", day: "numeric" };
-        return new Date(dateString).toLocaleDateString("en-US", options);
-      }
-
-      // View History Plan
-      function viewHistoryPlan(planId) {
-        // Find the plan in history
-        const plan = history.find((item) => item.id === planId);
-
-        if (plan) {
-          // Update current plan
-          currentPlan = plan;
-
-          // Update plan details
-          planTitle.textContent = plan.title;
-          planLocation.textContent = plan.location;
-          planTime.textContent = `${formatTime(plan.startTime)} - ${formatTime(
-            plan.endTime
-          )}`;
-          planPeople.textContent = `${plan.travelers} ${
-            plan.travelers == 1 ? "Traveler" : "Travelers"
-          }`;
-
-          // Display timeline
-          if (plan.timeline) {
-            displayTimelinePlan(plan.timeline);
-          } else {
-            // Generate new timeline if not saved
-            const newTimeline = generateTimelinePlan(
-              plan.location,
-              plan.startTime,
-              plan.endTime,
-              plan.travelers
-            );
-            displayTimelinePlan(newTimeline);
-
-            // Update plan with new timeline
-            plan.timeline = newTimeline;
-            localStorage.setItem("travelHistory", JSON.stringify(history));
-          }
-
-          // Show results
-          results.classList.add("active");
-
-          // Scroll to results
-          document
-            .getElementById("planner")
-            .scrollIntoView({ behavior: "smooth", block: "start" });
-          results.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-
-      // Handle Download Plan
-      function handleDownloadPlan() {
-        if (!currentPlan) return;
-
-        // Create text content for the plan
-        let planText = `${currentPlan.title}\n`;
-        planText += `Location: ${currentPlan.location}\n`;
-        planText += `Time: ${formatTime(currentPlan.startTime)} - ${formatTime(
-          currentPlan.endTime
-        )}\n`;
-        planText += `Travelers: ${currentPlan.travelers}\n\n`;
-        planText += `ITINERARY:\n\n`;
-
-        currentPlan.timeline.forEach((activity) => {
-          const timeString = activity.time.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          planText += `${timeString} - ${activity.title}\n`;
-          planText += `${activity.description}\n\n`;
-        });
-
-        // Create a blob and download link
-        const blob = new Blob([planText], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${currentPlan.location.replace(
-          /\s+/g,
-          "_"
-        )}_Travel_Plan.txt`;
-        document.body.appendChild(a);
-        a.click();
-
-        // Clean up
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
-
-        showToast("Plan downloaded successfully", "success");
-      }
-
-      // Handle Share Plan
-      function handleSharePlan() {
-        if (!currentPlan) return;
-
-        // In a real app, this would create a shareable link or open share dialogs
-        // For demo purposes, we'll just copy a fake URL to clipboard
-
-        const dummyShareUrl = `https://tripweaver.com/share/${currentPlan.id}`;
-
-        // Copy to clipboard
-        navigator.clipboard
-          .writeText(dummyShareUrl)
-          .then(() => {
-            showToast("Share link copied to clipboard!", "success");
-          })
-          .catch((err) => {
-            showToast("Failed to copy share link", "error");
-            console.error("Could not copy text: ", err);
-          });
-      }
-
-      // Handle Buy Plan
-      function handleBuyPlan(plan) {
-        if (!isLoggedIn) {
-          showToast("Please log in to purchase a plan", "error");
-          openLoginModal();
-          return;
-        }
-
-        // In a real app, this would redirect to a payment processor
-        // For demo purposes, we'll just show a success message
-
-        let planName, credits;
-        switch (plan) {
-          case "basic":
-            planName = "Basic Plan";
-            credits = 3;
-            break;
-          case "standard":
-            planName = "Standard Plan";
-            credits = 8;
-            break;
-          case "monthly":
-            planName = "Monthly Subscription";
-            credits = 30;
-            break;
-          case "annual":
-            planName = "Annual Subscription";
-            credits = 500;
-            break;
-        }
-
-        showToast(
-          `Thank you for purchasing the ${planName}! ${credits} credits added.`,
-          "success"
-        );
-      }
-
-      // Show Toast Notification
-      function showToast(message, type = "success") {
-        const toastMessage = document.getElementById("toastMessage");
-        toastMessage.textContent = message;
-
-        // Set icon based on type
-        const toastIcon = toast.querySelector("i");
-        if (type === "success") {
-          toastIcon.className = "fas fa-check-circle";
-          toast.className = "toast success";
-        } else {
-          toastIcon.className = "fas fa-exclamation-circle";
-          toast.className = "toast error";
-        }
-
-        // Show toast
-        toast.classList.add("active");
-
-        // Hide toast after 3 seconds
-        setTimeout(() => {
-          toast.classList.remove("active");
-        }, 3000);
-      }
-
-      // Animate elements when they come into view
-      function animateOnScroll() {
-        const fadeElements = document.querySelectorAll(".fade-in");
-
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.style.opacity = "1";
-                entry.target.style.transform = "translateY(0)";
-              }
-            });
-          },
-          {
-            threshold: 0.1,
-          }
-        );
-
-        fadeElements.forEach((element) => {
-          element.style.opacity = "0";
-          element.style.transform = "translateY(20px)";
-          element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-          observer.observe(element);
-        });
-      }
-
-      // Show Terms of Service Modal
-      function showTerms(e, source) {
-        e.preventDefault();
-        sourceElement = source;
-        activeModal = "terms";
-        termsModal.classList.add("active");
-      }
-
-      // Show Privacy Policy Modal
-      function showPrivacy(e, source) {
-        e.preventDefault();
-        sourceElement = source;
-        activeModal = "privacy";
-        privacyModal.classList.add("active");
-      }
-
-      // Close Terms of Service Modal
-      function closeTerms() {
-        termsModal.classList.remove("active");
-        activeModal = null;
-      }
-
-      // Close Privacy Policy Modal
-      function closePrivacy() {
-        privacyModal.classList.remove("active");
-        activeModal = null;
-      }
-
-      // Handle accepting Terms of Service
-      function handleAcceptTerms() {
-        if (sourceElement === "login") {
-          document.getElementById("agreeTerms").checked = true;
-        } else if (sourceElement === "signup") {
-          document.getElementById("agreeTermsSignup").checked = true;
-        }
-        closeTerms();
-      }
-
-      // Handle accepting Privacy Policy
-      function handleAcceptPrivacy() {
-        if (sourceElement === "login") {
-          document.getElementById("agreeTerms").checked = true;
-        } else if (sourceElement === "signup") {
-          document.getElementById("agreeTermsSignup").checked = true;
-        }
-        closePrivacy();
-      }
-
-      // Show Forgot Password Form
-      function showForgotPassword(e) {
-        e.preventDefault();
-        loginForm.classList.remove("active");
-        signupForm.classList.remove("active");
-        forgotPasswordForm.classList.add("active");
-        authModalTitle.textContent = "Reset Password";
-      }
-
-      // Back to Login Form
-      function backToLoginForm(e) {
-        e.preventDefault();
-        forgotPasswordForm.classList.remove("active");
-        loginForm.classList.add("active");
-        authModalTitle.textContent = "Login";
-        forgotPasswordForm.reset();
-      }
-
-      // Request Verification Code
-      function requestVerificationCode() {
-        const email = document.getElementById("resetEmail").value;
-
-        if (!email) {
-          showToast("Please enter your email address", "error");
-          return;
-        }
-
-        // Simulate API call to send verification code
-        setTimeout(() => {
-          verificationCodeSection.style.display = "block";
-          requestCodeBtn.style.display = "none";
-          resetPasswordBtn.style.display = "block";
-          showToast("Verification code sent to your email", "success");
-        }, 1000);
-      }
-
-      // Reset Password
-      function resetPassword(e) {
-        e.preventDefault();
-
-        // Clear previous errors
-        clearFormErrors(forgotPasswordForm);
-
-        const email = document.getElementById("resetEmail");
-        const code = document.getElementById("verificationCode");
-        const newPassword = document.getElementById("newPassword");
-        const confirmPassword = document.getElementById("confirmPassword");
-
-        // Validate form
-        let isValid = true;
-
-        if (!email.value || !isValidEmail(email.value)) {
-          showError(email, "resetEmailError");
-          isValid = false;
-        }
-
-        if (!code.value) {
-          showError(code, "verificationCodeError");
-          isValid = false;
-        }
-
-        if (!newPassword.value || newPassword.value.length < 6) {
-          showError(newPassword, "newPasswordError");
-          isValid = false;
-        }
-
-        if (!confirmPassword.value) {
-          showError(confirmPassword, "confirmPasswordError");
-          isValid = false;
-        } else if (newPassword.value !== confirmPassword.value) {
-          showError(confirmPassword, "confirmPasswordError");
-          isValid = false;
-        }
-
-        if (!isValid) return;
-
-        // Simulate API call to reset password
-        setTimeout(() => {
-          // Success
-          showToast("Password reset successfully", "success");
-          backToLoginForm(e);
-        }, 1000);
-      }
-
-      // Helper functions for form validation
-      function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-      }
-
-      function showError(input, errorId) {
-        input.classList.add("invalid");
-        document.getElementById(errorId).classList.add("active");
-      }
-
-      function clearFormErrors(form) {
-        form.querySelectorAll(".form-control").forEach((input) => {
-          input.classList.remove("invalid");
-        });
-
-        form.querySelectorAll(".error-message").forEach((error) => {
-          error.classList.remove("active");
-        });
-      }
-    </script>
+    <script src="trace/js/index.js"></script>
   </body>
 </html>
