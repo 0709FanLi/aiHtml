@@ -379,7 +379,6 @@ function initEventListeners() {
           <img src="${state.uploadedImage}" alt="Uploaded Food" style="max-width: 100%; max-height: 200px; margin-bottom: 10px;">
           <p class="upload-text">Click to change image</p>
         `;
-        elements.buttons.analyze.disabled = false;
 
         // 调试上传的图片格式
         console.log(
@@ -394,6 +393,9 @@ function initEventListeners() {
 
   // Analyze button
   elements.buttons.analyze.onclick = async function () {
+    console.log("Analyze button clicked, checking image...");
+    console.log("State.uploadedImage exists:", !!state.uploadedImage);
+
     // 检查用户是否登录
     let token = null;
     const stored = localStorage.getItem("healthyDietUser");
@@ -425,7 +427,7 @@ function initEventListeners() {
         "state.user=",
         !!state.user
       );
-      showNotification("请先登录后再分析食物", "warning");
+      showNotification("Please login before analyzing food", "warning");
       showView("auth");
       return;
     }
@@ -451,56 +453,51 @@ function initEventListeners() {
     }
 
     // 检查图片 - 优先使用state.uploadedImage
-    if (state.uploadedImage) {
-      console.log("使用已上传的图片进行分析");
+    if (!state.uploadedImage) {
+      // 如果state中没有图片，检查input元素
+      const fileInput = document.getElementById("foodImageInput");
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        showNotification("Please upload a food image first.", "warning");
+        return;
+      }
 
-      // 获取base64字符串，使用完整的data URI格式
-      let base64 = state.uploadedImage;
+      const file = fileInput.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification("Image size must not exceed 5MB.", "error");
+        return;
+      }
 
-      // 不再截取前缀部分，保留完整的data URI格式
-      // 输出处理后的base64前缀部分用于调试
-      console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
+      // 转base64
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
-      processImageAnalysis(base64, token);
+      try {
+        const base64 = await toBase64(file);
+        state.uploadedImage = base64; // 保存图片到state
+        processImageAnalysis(base64, token);
+      } catch (error) {
+        console.error("转换图片失败:", error);
+        showNotification("Failed to read image.", "error");
+      }
       return;
     }
 
-    // 如果state中没有图片，检查input元素
-    const fileInput = document.getElementById("foodImageInput");
-    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-      showNotification("Please upload a food image.", "warning");
-      return;
-    }
-
-    const file = fileInput.files[0];
-    if (file.size > 5 * 1024 * 1024) {
-      showNotification("Image size must not exceed 5MB.", "error");
-      return;
-    }
-
-    // 转base64
-    const toBase64 = (file) =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        // 不再分割data URI，保留完整格式
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-    try {
-      const base64 = await toBase64(file);
-      processImageAnalysis(base64, token);
-    } catch (error) {
-      console.error("转换图片失败:", error);
-      showNotification("Failed to read image.", "error");
-    }
+    // 如果state中有图片，直接使用
+    console.log("使用已上传的图片进行分析");
+    let base64 = state.uploadedImage;
+    console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
+    processImageAnalysis(base64, token);
   };
 
   // 抽取图片分析处理逻辑为独立函数
   function processImageAnalysis(base64, token) {
     elements.buttons.analyze.disabled = true;
-    elements.buttons.analyze.textContent = "分析中...";
+    elements.buttons.analyze.textContent = "Analyzing...";
     elements.buttons.analyze.style.pointerEvents = "none";
 
     // 调试输出，查看base64格式
@@ -700,7 +697,7 @@ function initEventListeners() {
       })
       .finally(() => {
         elements.buttons.analyze.disabled = false;
-        elements.buttons.analyze.textContent = "分析食物";
+        elements.buttons.analyze.textContent = "Analyze Food";
         elements.buttons.analyze.style.pointerEvents = "auto";
       });
   }
@@ -760,7 +757,7 @@ function initEventListeners() {
     button.addEventListener("click", () => {
       const plan = button.dataset.plan;
       if (!state.user) {
-        showNotification("请先登录后再购买积分", "warning");
+        showNotification("Please login before purchasing credits", "warning");
         showView("auth");
         return;
       }
@@ -778,7 +775,10 @@ function initEventListeners() {
       }
 
       if (!token) {
-        showNotification("登录信息已过期，请重新登录", "warning");
+        showNotification(
+          "Login information expired, please login again",
+          "warning"
+        );
         showView("auth");
         return;
       }
@@ -841,13 +841,15 @@ function initEventListeners() {
               updateLocalStorage();
             }
             showNotification(
-              `购买成功！您现在有 ${state.user.credits} 积分`,
+              `Purchase successful! You now have ${state.user.credits} credits`,
               "success"
             );
             // 返回主页
             showView("home");
           } else {
-            throw new Error("购买积分失败，请稍后再试");
+            throw new Error(
+              "Failed to purchase credits, please try again later"
+            );
           }
         })
         .catch((error) => {
@@ -1024,16 +1026,48 @@ function bindLogoutEvent() {
         },
         credentials: "omit",
       }).finally(() => {
+        // 清空本地存储和用户状态
         localStorage.clear();
         state.user = null;
         state.creditsUsed = 0;
+
+        // 清空上传的图片
+        state.uploadedImage = null;
+
+        // 重置上传区域
+        elements.upload.area.innerHTML = `
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p class="upload-text">Click or drag and drop image here</p>
+        `;
+
+        // 重置文件输入
+        if (elements.upload.input) {
+          elements.upload.input.value = "";
+        }
+
         updateUserDisplay();
         showView("home");
       });
     } else {
+      // 清空本地存储和用户状态
       localStorage.clear();
       state.user = null;
       state.creditsUsed = 0;
+
+      // 清空上传的图片
+      state.uploadedImage = null;
+
+      // 重置上传区域
+      elements.upload.area.innerHTML = `
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p class="upload-text">Click or drag and drop image here</p>
+      `;
+
+      // 重置文件输入
+      if (elements.upload.input) {
+        elements.upload.input.value = "";
+      }
+
       updateUserDisplay();
       showView("home");
     }
@@ -1416,7 +1450,7 @@ function setupHistoryPageEvents() {
         if (state.user) {
           state.user.history = [];
           updateLocalStorage();
-          showNotification("历史记录已清空", "success");
+          showNotification("History cleared", "success");
         }
       } else {
         // 删除特定的历史记录
@@ -1429,7 +1463,7 @@ function setupHistoryPageEvents() {
             return true;
           });
           updateLocalStorage();
-          showNotification("已删除该历史记录", "success");
+          showNotification("Record deleted", "success");
         }
       }
 

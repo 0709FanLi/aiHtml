@@ -95,7 +95,11 @@
               />
             </div>
 
-            <button class="btn btn-primary" id="analyzeBtn" disabled>
+            <button
+              class="btn btn-primary"
+              id="analyzeBtn"
+              onclick="if(!document.getElementById('foodImageInput').files[0]) { showNotification('Please upload a food image first.', 'warning'); return false; }"
+            >
               <i class="fas fa-search"></i> Analyze Food
             </button>
           </div>
