@@ -299,6 +299,10 @@ const state = {
   currentRecipe: null,
   creditsUsed: 0,
   maxFreeCredits: 1,
+  historyPage: 1,
+  historyPageSize: 10,
+  historySearchTerm: "",
+  itemToDelete: null,
 };
 
 // Helper function to show a view
@@ -946,106 +950,467 @@ function updateLocalStorage() {
 
 // Update history view
 function updateHistoryView() {
+  console.log("更新历史记录视图...");
+
   if (!state.user) {
-    elements.user.loginPrompt.style.display = "block";
-    elements.user.historyContent.style.display = "none";
+    console.log("用户未登录，显示登录提示");
+    const loginPrompt = document.getElementById("loginPrompt");
+    const historyContent = document.getElementById("historyContent");
+
+    if (loginPrompt && historyContent) {
+      loginPrompt.style.display = "block";
+      historyContent.style.display = "none";
+    } else {
+      console.error("未找到loginPrompt或historyContent元素");
+    }
     return;
   }
 
-  elements.user.loginPrompt.style.display = "none";
-  elements.user.historyContent.style.display = "block";
+  const loginPrompt = document.getElementById("loginPrompt");
+  const historyContent = document.getElementById("historyContent");
 
-  // Clear existing history
-  document.getElementById("analysisHistory").innerHTML = "";
-  document.getElementById("recipeHistory").innerHTML = "";
-
-  // Add analysis history
-  const analysisHistory = state.user.history.filter(
-    (item) => item.type === "analysis"
-  );
-  if (analysisHistory.length > 0) {
-    analysisHistory.forEach((item) => {
-      const historyItem = document.createElement("div");
-      historyItem.className = "history-item";
-      historyItem.innerHTML = `
-                        <img src="${item.food.image}" alt="${
-        item.food.name
-      }" class="history-image">
-                        <div class="history-content">
-                            <div class="history-date">${new Date(
-                              item.date
-                            ).toLocaleString()}</div>
-                            <h3 class="history-title">${item.food.name}</h3>
-                            <div class="history-meta">
-                                <div><i class="fas fa-fire"></i> ${
-                                  item.food.calories
-                                } Calories</div>
-                                <div>
-                                    <i class="fas ${
-                                      item.food.isHealthy
-                                        ? "fa-check-circle"
-                                        : "fa-exclamation-circle"
-                                    }" 
-                                       style="color: var(${
-                                         item.food.isHealthy
-                                           ? "--success-color"
-                                           : "--warning-color"
-                                       });"></i> 
-                                    ${
-                                      item.food.isHealthy
-                                        ? "Healthy Choice"
-                                        : "Occasional Treat"
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    `;
-      document.getElementById("analysisHistory").appendChild(historyItem);
-    });
-  } else {
-    document.getElementById("analysisHistory").innerHTML =
-      '<p style="text-align: center; padding: 20px;">No analysis records yet</p>';
+  if (!loginPrompt || !historyContent) {
+    console.error("未找到loginPrompt或historyContent元素");
+    return;
   }
 
-  // Add recipe history
-  const recipeHistory = state.user.history.filter(
-    (item) => item.type === "recipe"
-  );
-  if (recipeHistory.length > 0) {
-    recipeHistory.forEach((item) => {
-      const historyItem = document.createElement("div");
-      historyItem.className = "history-item recipe-card";
-      historyItem.dataset.id = item.recipe.id;
-      historyItem.innerHTML = `
-                        <img src="${item.recipe.image}" alt="${
-        item.recipe.name
-      }" class="history-image">
-                        <div class="history-content">
-                            <div class="history-date">${new Date(
-                              item.date
-                            ).toLocaleString()}</div>
-                            <h3 class="history-title">${item.recipe.name}</h3>
-                            <div class="history-meta">
-                                <div><i class="fas fa-fire"></i> ${
-                                  item.recipe.calories
-                                } Calories</div>
-                                <div><i class="fas fa-clock"></i> ${
-                                  item.recipe.time
-                                } Minutes</div>
-                            </div>
-                        </div>
-                    `;
-      document.getElementById("recipeHistory").appendChild(historyItem);
+  loginPrompt.style.display = "none";
+  historyContent.style.display = "block";
 
-      // Add click event to recipe history item
-      historyItem.addEventListener("click", () => {
-        showRecipeDetail(item.recipe.id);
+  // 获取过滤后的历史记录
+  const filteredHistory = getFilteredHistory();
+  console.log("过滤后的历史记录数量:", filteredHistory.length);
+
+  // 计算分页信息
+  const totalItems = filteredHistory.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / state.historyPageSize));
+  state.historyPage = Math.min(state.historyPage, totalPages);
+
+  // 更新分页UI
+  const currentPageSpan = document.getElementById("currentPage");
+  const totalPagesSpan = document.getElementById("totalPages");
+  const prevPageBtn = document.getElementById("prevPageBtn");
+  const nextPageBtn = document.getElementById("nextPageBtn");
+
+  if (!currentPageSpan || !totalPagesSpan || !prevPageBtn || !nextPageBtn) {
+    console.error("未找到分页UI元素");
+    return;
+  }
+
+  currentPageSpan.textContent = state.historyPage;
+  totalPagesSpan.textContent = totalPages;
+  prevPageBtn.disabled = state.historyPage <= 1;
+  nextPageBtn.disabled = state.historyPage >= totalPages;
+
+  // 获取当前页的数据
+  const startIndex = (state.historyPage - 1) * state.historyPageSize;
+  const pageItems = filteredHistory.slice(
+    startIndex,
+    startIndex + state.historyPageSize
+  );
+
+  // 更新当前标签页的内容
+  const recipeHistoryTab = document.getElementById("recipeHistoryTab");
+
+  if (!recipeHistoryTab) {
+    console.error("未找到recipeHistoryTab元素");
+    return;
+  }
+
+  const currentTab =
+    recipeHistoryTab.style.display === "none" ? "analysis" : "recipe";
+  const historyContainer =
+    currentTab === "analysis"
+      ? document.getElementById("analysisHistory")
+      : document.getElementById("recipeHistory");
+
+  if (!historyContainer) {
+    console.error(
+      `未找到历史记录容器: ${
+        currentTab === "analysis" ? "analysisHistory" : "recipeHistory"
+      }`
+    );
+    return;
+  }
+
+  // 清空现有内容
+  historyContainer.innerHTML = "";
+
+  // 添加当前页的历史记录项
+  if (pageItems.length > 0) {
+    pageItems.forEach((item) => {
+      const historyItem = document.createElement("div");
+      historyItem.className =
+        "history-item" + (item.type === "recipe" ? " recipe-card" : "");
+      const itemId =
+        item.type === "analysis"
+          ? item.food.id || JSON.stringify(item.food.name)
+          : item.recipe.id;
+      historyItem.dataset.id = itemId;
+
+      if (item.type === "analysis") {
+        historyItem.innerHTML = `
+          <img src="${item.food.image}" alt="${
+          item.food.name
+        }" class="history-image">
+          <div class="history-content">
+            <div class="history-date">${new Date(
+              item.date
+            ).toLocaleString()}</div>
+            <h3 class="history-title">${item.food.name}</h3>
+            <div class="history-meta">
+              <div><i class="fas fa-fire"></i> ${item.food.calories}</div>
+              <div>
+                <i class="fas ${
+                  item.food.isHealthy
+                    ? "fa-check-circle"
+                    : "fa-exclamation-circle"
+                }" 
+                  style="color: var(${
+                    item.food.isHealthy ? "--success-color" : "--warning-color"
+                  });"></i> 
+                ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
+              </div>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn-icon view-detail" title="查看详情">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon delete-item" title="删除">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        historyItem.innerHTML = `
+          <img src="${item.recipe.image}" alt="${
+          item.recipe.name
+        }" class="history-image">
+          <div class="history-content">
+            <div class="history-date">${new Date(
+              item.date
+            ).toLocaleString()}</div>
+            <h3 class="history-title">${item.recipe.name}</h3>
+            <div class="history-meta">
+              <div><i class="fas fa-fire"></i> ${
+                item.recipe.calories
+              } 卡路里</div>
+              <div><i class="fas fa-clock"></i> ${item.recipe.time} 分钟</div>
+            </div>
+          </div>
+          <div class="history-actions">
+            <button class="btn-icon view-detail" title="查看详情">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon delete-item" title="删除">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+      }
+
+      historyContainer.appendChild(historyItem);
+
+      // 绑定查看详情和删除按钮事件
+      const viewDetailBtn = historyItem.querySelector(".view-detail");
+      const deleteItemBtn = historyItem.querySelector(".delete-item");
+
+      viewDetailBtn.addEventListener("click", function (e) {
+        e.stopPropagation(); // 防止冒泡到卡片
+        showHistoryDetailModal(item);
       });
+
+      deleteItemBtn.addEventListener("click", function (e) {
+        e.stopPropagation(); // 防止冒泡到卡片
+        showDeleteConfirmModal(itemId);
+      });
+
+      // 为食谱卡片添加点击事件
+      if (item.type === "recipe") {
+        historyItem.addEventListener("click", function () {
+          showRecipeDetail(item.recipe.id);
+        });
+      }
     });
   } else {
-    document.getElementById("recipeHistory").innerHTML =
-      '<p style="text-align: center; padding: 20px;">No recipe browsing records yet</p>';
+    // 没有记录显示提示
+    historyContainer.innerHTML = `<p style="text-align: center; padding: 20px;">没有${
+      currentTab === "analysis" ? "食物分析" : "食谱浏览"
+    }记录</p>`;
   }
+}
+
+// 设置历史记录页面的事件监听器
+function setupHistoryPageEvents() {
+  console.log("设置历史记录页面事件...");
+
+  // 标签切换按钮
+  const analysisTabBtn = document.getElementById("analysisTabBtn");
+  const recipeTabBtn = document.getElementById("recipeTabBtn");
+  const analysisHistoryTab = document.getElementById("analysisHistoryTab");
+  const recipeHistoryTab = document.getElementById("recipeHistoryTab");
+
+  if (analysisTabBtn && recipeTabBtn) {
+    console.log("找到历史记录标签切换按钮");
+    analysisTabBtn.addEventListener("click", function () {
+      analysisTabBtn.classList.add("active-tab");
+      recipeTabBtn.classList.remove("active-tab");
+      analysisHistoryTab.style.display = "block";
+      recipeHistoryTab.style.display = "none";
+    });
+
+    recipeTabBtn.addEventListener("click", function () {
+      recipeTabBtn.classList.add("active-tab");
+      analysisTabBtn.classList.remove("active-tab");
+      recipeHistoryTab.style.display = "block";
+      analysisHistoryTab.style.display = "none";
+    });
+  } else {
+    console.error("未找到历史记录标签切换按钮");
+  }
+
+  // 分页控制
+  const prevPageBtn = document.getElementById("prevPageBtn");
+  const nextPageBtn = document.getElementById("nextPageBtn");
+  const pageSizeSelect = document.getElementById("historyPageSize");
+
+  if (prevPageBtn && nextPageBtn && pageSizeSelect) {
+    prevPageBtn.addEventListener("click", function () {
+      if (state.historyPage > 1) {
+        state.historyPage--;
+        updateHistoryView();
+      }
+    });
+
+    nextPageBtn.addEventListener("click", function () {
+      const totalPages = Math.ceil(
+        getFilteredHistory().length / state.historyPageSize
+      );
+      if (state.historyPage < totalPages) {
+        state.historyPage++;
+        updateHistoryView();
+      }
+    });
+
+    pageSizeSelect.addEventListener("change", function () {
+      state.historyPageSize = parseInt(pageSizeSelect.value);
+      state.historyPage = 1; // 重置到第一页
+      updateHistoryView();
+    });
+  } else {
+    console.error("未找到分页控制按钮");
+  }
+
+  // 搜索功能
+  const searchInput = document.getElementById("historySearchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      state.historySearchTerm = searchInput.value.toLowerCase();
+      state.historyPage = 1; // 重置到第一页
+      updateHistoryView();
+    });
+  } else {
+    console.error("未找到搜索输入框");
+  }
+
+  // 清空历史按钮
+  const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", function () {
+      showDeleteConfirmModal("all");
+    });
+  } else {
+    console.error("未找到清空历史按钮");
+  }
+
+  // 绑定详情和删除按钮的事件（会在updateHistoryView中动态绑定）
+
+  // 确认删除弹窗
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+  if (cancelDeleteBtn && confirmDeleteBtn) {
+    cancelDeleteBtn.addEventListener("click", function () {
+      document.getElementById("deleteConfirmModal").style.display = "none";
+    });
+
+    confirmDeleteBtn.addEventListener("click", function () {
+      const itemToDelete = state.itemToDelete;
+      if (itemToDelete === "all") {
+        // 清空所有历史
+        if (state.user) {
+          state.user.history = [];
+          updateLocalStorage();
+          showNotification("历史记录已清空", "success");
+        }
+      } else {
+        // 删除特定的历史记录
+        if (state.user && state.user.history.length > 0) {
+          state.user.history = state.user.history.filter((item) => {
+            if (item.type === "analysis" && item.food.id === itemToDelete)
+              return false;
+            if (item.type === "recipe" && item.recipe.id === itemToDelete)
+              return false;
+            return true;
+          });
+          updateLocalStorage();
+          showNotification("已删除该历史记录", "success");
+        }
+      }
+
+      document.getElementById("deleteConfirmModal").style.display = "none";
+      updateHistoryView();
+    });
+  } else {
+    console.error("未找到确认删除弹窗按钮");
+  }
+
+  // 关闭详情弹窗
+  const closeDetailBtn = document.getElementById("closeDetailBtn");
+  if (closeDetailBtn) {
+    closeDetailBtn.addEventListener("click", function () {
+      document.getElementById("historyDetailModal").style.display = "none";
+    });
+  } else {
+    console.error("未找到关闭详情弹窗按钮");
+  }
+
+  // 初始化历史记录状态
+  if (!state.historyPage) {
+    state.historyPage = 1;
+    state.historyPageSize = 10;
+    state.historySearchTerm = "";
+  }
+}
+
+// 显示删除确认弹窗
+function showDeleteConfirmModal(itemId) {
+  state.itemToDelete = itemId;
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.style.display = "flex";
+}
+
+// 显示历史记录详情弹窗
+function showHistoryDetailModal(item) {
+  const modal = document.getElementById("historyDetailModal");
+  const detailTitle = document.getElementById("detailTitle");
+  const detailContent = document.getElementById("historyDetailContent");
+
+  if (item.type === "analysis") {
+    detailTitle.textContent = "食物分析详情";
+    detailContent.innerHTML = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="${item.food.image}" alt="${
+      item.food.name
+    }" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <h3 style="margin-bottom: 10px;">${item.food.name}</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+          <span class="result-tag">${item.food.calories}</span>
+          <span class="result-tag ${
+            item.food.isHealthy ? "tag-success" : "tag-warning"
+          }">
+            ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
+          </span>
+        </div>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
+          <p style="margin: 0; line-height: 1.6;">${item.food.analysis}</p>
+        </div>
+      </div>
+      <div>
+        <p style="color: #666; font-size: 0.9em;">分析时间：${new Date(
+          item.date
+        ).toLocaleString()}</p>
+      </div>
+    `;
+  } else if (item.type === "recipe") {
+    detailTitle.textContent = "食谱详情";
+    detailContent.innerHTML = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="${item.recipe.image}" alt="${
+      item.recipe.name
+    }" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <h3 style="margin-bottom: 10px;">${item.recipe.name}</h3>
+        <p style="margin-bottom: 15px;">${item.recipe.description}</p>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-weight: bold;">${item.recipe.calories}</div>
+            <div style="font-size: 0.8em; color: #666;">卡路里</div>
+          </div>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-weight: bold;">${item.recipe.protein}</div>
+            <div style="font-size: 0.8em; color: #666;">蛋白质</div>
+          </div>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-weight: bold;">${item.recipe.carbs}</div>
+            <div style="font-size: 0.8em; color: #666;">碳水</div>
+          </div>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-weight: bold;">${item.recipe.fat}</div>
+            <div style="font-size: 0.8em; color: #666;">脂肪</div>
+          </div>
+          <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; text-align: center; flex: 1;">
+            <div style="font-weight: bold;">${item.recipe.time}</div>
+            <div style="font-size: 0.8em; color: #666;">分钟</div>
+          </div>
+        </div>
+        
+        <h4 style="margin: 20px 0 10px 0;">健康提示</h4>
+        <p style="margin: 0 0 20px 0; line-height: 1.6;">${
+          item.recipe.healthTips
+        }</p>
+        
+        <h4 style="margin: 20px 0 10px 0;">食材</h4>
+        <ul style="padding-left: 20px; margin-bottom: 20px;">
+          ${item.recipe.ingredients
+            .map((ingredient) => `<li>${ingredient}</li>`)
+            .join("")}
+        </ul>
+        
+        <h4 style="margin: 20px 0 10px 0;">烹饪步骤</h4>
+        <ol style="padding-left: 20px; margin-bottom: 10px;">
+          ${item.recipe.steps
+            .map((step) => `<li style="margin-bottom: 8px;">${step}</li>`)
+            .join("")}
+        </ol>
+      </div>
+      <div>
+        <p style="color: #666; font-size: 0.9em;">浏览时间：${new Date(
+          item.date
+        ).toLocaleString()}</p>
+      </div>
+    `;
+  }
+
+  modal.style.display = "flex";
+}
+
+// 获取过滤后的历史记录
+function getFilteredHistory() {
+  if (!state.user || !state.user.history) return [];
+
+  const currentTab =
+    document.getElementById("recipeHistoryTab").style.display === "none"
+      ? "analysis"
+      : "recipe";
+
+  return state.user.history.filter((item) => {
+    // 筛选当前标签页的类型
+    if (item.type !== currentTab) return false;
+
+    // 搜索筛选
+    if (state.historySearchTerm) {
+      const name = item.type === "analysis" ? item.food.name : item.recipe.name;
+      return name.toLowerCase().includes(state.historySearchTerm);
+    }
+
+    return true;
+  });
 }
 
 // Initialize the app
@@ -1067,6 +1432,20 @@ function init() {
 
   initEventListeners();
   setupLogoutButton();
+  setupHistoryPageEvents(); // 添加历史记录页面事件处理
+
+  // 为History导航链接添加点击事件
+  console.log("为History导航链接添加点击事件");
+  const historyLinks = document.querySelectorAll(".nav-history");
+  historyLinks.forEach((link) => {
+    console.log("找到History链接:", link);
+    link.addEventListener("click", function (e) {
+      console.log("点击了History链接");
+      e.preventDefault();
+      showView("history");
+      updateHistoryView();
+    });
+  });
 }
 
 // Run initialization when DOM is loaded

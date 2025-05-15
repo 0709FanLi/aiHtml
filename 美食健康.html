@@ -397,10 +397,8 @@
             class="hero"
             style="background: linear-gradient(135deg, #9c27b0, #2196f3)"
           >
-            <h1>Your History</h1>
-            <p>
-              Review and revisit previously analyzed foods and browsed recipes.
-            </p>
+            <h1>您的历史记录</h1>
+            <p>查看和访问您之前分析过的食物和浏览过的食谱。</p>
           </div>
 
           <div
@@ -415,104 +413,335 @@
                 margin-bottom: 15px;
               "
             ></i>
-            <h2>Please Login to View Your History</h2>
+            <h2>请登录查看您的历史记录</h2>
             <p style="margin-bottom: 20px">
-              Login to view all your analysis records and browsed recipes
+              登录以查看所有分析记录和浏览的食谱
             </p>
             <button class="btn btn-primary" id="historyLoginBtn">
-              Login / Signup
+              登录 / 注册
             </button>
           </div>
 
           <div id="historyContent">
-            <div class="section-header">
-              <h2 class="section-title">Recent Analysis</h2>
+            <!-- 历史记录导航栏 -->
+            <div
+              class="history-nav"
+              style="
+                margin-bottom: 20px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+              "
+            >
+              <button
+                id="analysisTabBtn"
+                class="btn btn-outline active-tab"
+                style="margin-right: 10px"
+              >
+                食物分析
+              </button>
+              <button id="recipeTabBtn" class="btn btn-outline">
+                食谱浏览
+              </button>
+              <div style="float: right">
+                <div
+                  class="history-search"
+                  style="display: inline-block; position: relative"
+                >
+                  <input
+                    type="text"
+                    id="historySearchInput"
+                    placeholder="搜索历史记录..."
+                    style="
+                      padding: 8px 12px;
+                      border-radius: 20px;
+                      border: 1px solid #ddd;
+                      width: 200px;
+                    "
+                  />
+                  <i
+                    class="fas fa-search"
+                    style="
+                      position: absolute;
+                      right: 12px;
+                      top: 10px;
+                      color: #999;
+                    "
+                  ></i>
+                </div>
+                <button
+                  id="clearHistoryBtn"
+                  class="btn btn-outline"
+                  style="margin-left: 10px; color: var(--danger-color)"
+                >
+                  <i class="fas fa-trash"></i> 清空历史
+                </button>
+              </div>
             </div>
 
-            <div id="analysisHistory">
-              <!-- Example history items -->
-              <div class="history-item">
-                <img
-                  src="https://images.unsplash.com/photo-1565299543923-37dd37887442"
-                  alt="Apple"
-                  class="history-image"
-                />
-                <div class="history-content">
-                  <div class="history-date">2023-06-15 14:30</div>
-                  <h3 class="history-title">Red Apple</h3>
-                  <div class="history-meta">
-                    <div><i class="fas fa-fire"></i> 95 Calories</div>
-                    <div>
-                      <i
-                        class="fas fa-check-circle"
-                        style="color: var(--success-color)"
-                      ></i>
-                      Healthy Choice
+            <!-- 分页控制 -->
+            <div
+              class="pagination-controls"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+              "
+            >
+              <div class="page-size">
+                每页显示:
+                <select
+                  id="historyPageSize"
+                  style="
+                    padding: 5px;
+                    border-radius: 4px;
+                    border: 1px solid #ddd;
+                  "
+                >
+                  <option value="5">5条</option>
+                  <option value="10" selected>10条</option>
+                  <option value="20">20条</option>
+                </select>
+              </div>
+              <div class="pagination" id="historyPagination">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="currentPageInfo" style="margin: 0 15px"
+                  >第 <span id="currentPage">1</span> 页，共
+                  <span id="totalPages">1</span> 页</span
+                >
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 食物分析历史标签页 -->
+            <div id="analysisHistoryTab">
+              <div class="section-header">
+                <h2 class="section-title">食物分析历史记录</h2>
+              </div>
+
+              <div id="analysisHistory" class="history-list">
+                <!-- 示例分析历史记录项 -->
+                <div class="history-item" data-id="mock1">
+                  <img
+                    src="https://images.unsplash.com/photo-1565299543923-37dd37887442"
+                    alt="Apple"
+                    class="history-image"
+                  />
+                  <div class="history-content">
+                    <div class="history-date">2023-06-15 14:30</div>
+                    <h3 class="history-title">红苹果</h3>
+                    <div class="history-meta">
+                      <div><i class="fas fa-fire"></i> 95 卡路里</div>
+                      <div>
+                        <i
+                          class="fas fa-check-circle"
+                          style="color: var(--success-color)"
+                        ></i>
+                        健康选择
+                      </div>
                     </div>
                   </div>
+                  <div class="history-actions">
+                    <button class="btn-icon view-detail" title="查看详情">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon delete-item" title="删除">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div class="history-item">
-                <img
-                  src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
-                  alt="Burger"
-                  class="history-image"
-                />
-                <div class="history-content">
-                  <div class="history-date">2023-06-14 18:45</div>
-                  <h3 class="history-title">Cheeseburger</h3>
-                  <div class="history-meta">
-                    <div><i class="fas fa-fire"></i> 450 Calories</div>
-                    <div>
-                      <i
-                        class="fas fa-exclamation-circle"
-                        style="color: var(--warning-color)"
-                      ></i>
-                      Occasional Treat
+                <div class="history-item" data-id="mock2">
+                  <img
+                    src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+                    alt="Burger"
+                    class="history-image"
+                  />
+                  <div class="history-content">
+                    <div class="history-date">2023-06-14 18:45</div>
+                    <h3 class="history-title">芝士汉堡</h3>
+                    <div class="history-meta">
+                      <div><i class="fas fa-fire"></i> 450 卡路里</div>
+                      <div>
+                        <i
+                          class="fas fa-exclamation-circle"
+                          style="color: var(--warning-color)"
+                        ></i>
+                        偶尔食用
+                      </div>
                     </div>
                   </div>
+                  <div class="history-actions">
+                    <button class="btn-icon view-detail" title="查看详情">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon delete-item" title="删除">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="section-header" style="margin-top: 30px">
-              <h2 class="section-title">Browsed Recipes</h2>
+            <!-- 食谱浏览历史标签页 -->
+            <div id="recipeHistoryTab" style="display: none">
+              <div class="section-header">
+                <h2 class="section-title">食谱浏览历史记录</h2>
+              </div>
+
+              <div id="recipeHistory" class="history-list">
+                <!-- 示例食谱历史记录项 -->
+                <div class="history-item recipe-card" data-id="1">
+                  <img
+                    src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+                    alt="Salad"
+                    class="history-image"
+                  />
+                  <div class="history-content">
+                    <div class="history-date">2023-06-15 15:10</div>
+                    <h3 class="history-title">彩虹蔬菜沙拉</h3>
+                    <div class="history-meta">
+                      <div><i class="fas fa-fire"></i> 180 卡路里</div>
+                      <div><i class="fas fa-clock"></i> 15 分钟</div>
+                    </div>
+                  </div>
+                  <div class="history-actions">
+                    <button class="btn-icon view-detail" title="查看详情">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon delete-item" title="删除">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="history-item recipe-card" data-id="3">
+                  <img
+                    src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd"
+                    alt="Smoothie Bowl"
+                    class="history-image"
+                  />
+                  <div class="history-content">
+                    <div class="history-date">2023-06-14 09:20</div>
+                    <h3 class="history-title">浆果奇亚籽思慕雪碗</h3>
+                    <div class="history-meta">
+                      <div><i class="fas fa-fire"></i> 250 卡路里</div>
+                      <div><i class="fas fa-clock"></i> 10 分钟</div>
+                    </div>
+                  </div>
+                  <div class="history-actions">
+                    <button class="btn-icon view-detail" title="查看详情">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon delete-item" title="删除">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div id="recipeHistory">
-              <!-- Example recipe history items -->
-              <div class="history-item recipe-card" data-id="1">
-                <img
-                  src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
-                  alt="Salad"
-                  class="history-image"
-                />
-                <div class="history-content">
-                  <div class="history-date">2023-06-15 15:10</div>
-                  <h3 class="history-title">Rainbow Vegetable Salad</h3>
-                  <div class="history-meta">
-                    <div><i class="fas fa-fire"></i> 180 Calories</div>
-                    <div><i class="fas fa-clock"></i> 15 Minutes</div>
-                  </div>
-                </div>
-              </div>
+        <!-- 确认删除弹窗 -->
+        <div
+          id="deleteConfirmModal"
+          class="modal"
+          style="
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+          "
+        >
+          <div
+            style="
+              background: #fff;
+              padding: 25px;
+              border-radius: 8px;
+              max-width: 400px;
+              width: 90%;
+            "
+          >
+            <h3 style="margin-top: 0">确认删除</h3>
+            <p>您确定要删除这条历史记录吗？此操作无法撤销。</p>
+            <div
+              style="
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                margin-top: 20px;
+              "
+            >
+              <button id="cancelDeleteBtn" class="btn btn-outline">取消</button>
+              <button
+                id="confirmDeleteBtn"
+                class="btn btn-primary"
+                style="background-color: var(--danger-color)"
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </div>
 
-              <div class="history-item recipe-card" data-id="3">
-                <img
-                  src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd"
-                  alt="Smoothie Bowl"
-                  class="history-image"
-                />
-                <div class="history-content">
-                  <div class="history-date">2023-06-14 09:20</div>
-                  <h3 class="history-title">Berry Chia Seed Smoothie Bowl</h3>
-                  <div class="history-meta">
-                    <div><i class="fas fa-fire"></i> 250 Calories</div>
-                    <div><i class="fas fa-clock"></i> 10 Minutes</div>
-                  </div>
-                </div>
-              </div>
+        <!-- 历史记录详情弹窗 -->
+        <div
+          id="historyDetailModal"
+          class="modal"
+          style="
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+          "
+        >
+          <div
+            style="
+              background: #fff;
+              padding: 25px;
+              border-radius: 8px;
+              max-width: 600px;
+              width: 90%;
+              max-height: 80vh;
+              overflow: auto;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+              "
+            >
+              <h3 id="detailTitle" style="margin: 0">历史记录详情</h3>
+              <button
+                id="closeDetailBtn"
+                class="btn-icon"
+                style="background: none; border: none; cursor: pointer"
+              >
+                <i class="fas fa-times" style="font-size: 18px"></i>
+              </button>
+            </div>
+            <div id="historyDetailContent">
+              <!-- 详情内容将通过JavaScript动态生成 -->
             </div>
           </div>
         </div>

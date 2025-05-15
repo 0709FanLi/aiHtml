@@ -803,3 +803,144 @@ footer {
 .notification-close:hover {
   color: var(--danger-color);
 }
+
+/* 历史记录页样式 */
+.active-tab {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-item {
+  display: flex;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.history-item:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.history-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.history-content {
+  flex: 1;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-date {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 5px;
+}
+
+.history-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: var(--text-color);
+}
+
+.history-meta {
+  display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.history-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 15px;
+  gap: 10px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.view-detail {
+  color: var(--primary-color);
+}
+
+.delete-item {
+  color: var(--danger-color);
+}
+
+/* 分页样式 */
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  min-width: 40px;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .history-image {
+    width: 80px;
+    height: 80px;
+  }
+
+  .history-title {
+    font-size: 16px;
+  }
+
+  .history-meta {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .history-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pagination {
+    width: 100%;
+    justify-content: center;
+  }
+}
