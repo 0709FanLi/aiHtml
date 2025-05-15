@@ -7,6 +7,63 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultsCard = document.getElementById("results-card");
   const userDashboard = document.getElementById("user-dashboard");
 
+  // 创建Toast通知容器 - 移到文件前面确保toastContainer在任何函数调用前被初始化
+  const toastContainer = document.createElement("div");
+  toastContainer.className = "toast-container";
+  document.body.appendChild(toastContainer);
+
+  // 显示Toast通知函数
+  function showToast(type, title, message, duration = 3000) {
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+
+    // 根据类型设置图标
+    let icon = "";
+    switch (type) {
+      case "success":
+        icon = '<i class="fas fa-check-circle toast-icon"></i>';
+        break;
+      case "error":
+        icon = '<i class="fas fa-exclamation-circle toast-icon"></i>';
+        break;
+      case "warning":
+        icon = '<i class="fas fa-exclamation-triangle toast-icon"></i>';
+        break;
+      case "info":
+      default:
+        icon = '<i class="fas fa-info-circle toast-icon"></i>';
+        break;
+    }
+
+    toast.innerHTML = `
+      ${icon}
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+      <button class="toast-close">&times;</button>
+      <div class="toast-progress">
+        <div class="toast-progress-bar"></div>
+      </div>
+    `;
+
+    // 添加到容器
+    toastContainer.appendChild(toast);
+
+    // 关闭按钮事件
+    const closeBtn = toast.querySelector(".toast-close");
+    closeBtn.addEventListener("click", function () {
+      toast.remove();
+    });
+
+    // 自动移除
+    setTimeout(function () {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, duration);
+  }
+
   // 全局状态变量
   let isLoggedIn = false; // 默认未登录状态
   let currentUser = null; // 当前用户信息
@@ -1120,12 +1177,8 @@ document.addEventListener("DOMContentLoaded", function () {
     annotateBtn.addEventListener("click", function () {
       // 检查用户是否登录
       if (!isLoggedIn || !currentUser) {
-        showToast(
-          "error",
-          "Authentication Required",
-          "Please login to use the code annotation service"
-        );
-        // 显示登录弹窗
+        // 事件内即时获取loginModal，确保不为undefined
+        const loginModal = document.getElementById("login-modal");
         if (loginModal) {
           loginModal.classList.add("active");
         }
@@ -1614,131 +1667,93 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // 封装弹框显示/隐藏函数
+  function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "flex";
+      modal.classList.add("active");
+      const inner = modal.querySelector(".modal");
+      if (inner) inner.style.display = "block";
+    }
+  }
+  function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = "none";
+      modal.classList.remove("active");
+      const inner = modal.querySelector(".modal");
+      if (inner) inner.style.display = "none";
+    }
+  }
+
   // 登录按钮点击事件
   if (loginBtn) {
     loginBtn.addEventListener("click", function () {
-      if (loginModal) {
-        loginModal.classList.add("active");
-      }
+      showModal("login-modal");
     });
   }
 
   // 注册按钮点击事件
   if (signupBtn) {
     signupBtn.addEventListener("click", function () {
-      if (signupModal) {
-        signupModal.classList.add("active");
-      }
+      showModal("signup-modal");
     });
   }
 
-  // 从登录模态框中的"Sign up"链接到注册模态框
-  if (showSignupLink) {
-    showSignupLink.addEventListener("click", function (e) {
-      e.preventDefault();
-      // 隐藏登录模态框并清空表单
-      closeModalAndClearForm(loginModal);
-      // 显示注册模态框
-      if (signupModal) {
-        signupModal.classList.add("active");
+  // Annotate Code按钮未登录弹窗
+  if (annotateBtn) {
+    annotateBtn.addEventListener("click", function () {
+      if (!isLoggedIn || !currentUser) {
+        showModal("login-modal");
+        return;
       }
+      // ... existing code ...
     });
   }
 
-  // 从注册模态框中的"Login"链接到登录模态框
-  if (showLoginLink) {
-    showLoginLink.addEventListener("click", function (e) {
-      e.preventDefault();
-      // 获取注册邮箱
-      const signupEmail = document.getElementById("signup-email");
-      const emailValue = signupEmail ? signupEmail.value.trim() : "";
-
-      // 隐藏注册模态框并清空表单
-      closeModalAndClearForm(signupModal);
-
-      // 显示登录模态框
-      if (loginModal) {
-        loginModal.classList.add("active");
-
-        // 如果有填写邮箱，带入登录弹框
-        if (emailValue) {
-          const loginEmail = document.getElementById("login-email");
-          if (loginEmail) {
-            loginEmail.value = emailValue;
-          }
-        }
-      }
-    });
-  }
-
-  // 模态框关闭按钮事件处理
+  // modal关闭按钮事件
   if (modalCloseButtons) {
     modalCloseButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        // 找到当前模态框并关闭它
         const currentModal = this.closest(".modal-backdrop");
-        if (currentModal) {
-          closeModalAndClearForm(currentModal);
+        if (currentModal && currentModal.id) {
+          hideModal(currentModal.id);
         }
       });
     });
   }
 
-  // 忘记密码链接点击事件
+  // 登录/注册/忘记密码弹框切换
+  if (showSignupLink) {
+    showSignupLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      hideModal("login-modal");
+      showModal("signup-modal");
+    });
+  }
+  if (showLoginLink) {
+    showLoginLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      hideModal("signup-modal");
+      showModal("login-modal");
+      // ... existing code ...
+    });
+  }
   if (showForgotPasswordLink) {
     showForgotPasswordLink.addEventListener("click", function (e) {
       e.preventDefault();
-
-      // 获取登录邮箱
-      const loginEmail = document.getElementById("login-email");
-      const emailValue = loginEmail ? loginEmail.value.trim() : "";
-
-      // 隐藏登录模态框并清空表单
-      closeModalAndClearForm(loginModal);
-
-      // 显示忘记密码模态框
-      if (forgotPasswordModal) {
-        forgotPasswordModal.classList.add("active");
-
-        // 如果登录弹框已填写邮箱，带入到忘记密码弹框
-        if (emailValue) {
-          setTimeout(() => {
-            const forgotEmail = document.getElementById("forgot-email");
-            if (forgotEmail) {
-              forgotEmail.value = emailValue;
-            }
-          }, 100); // 短暂延时确保DOM已渲染
-        }
-      }
+      hideModal("login-modal");
+      showModal("forgot-password-modal");
+      // ... existing code ...
     });
   }
-
-  // 返回登录按钮点击事件
   if (backToLoginLink) {
     backToLoginLink.addEventListener("click", function (e) {
       e.preventDefault();
-
-      // 获取忘记密码弹框中的邮箱
-      const forgotEmail = document.getElementById("forgot-email");
-      const emailValue = forgotEmail ? forgotEmail.value.trim() : "";
-
-      // 隐藏忘记密码模态框并清空表单
-      closeModalAndClearForm(forgotPasswordModal);
-
-      // 显示登录模态框
-      if (loginModal) {
-        loginModal.classList.add("active");
-
-        // 如果忘记密码弹框已填写邮箱，带入到登录弹框
-        if (emailValue) {
-          setTimeout(() => {
-            const loginEmail = document.getElementById("login-email");
-            if (loginEmail) {
-              loginEmail.value = emailValue;
-            }
-          }, 100); // 短暂延时确保DOM已渲染
-        }
-      }
+      hideModal("forgot-password-modal");
+      showModal("login-modal");
+      // ... existing code ...
     });
   }
 
@@ -1909,63 +1924,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (userDropdown) {
       userDropdown.classList.remove("active");
     }
-  }
-
-  // 创建Toast通知容器
-  const toastContainer = document.createElement("div");
-  toastContainer.className = "toast-container";
-  document.body.appendChild(toastContainer);
-
-  // 显示Toast通知函数
-  function showToast(type, title, message, duration = 3000) {
-    const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
-
-    // 根据类型设置图标
-    let icon = "";
-    switch (type) {
-      case "success":
-        icon = '<i class="fas fa-check-circle toast-icon"></i>';
-        break;
-      case "error":
-        icon = '<i class="fas fa-exclamation-circle toast-icon"></i>';
-        break;
-      case "warning":
-        icon = '<i class="fas fa-exclamation-triangle toast-icon"></i>';
-        break;
-      case "info":
-      default:
-        icon = '<i class="fas fa-info-circle toast-icon"></i>';
-        break;
-    }
-
-    toast.innerHTML = `
-      ${icon}
-      <div class="toast-content">
-        <div class="toast-title">${title}</div>
-        <div class="toast-message">${message}</div>
-      </div>
-      <button class="toast-close">&times;</button>
-      <div class="toast-progress">
-        <div class="toast-progress-bar"></div>
-      </div>
-    `;
-
-    // 添加到容器
-    toastContainer.appendChild(toast);
-
-    // 关闭按钮事件
-    const closeBtn = toast.querySelector(".toast-close");
-    closeBtn.addEventListener("click", function () {
-      toast.remove();
-    });
-
-    // 自动移除
-    setTimeout(function () {
-      if (toast.parentNode) {
-        toast.remove();
-      }
-    }, duration);
   }
 
   // 更新登录表单代码使用Toast通知
