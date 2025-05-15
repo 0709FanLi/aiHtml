@@ -26,49 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // 初始化购买积分功能
   initBuyCredits();
 
-  // 初始显示设置 - 页面加载时默认显示Home (About内容)
-  function initialPageSetup() {
-    // 仅显示About相关卡片 (前5个卡片是About内容)
-    if (mainContent) {
-      const contentCards = mainContent.querySelectorAll(".card");
-
-      // 显示About相关卡片，但隐藏Our Team部分（第3个卡片）
-      for (let i = 0; i < 5; i++) {
-        if (contentCards[i]) {
-          if (i === 2) {
-            // Our Team卡片是第3个，索引为2
-            contentCards[i].style.display = "none";
-          } else {
-            contentCards[i].style.display = "block";
-          }
-        }
-      }
-
-      // 显示About相关卡片后的功能卡片需要隐藏
-      const totalCards = contentCards.length;
-      for (let i = 5; i < totalCards; i++) {
-        if (contentCards[i]) {
-          contentCards[i].style.display = "none";
-        }
-      }
-
-      // 隐藏功能相关卡片
-      if (codeInputCard) codeInputCard.style.display = "none";
-      if (resultsCard) resultsCard.style.display = "none";
-
-      // 根据登录状态显示仪表盘
-      if (userDashboard) {
-        userDashboard.style.display = isLoggedIn ? "block" : "none";
-      }
-    }
-
-    // 隐藏价格部分
-    if (pricingSection) pricingSection.style.display = "none";
-
-    // 初始化Dashboard标签页切换
-    initDashboardTabs();
-  }
-
   // 初始化Dashboard标签页切换功能
   function initDashboardTabs() {
     const dashboardTabs = document.querySelectorAll(".dashboard-tab");
@@ -99,6 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
           activeContent.classList.add("active");
         }
 
+        // 如果点击的是History标签，加载历史记录
+        if (contentId === "history") {
+          fetchCodeRecords(1, 10);
+        }
+
         // 如果点击的是Buy Credits标签，显示价格区域
         if (contentId === "buy-credits") {
           if (pricingSection) {
@@ -116,7 +78,307 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 检查用户登录状态
+  // 历史记录相关变量
+  let codeRecords = {
+    total: 0,
+    items: [],
+    hasMore: false,
+    currentPage: 1,
+  };
+
+  // 获取代码历史记录
+  function fetchCodeRecords(page = 1, pageSize = 10) {
+    // 历史记录内容区域
+    const historyContent = document.querySelector(
+      '[data-dashboard-content="history"]'
+    );
+    if (!historyContent) return;
+
+    // 如果未登录，显示提示信息
+    if (!isLoggedIn || !currentUser) {
+      historyContent.innerHTML = `
+        <div class="history-empty">
+          <p>Please login to view your code annotation history.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // 显示加载中...
+    historyContent.innerHTML = `
+      <div class="history-loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading your history...</p>
+      </div>
+    `;
+
+    // 获取token
+    const token = localStorage.getItem("token");
+    const tokenType = localStorage.getItem("token_type") || "bearer";
+
+    // 设置请求参数
+    const requestData = {
+      page: page,
+      page_size: pageSize,
+    };
+
+    // 发送请求
+    fetch("http://web.codecommont.com/api/v1/code/records", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${tokenType} ${token}`,
+      },
+      body: JSON.stringify(requestData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // 保存数据
+        if (data.ok === 1) {
+          if (page === 1 && data.data.total !== undefined) {
+            codeRecords.total = data.data.total;
+          }
+          codeRecords.items = data.data.items || [];
+          codeRecords.hasMore = data.data.has_more === 1;
+          codeRecords.currentPage = page;
+
+          // 显示历史记录
+          displayCodeRecords(historyContent);
+        } else {
+          throw new Error(data.message || "Failed to fetch code records");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching code records:", error);
+        historyContent.innerHTML = `
+        <div class="history-empty">
+          <p>Failed to load your history. Please try again later.</p>
+          <button class="btn btn-primary retry-history-btn">Retry</button>
+        </div>
+      `;
+
+        // 添加重试按钮事件
+        const retryBtn = historyContent.querySelector(".retry-history-btn");
+        if (retryBtn) {
+          retryBtn.addEventListener("click", () =>
+            fetchCodeRecords(page, pageSize)
+          );
+        }
+      });
+  }
+
+  // 显示代码历史记录
+  function displayCodeRecords(container) {
+    if (!container) return;
+
+    // 如果没有记录
+    if (!codeRecords.items.length) {
+      container.innerHTML = `
+        <div class="history-empty">
+          <p>You don't have any code annotation history yet.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // 构建历史记录HTML
+    let historyHTML = '<div class="history-list">';
+
+    // 遍历历史记录项
+    codeRecords.items.forEach((record) => {
+      // 格式化日期
+      const date = new Date(record.created_at);
+      const formattedDate =
+        date.toLocaleDateString() + " " + date.toLocaleTimeString();
+
+      historyHTML += `
+        <div class="history-item" data-id="${record.id}">
+          <div class="history-header">
+            <div class="history-title">${record.file_name}</div>
+            <div class="history-date">${formattedDate}</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-sm btn-primary view-history-btn">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button class="btn btn-sm btn-danger delete-history-btn">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    historyHTML += "</div>";
+
+    // 添加分页控件
+    if (codeRecords.total > 0) {
+      const totalPages = Math.ceil(codeRecords.total / 10);
+
+      historyHTML += `
+        <div class="pagination-container">
+          <div class="pagination">
+      `;
+
+      // 上一页按钮
+      if (codeRecords.currentPage > 1) {
+        historyHTML += `
+          <button class="pagination-btn prev-page" data-page="${
+            codeRecords.currentPage - 1
+          }">
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+        `;
+      }
+
+      // 页码按钮
+      const startPage = Math.max(1, codeRecords.currentPage - 2);
+      const endPage = Math.min(totalPages, codeRecords.currentPage + 2);
+
+      for (let i = startPage; i <= endPage; i++) {
+        historyHTML += `
+          <button class="pagination-btn page-num ${
+            i === codeRecords.currentPage ? "active" : ""
+          }" data-page="${i}">
+            ${i}
+          </button>
+        `;
+      }
+
+      // 下一页按钮
+      if (codeRecords.currentPage < totalPages) {
+        historyHTML += `
+          <button class="pagination-btn next-page" data-page="${
+            codeRecords.currentPage + 1
+          }">
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        `;
+      }
+
+      historyHTML += `
+          </div>
+          <div class="pagination-info">
+            Showing ${(codeRecords.currentPage - 1) * 10 + 1}-${Math.min(
+        codeRecords.currentPage * 10,
+        codeRecords.total
+      )} of ${codeRecords.total} records
+          </div>
+        </div>
+      `;
+    }
+
+    // 更新容器内容
+    container.innerHTML = historyHTML;
+
+    // 添加事件监听器
+    addHistoryEventListeners(container);
+  }
+
+  // 添加历史记录事件监听器
+  function addHistoryEventListeners(container) {
+    if (!container) return;
+
+    // 查看按钮事件
+    const viewButtons = container.querySelectorAll(".view-history-btn");
+    viewButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const historyItem = this.closest(".history-item");
+        const recordId = historyItem.getAttribute("data-id");
+        // TODO: 实现查看具体代码的功能
+        showToast(
+          "info",
+          "Feature Coming Soon",
+          "View feature will be available soon."
+        );
+      });
+    });
+
+    // 删除按钮事件
+    const deleteButtons = container.querySelectorAll(".delete-history-btn");
+    deleteButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const historyItem = this.closest(".history-item");
+        const recordId = historyItem.getAttribute("data-id");
+        deleteCodeRecord(recordId);
+      });
+    });
+
+    // 分页按钮事件
+    const pageButtons = container.querySelectorAll(".pagination-btn");
+    pageButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const page = parseInt(this.getAttribute("data-page"));
+        fetchCodeRecords(page, 10);
+      });
+    });
+  }
+
+  // 删除代码历史记录
+  function deleteCodeRecord(recordId) {
+    if (!recordId) return;
+
+    // 确认删除
+    if (
+      !confirm(
+        "Are you sure you want to delete this record? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    // 获取token
+    const token = localStorage.getItem("token");
+    const tokenType = localStorage.getItem("token_type") || "bearer";
+
+    // 显示正在删除的提示
+    showToast("info", "Deleting Record", "Processing your request...");
+
+    // 发送删除请求
+    fetch(`http://web.codecommont.com/api/v1/code/record/${recordId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${tokenType} ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.ok === 1) {
+          // 删除成功
+          showToast(
+            "success",
+            "Record Deleted",
+            "The record has been successfully deleted."
+          );
+
+          // 重新加载当前页面的历史记录
+          fetchCodeRecords(codeRecords.currentPage, 10);
+        } else {
+          throw new Error(data.message || "Failed to delete record");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting record:", error);
+        showToast(
+          "error",
+          "Delete Failed",
+          "Failed to delete the record. Please try again later."
+        );
+      });
+  }
+
+  // 初始化 - 检查用户登录状态
   function checkLoginStatus() {
     // 检查localStorage中是否有token
     const token = localStorage.getItem("token");
@@ -2058,5 +2320,58 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }, 300)
     );
+  }
+
+  // 初始显示设置 - 页面加载时默认显示Home (About内容)
+  function initialPageSetup() {
+    // 仅显示About相关卡片 (前5个卡片是About内容)
+    if (mainContent) {
+      const contentCards = mainContent.querySelectorAll(".card");
+
+      // 显示About相关卡片，但隐藏Our Team部分（第3个卡片）
+      for (let i = 0; i < 5; i++) {
+        if (contentCards[i]) {
+          if (i === 2) {
+            // Our Team卡片是第3个，索引为2
+            contentCards[i].style.display = "none";
+          } else {
+            contentCards[i].style.display = "block";
+          }
+        }
+      }
+
+      // 显示About相关卡片后的功能卡片需要隐藏
+      const totalCards = contentCards.length;
+      for (let i = 5; i < totalCards; i++) {
+        if (contentCards[i]) {
+          contentCards[i].style.display = "none";
+        }
+      }
+
+      // 隐藏功能相关卡片
+      if (codeInputCard) codeInputCard.style.display = "none";
+      if (resultsCard) resultsCard.style.display = "none";
+
+      // 根据登录状态显示仪表盘
+      if (userDashboard) {
+        userDashboard.style.display = isLoggedIn ? "block" : "none";
+
+        // 如果用户已登录，加载历史记录
+        if (isLoggedIn) {
+          const historyTab = document.querySelector(
+            '[data-dashboard-tab="history"]'
+          );
+          if (historyTab && historyTab.classList.contains("active")) {
+            fetchCodeRecords(1, 10);
+          }
+        }
+      }
+    }
+
+    // 隐藏价格部分
+    if (pricingSection) pricingSection.style.display = "none";
+
+    // 初始化Dashboard标签页切换
+    initDashboardTabs();
   }
 });
