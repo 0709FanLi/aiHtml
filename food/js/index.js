@@ -1497,27 +1497,11 @@ function updateHistoryView() {
     startIndex + state.historyPageSize
   );
 
-  // 更新当前标签页的内容
-  const recipeHistoryTab = document.getElementById("recipeHistoryTab");
-
-  if (!recipeHistoryTab) {
-    console.error("未找到recipeHistoryTab元素");
-    return;
-  }
-
-  const currentTab =
-    recipeHistoryTab.style.display === "none" ? "analysis" : "recipe";
-  const historyContainer =
-    currentTab === "analysis"
-      ? document.getElementById("analysisHistory")
-      : document.getElementById("recipeHistory");
+  // 直接获取分析历史容器，不再有Recipe Browse标签
+  const historyContainer = document.getElementById("analysisHistory");
 
   if (!historyContainer) {
-    console.error(
-      `未找到历史记录容器: ${
-        currentTab === "analysis" ? "analysisHistory" : "recipeHistory"
-      }`
-    );
+    console.error("未找到历史记录容器: analysisHistory");
     return;
   }
 
@@ -1527,78 +1511,49 @@ function updateHistoryView() {
   // 添加当前页的历史记录项
   if (pageItems.length > 0) {
     pageItems.forEach((item) => {
+      // 只处理food analysis类型的记录，忽略recipe类型
+      if (item.type !== "analysis") return;
+
       const historyItem = document.createElement("div");
-      historyItem.className =
-        "history-item" + (item.type === "recipe" ? " recipe-card" : "");
-      const itemId =
-        item.type === "analysis"
-          ? item.food.id || JSON.stringify(item.food.name)
-          : item.recipe.id;
+      historyItem.className = "history-item";
+      const itemId = item.food.id || JSON.stringify(item.food.name);
       historyItem.dataset.id = itemId;
 
-      if (item.type === "analysis") {
-        historyItem.innerHTML = `
-                        <img src="${item.food.image}" alt="${
-          item.food.name
-        }" class="history-image">
-                        <div class="history-content">
-                            <div class="history-date">${new Date(
-                              item.date
-                            ).toLocaleString()}</div>
-                            <h3 class="history-title">${item.food.name}</h3>
-                            <div class="history-meta">
-              <div><i class="fas fa-fire"></i> ${item.food.calories}</div>
-                                <div>
-                                    <i class="fas ${
-                                      item.food.isHealthy
-                                        ? "fa-check-circle"
-                                        : "fa-exclamation-circle"
-                                    }" 
-                                       style="color: var(${
-                                         item.food.isHealthy
-                                           ? "--success-color"
-                                           : "--warning-color"
-                                       });"></i> 
-                ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
-                                </div>
+      // 历史记录项不再显示图片
+      historyItem.innerHTML = `
+                    <div class="history-content">
+                        <div class="history-date">${new Date(
+                          item.date
+                        ).toLocaleString()}</div>
+                        <h3 class="history-title">${item.food.name}</h3>
+                        <div class="history-meta">
+                            <div><i class="fas fa-fire"></i> ${
+                              item.food.calories
+                            }</div>
+                            <div>
+                                <i class="fas ${
+                                  item.food.isHealthy
+                                    ? "fa-check-circle"
+                                    : "fa-exclamation-circle"
+                                }" 
+                                   style="color: var(${
+                                     item.food.isHealthy
+                                       ? "--success-color"
+                                       : "--warning-color"
+                                   });"></i> 
+                                ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
                             </div>
                         </div>
-          <div class="history-actions">
-            <button class="btn-icon view-detail" title="查看详情">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn-icon delete-item" title="删除">
-              <i class="fas fa-trash"></i>
-            </button>
-                        </div>
-                    `;
-      } else {
-        historyItem.innerHTML = `
-                        <img src="${item.recipe.image}" alt="${
-          item.recipe.name
-        }" class="history-image">
-                        <div class="history-content">
-                            <div class="history-date">${new Date(
-                              item.date
-                            ).toLocaleString()}</div>
-                            <h3 class="history-title">${item.recipe.name}</h3>
-                            <div class="history-meta">
-                                <div><i class="fas fa-fire"></i> ${
-                                  item.recipe.calories
-                                } 卡路里</div>
-              <div><i class="fas fa-clock"></i> ${item.recipe.time} 分钟</div>
-                            </div>
-                        </div>
-          <div class="history-actions">
-            <button class="btn-icon view-detail" title="查看详情">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn-icon delete-item" title="删除">
-              <i class="fas fa-trash"></i>
-            </button>
-                        </div>
-                    `;
-      }
+                    </div>
+                    <div class="history-actions">
+                        <button class="btn-icon view-detail" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon delete-item" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
 
       historyContainer.appendChild(historyItem);
 
@@ -1615,19 +1570,10 @@ function updateHistoryView() {
         e.stopPropagation(); // 防止冒泡到卡片
         showDeleteConfirmModal(itemId);
       });
-
-      // 为食谱卡片添加点击事件
-      if (item.type === "recipe") {
-        historyItem.addEventListener("click", function () {
-          showRecipeDetail(item.recipe.id);
-        });
-      }
     });
   } else {
     // 没有记录显示提示
-    historyContainer.innerHTML = `<p style="text-align: center; padding: 20px;">没有${
-      currentTab === "analysis" ? "食物分析" : "食谱浏览"
-    }记录</p>`;
+    historyContainer.innerHTML = `<p style="text-align: center; padding: 20px;">没有食物分析记录</p>`;
   }
 }
 
@@ -1635,31 +1581,7 @@ function updateHistoryView() {
 function setupHistoryPageEvents() {
   console.log("设置历史记录页面事件...");
 
-  // 标签切换按钮
-  const analysisTabBtn = document.getElementById("analysisTabBtn");
-  const recipeTabBtn = document.getElementById("recipeTabBtn");
-  const analysisHistoryTab = document.getElementById("analysisHistoryTab");
-  const recipeHistoryTab = document.getElementById("recipeHistoryTab");
-
-  if (analysisTabBtn && recipeTabBtn) {
-    console.log("找到历史记录标签切换按钮");
-    analysisTabBtn.addEventListener("click", function () {
-      analysisTabBtn.classList.add("active-tab");
-      recipeTabBtn.classList.remove("active-tab");
-      analysisHistoryTab.style.display = "block";
-      recipeHistoryTab.style.display = "none";
-    });
-
-    recipeTabBtn.addEventListener("click", function () {
-      recipeTabBtn.classList.add("active-tab");
-      analysisTabBtn.classList.remove("active-tab");
-      recipeHistoryTab.style.display = "block";
-      analysisHistoryTab.style.display = "none";
-    });
-  } else {
-    console.error("未找到历史记录标签切换按钮");
-  }
-
+  // 不再需要标签切换按钮的事件处理
   // 分页控制
   const prevPageBtn = document.getElementById("prevPageBtn");
   const nextPageBtn = document.getElementById("nextPageBtn");
@@ -1810,11 +1732,6 @@ function showHistoryDetailModal(item) {
 
     detailTitle.textContent = "Food Analysis Details";
     detailContent.innerHTML = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <img src="${item.food.image}" alt="${
-      item.food.name
-    }" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
-      </div>
       <div style="margin-bottom: 15px;">
         <h3 style="margin-bottom: 10px;">${item.food.name}</h3>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
@@ -1886,19 +1803,14 @@ function showRecipeDetailsModal(recipe) {
 function getFilteredHistory() {
   if (!state.user || !state.user.history) return [];
 
-  const currentTab =
-    document.getElementById("recipeHistoryTab").style.display === "none"
-      ? "analysis"
-      : "recipe";
-
   return state.user.history.filter((item) => {
-    // 筛选当前标签页的类型
-    if (item.type !== currentTab) return false;
+    // 只返回分析类型的历史记录
+    if (item.type !== "analysis") return false;
 
     // 搜索筛选
     if (state.historySearchTerm) {
-      const name = item.type === "analysis" ? item.food.name : item.recipe.name;
-      return name.toLowerCase().includes(state.historySearchTerm);
+      const name = item.food.name;
+      return name.toLowerCase().includes(state.historySearchTerm.toLowerCase());
     }
 
     return true;
@@ -2536,62 +2448,87 @@ if (signupBtn) {
 document.addEventListener("DOMContentLoaded", function () {
   // 更改界面中的中文文本为英文
   // 分析结果视图文本修改
-  document.querySelector("#analyzedFoodName").textContent = "Food Name";
-  document.querySelector("#foodHealthTag").textContent = "Healthy Choice";
-  document.querySelector("#foodAnalysisText").textContent =
-    "Analysis results will be displayed here...";
-  document.querySelector("#recommendationsSection h3").textContent =
-    "Recommended Healthy Recipes";
-  document.querySelector("#backToHomeBtn").innerHTML =
-    '<i class="fas fa-arrow-left"></i> Back to Home';
+  const safeSetText = (selector, text) => {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = text;
+  };
+
+  const safeSetHTML = (selector, html) => {
+    const element = document.querySelector(selector);
+    if (element) element.innerHTML = html;
+  };
+
+  // 分析结果视图文本修改
+  safeSetText("#analyzedFoodName", "Food Name");
+  safeSetText("#foodHealthTag", "Healthy Choice");
+  safeSetText(
+    "#foodAnalysisText",
+    "Analysis results will be displayed here..."
+  );
+  safeSetText("#recommendationsSection h3", "Recommended Healthy Recipes");
+  safeSetHTML(
+    "#backToHomeBtn",
+    '<i class="fas fa-arrow-left"></i> Back to Home'
+  );
 
   // 历史记录视图文本修改
-  document.querySelector("#historyView .hero h1").textContent = "Your History";
-  document.querySelector("#historyView .hero p").textContent =
-    "View and access previously analyzed foods and browsed recipes.";
-  document.querySelector("#loginPrompt h2").textContent =
-    "Please Login to View Your History";
-  document.querySelector("#loginPrompt p").textContent =
-    "Login to see all analysis records and browsed recipes";
-  document.querySelector("#historyLoginBtn").textContent = "Login / Register";
-  document.querySelector("#analysisTabBtn").textContent = "Food Analysis";
-  document.querySelector("#recipeTabBtn").textContent = "Recipe Browse";
-  document.querySelector("#historySearchInput").placeholder =
-    "Search history...";
-  document.querySelector("#clearHistoryBtn").innerHTML =
-    '<i class="fas fa-trash"></i> Clear History';
+  safeSetText("#historyView .hero h1", "Your History");
+  safeSetText(
+    "#historyView .hero p",
+    "View and access previously analyzed foods and browsed recipes."
+  );
+  safeSetText("#loginPrompt h2", "Please Login to View Your History");
+  safeSetText(
+    "#loginPrompt p",
+    "Login to see all analysis records and browsed recipes"
+  );
+  safeSetText("#historyLoginBtn", "Login / Register");
+  safeSetText("#analysisTabBtn", "Food Analysis");
+  safeSetText("#recipeTabBtn", "Recipe Browse");
+
+  const historySearchInput = document.querySelector("#historySearchInput");
+  if (historySearchInput) historySearchInput.placeholder = "Search history...";
+
+  safeSetHTML("#clearHistoryBtn", '<i class="fas fa-trash"></i> Clear History');
 
   // 食谱详情视图文本修改
-  document.querySelector(
-    "#recipeDetailView .recipe-stats .stat-label:nth-child(2)"
-  ).textContent = "Calories";
-  document.querySelector(
-    "#recipeDetailView .recipe-stats .stat-label:nth-child(4)"
-  ).textContent = "Protein";
-  document.querySelector(
-    "#recipeDetailView .recipe-stats .stat-label:nth-child(6)"
-  ).textContent = "Carbs";
-  document.querySelector(
-    "#recipeDetailView .recipe-stats .stat-label:nth-child(8)"
-  ).textContent = "Fat";
-  document.querySelector(
-    "#recipeDetailView .recipe-stats .stat-label:nth-child(10)"
-  ).textContent = "Minutes";
-  document.querySelector(
-    "#recipeDetailView .recipe-section h3:nth-of-type(1)"
-  ).textContent = "Health Tips";
-  document.querySelector(
-    "#recipeDetailView .recipe-section h3:nth-of-type(2)"
-  ).textContent = "Ingredients";
-  document.querySelector(
-    "#recipeDetailView .recipe-section h3:nth-of-type(3)"
-  ).textContent = "Steps";
-  document.querySelector("#backFromRecipeBtn").innerHTML =
-    '<i class="fas fa-arrow-left"></i> Back';
+  safeSetText(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(2)",
+    "Calories"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(4)",
+    "Protein"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(6)",
+    "Carbs"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(8)",
+    "Fat"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-stats .stat-label:nth-child(10)",
+    "Minutes"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-section h3:nth-of-type(1)",
+    "Health Tips"
+  );
+  safeSetText(
+    "#recipeDetailView .recipe-section h3:nth-of-type(2)",
+    "Ingredients"
+  );
+  safeSetText("#recipeDetailView .recipe-section h3:nth-of-type(3)", "Steps");
+  safeSetHTML("#backFromRecipeBtn", '<i class="fas fa-arrow-left"></i> Back');
 
   // 为每页的"View Details"按钮添加英文文本
-  document.querySelectorAll(".view-recipe-details").forEach((button) => {
-    button.textContent = "View Details";
-    // 不在此添加事件监听，让food/js/index.js处理
-  });
+  const detailButtons = document.querySelectorAll(".view-recipe-details");
+  if (detailButtons.length > 0) {
+    detailButtons.forEach((button) => {
+      button.textContent = "View Details";
+      // 不在此添加事件监听，让food/js/index.js处理
+    });
+  }
 });
