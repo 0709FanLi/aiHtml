@@ -689,18 +689,12 @@ registerSubmitBtn.addEventListener("click", () => {
       loadingOverlay.style.display = "none";
 
       if (data.ok === 1) {
-        // 适配新接口：data为用户对象，需手动构造userData结构
-        const userData = {
-          user: data.data, // 直接用data.data作为user
-          access_token: null,
-          refresh_token: null,
-          access_token_expires: null,
-          refresh_token_expires: null,
-          token_type: null,
-        };
-        saveUserData(userData);
-        updateUIAfterLogin(userData);
-        showToast("Account created successfully!", "success");
+        // 注册成功后，打开登录弹窗并自动填充邮箱，不自动登录
+        showAuthModal();
+        loginTab.click();
+        document.getElementById("loginEmail").value = data.data.email;
+        document.getElementById("loginPassword").value = "";
+        showToast("注册成功，请登录！", "success");
       } else {
         showToast(data.message || "Registration failed", "error");
       }
