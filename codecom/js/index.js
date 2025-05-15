@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // 初始化文件上传功能
   initFileUpload();
 
+  // 初始化购买积分功能
+  initBuyCredits();
+
   // 初始显示设置 - 页面加载时默认显示Home (About内容)
   function initialPageSetup() {
     // 仅显示About相关卡片 (前5个卡片是About内容)
@@ -61,6 +64,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 隐藏价格部分
     if (pricingSection) pricingSection.style.display = "none";
+
+    // 初始化Dashboard标签页切换
+    initDashboardTabs();
+  }
+
+  // 初始化Dashboard标签页切换功能
+  function initDashboardTabs() {
+    const dashboardTabs = document.querySelectorAll(".dashboard-tab");
+    const dashboardContents = document.querySelectorAll(".dashboard-content");
+
+    // 为每个标签添加点击事件
+    dashboardTabs.forEach((tab) => {
+      tab.addEventListener("click", function () {
+        // 移除所有标签的active类
+        dashboardTabs.forEach((t) => t.classList.remove("active"));
+
+        // 为当前点击的标签添加active类
+        this.classList.add("active");
+
+        // 获取标签对应的内容ID
+        const contentId = this.getAttribute("data-dashboard-tab");
+
+        // 隐藏所有内容
+        dashboardContents.forEach((content) =>
+          content.classList.remove("active")
+        );
+
+        // 显示对应的内容
+        const activeContent = document.querySelector(
+          `[data-dashboard-content="${contentId}"]`
+        );
+        if (activeContent) {
+          activeContent.classList.add("active");
+        }
+
+        // 如果点击的是Buy Credits标签，显示价格区域
+        if (contentId === "buy-credits") {
+          if (pricingSection) {
+            pricingSection.style.display = "block";
+            // 滚动到pricing section
+            pricingSection.scrollIntoView({ behavior: "smooth" });
+          }
+        } else {
+          // 其他标签页隐藏价格区域
+          if (pricingSection) {
+            pricingSection.style.display = "none";
+          }
+        }
+      });
+    });
   }
 
   // 检查用户登录状态
@@ -1787,6 +1840,166 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       reader.readAsText(file);
+    }
+  }
+
+  // 初始化购买积分功能
+  function initBuyCredits() {
+    // 获取所有购买按钮
+    const buyPlanButtons = document.querySelectorAll(".buy-plan");
+    const paymentModal = document.getElementById("payment-modal");
+    const selectedPlanElement = document.getElementById("selected-plan");
+    const closeModalButtons = paymentModal
+      ? paymentModal.querySelectorAll(".modal-close")
+      : [];
+    const completePaymentBtn = document.getElementById("complete-payment");
+
+    // 为所有购买按钮添加点击事件
+    if (buyPlanButtons.length > 0) {
+      buyPlanButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          // 检查用户是否已登录
+          if (!isLoggedIn) {
+            showToast(
+              "warning",
+              "Authentication Required",
+              "Please login to purchase credits"
+            );
+
+            // 显示登录弹窗
+            if (loginModal) {
+              loginModal.classList.add("active");
+            }
+            return;
+          }
+
+          // 获取计划信息
+          const plan = this.getAttribute("data-plan");
+          let planName, planPrice, planCredits;
+
+          // 设置计划信息
+          switch (plan) {
+            case "basic":
+              planName = "Basic";
+              planPrice = "$0.99";
+              planCredits = 2;
+              break;
+            case "standard":
+              planName = "Standard";
+              planPrice = "$4.99";
+              planCredits = 10;
+              break;
+            case "plus":
+              planName = "Plus";
+              planPrice = "$9.99";
+              planCredits = 30;
+              break;
+            case "monthly":
+              planName = "Monthly";
+              planPrice = "$10.99";
+              planCredits = 50;
+              break;
+            case "annual":
+              planName = "Annual";
+              planPrice = "$99.90";
+              planCredits = 1000;
+              break;
+            default:
+              planName = "Basic";
+              planPrice = "$0.99";
+              planCredits = 2;
+          }
+
+          // 更新payment-modal中的计划信息
+          if (selectedPlanElement) {
+            selectedPlanElement.textContent = `${planName} - ${planPrice} for ${planCredits} Annotations`;
+          }
+
+          // 打开payment-modal
+          if (paymentModal) {
+            paymentModal.classList.add("active");
+          }
+        });
+      });
+    }
+
+    // 关闭按钮事件
+    if (closeModalButtons.length > 0) {
+      closeModalButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          if (paymentModal) {
+            paymentModal.classList.remove("active");
+          }
+        });
+      });
+    }
+
+    // 支付方式选择
+    const paymentOptions = document.querySelectorAll(".payment-option");
+    const cardPaymentFields = document.getElementById("card-payment-fields");
+    const paypalFields = document.getElementById("paypal-fields");
+
+    if (paymentOptions.length > 0) {
+      paymentOptions.forEach((option) => {
+        option.addEventListener("click", function () {
+          // 移除所有选项的选中状态
+          paymentOptions.forEach((opt) => opt.classList.remove("selected"));
+
+          // 设置当前选项为选中状态
+          this.classList.add("selected");
+
+          // 显示对应的支付字段
+          const method = this.getAttribute("data-method");
+          if (method === "card") {
+            if (cardPaymentFields) cardPaymentFields.style.display = "block";
+            if (paypalFields) paypalFields.style.display = "none";
+          } else if (method === "paypal") {
+            if (cardPaymentFields) cardPaymentFields.style.display = "none";
+            if (paypalFields) paypalFields.style.display = "block";
+          }
+        });
+      });
+    }
+
+    // 完成购买按钮事件
+    if (completePaymentBtn) {
+      completePaymentBtn.addEventListener("click", function () {
+        // 模拟付款处理
+        const originalBtnText = completePaymentBtn.innerHTML;
+        completePaymentBtn.disabled = true;
+        completePaymentBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin spinner"></i> Processing...';
+
+        setTimeout(() => {
+          // 获取添加的积分数量
+          const planText = selectedPlanElement.textContent;
+          const creditsMatch = planText.match(/(\d+)\s+Annotations/);
+          const credits = creditsMatch ? parseInt(creditsMatch[1]) : 5;
+
+          // 更新用户积分
+          if (currentUser) {
+            currentUser.credits = (currentUser.credits || 0) + credits;
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            updateCreditsDisplay();
+          }
+
+          // 恢复按钮状态
+          completePaymentBtn.disabled = false;
+          completePaymentBtn.innerHTML = originalBtnText;
+
+          // 关闭modal
+          if (paymentModal) {
+            paymentModal.classList.remove("active");
+          }
+
+          // 显示成功消息
+          showToast(
+            "success",
+            "Purchase Complete",
+            `${credits} credits have been added to your account`
+          );
+        }, 2000);
+      });
     }
   }
 });
