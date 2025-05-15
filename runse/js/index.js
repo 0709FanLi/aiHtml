@@ -600,6 +600,7 @@ loginSubmitBtn.addEventListener("click", () => {
   // Call the login API
   fetch("http://web.novelbeautify.com/api/v1/auth/login", {
     method: "POST",
+    credentials: "omit",
     headers: {
       "Content-Type": "application/json",
     },
@@ -1438,9 +1439,27 @@ function condenseText(text) {
 }
 
 // Action button event listeners
-polishBtn.addEventListener("click", () => processText("polish"));
-expandBtn.addEventListener("click", () => processText("expand"));
-condenseBtn.addEventListener("click", () => processText("condense"));
+polishBtn.addEventListener("click", () => {
+  if (!isLoggedIn) {
+    showAuthModal();
+    return;
+  }
+  processText("polish");
+});
+expandBtn.addEventListener("click", () => {
+  if (!isLoggedIn) {
+    showAuthModal();
+    return;
+  }
+  processText("expand");
+});
+condenseBtn.addEventListener("click", () => {
+  if (!isLoggedIn) {
+    showAuthModal();
+    return;
+  }
+  processText("condense");
+});
 
 // Result action buttons
 copyBtn.addEventListener("click", () => {
