@@ -166,11 +166,10 @@ header {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
 }
 
 .card-title {
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -270,31 +269,36 @@ header {
 
 .code-panel {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .code-panel-header {
   margin-bottom: 10px;
   font-weight: 500;
   color: var(--gray);
+  padding: 0 15px;
 }
 
 .code-display {
   background-color: var(--dark);
   color: #d4d4d4;
   border-radius: var(--border-radius);
-  overflow: auto;
   position: relative;
   height: 400px;
+  overflow: hidden;
 }
 
 .code-content {
-  padding: 15px 15px 15px 50px;
-  font-family: var(--font-mono);
   height: 100%;
   overflow: auto;
   line-height: 1.5;
+  font-family: var(--font-mono);
   white-space: pre-wrap;
   word-break: break-all;
+  padding: 15px 30px 15px 60px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .line-numbers {
@@ -309,6 +313,8 @@ header {
   color: #858585;
   font-family: var(--font-mono);
   user-select: none;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
 .btn-success {
@@ -318,6 +324,12 @@ header {
 
 .btn-success:hover {
   background-color: #2f9e44;
+}
+
+/* 卡片头部按钮样式 */
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 /* Pricing Section */
@@ -1448,13 +1460,17 @@ footer {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  margin: 0;
-  padding: 10px;
+  margin: 0 auto;
+  padding: 10px 20px;
   border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #annotated-code code {
   white-space: pre-wrap;
   word-break: break-word;
   font-family: var(--font-mono);
+  display: block;
+  padding: 0 10px;
 }

@@ -642,6 +642,15 @@ document.addEventListener("DOMContentLoaded", function () {
             pre.style.overflow = "auto";
             pre.style.whiteSpace = "pre-wrap";
             pre.style.wordBreak = "break-word";
+            pre.style.margin = "0 auto";
+            pre.style.boxSizing = "border-box";
+
+            // 如果有code标签，应用样式
+            const codeElement = pre.querySelector("code");
+            if (codeElement) {
+              codeElement.style.display = "block";
+              codeElement.style.padding = "0 15px";
+            }
           });
         }
       } else {
@@ -674,55 +683,58 @@ document.addEventListener("DOMContentLoaded", function () {
   // 下载按钮事件处理
   const downloadBtn = document.getElementById("download-btn");
   if (downloadBtn) {
-    downloadBtn.addEventListener("click", function () {
-      // 获取代码内容
-      const annotatedCode = document.getElementById("annotated-code");
-      if (!annotatedCode) return;
+    downloadBtn.addEventListener(
+      "click",
+      debounce(function () {
+        // 获取代码内容
+        const annotatedCode = document.getElementById("annotated-code");
+        if (!annotatedCode) return;
 
-      // 检查是否含有HTML内容
-      let codeContent = "";
+        // 检查是否含有HTML内容
+        let codeContent = "";
 
-      if (annotatedCode.querySelector("pre code")) {
-        // 如果有pre/code标签，获取code标签中的纯文本内容
-        const codeElement = annotatedCode.querySelector("pre code");
-        // 获取纯文本
-        codeContent = codeElement.textContent || codeElement.innerText;
-      } else if (annotatedCode.innerHTML.includes("<pre")) {
-        // 备用方案：如果找不到code元素但有pre标签
-        const tempElement = document.createElement("div");
-        tempElement.innerHTML = annotatedCode.innerHTML;
-        const preElement = tempElement.querySelector("pre");
-        if (preElement) {
-          codeContent = preElement.textContent || preElement.innerText;
+        if (annotatedCode.querySelector("pre code")) {
+          // 如果有pre/code标签，获取code标签中的纯文本内容
+          const codeElement = annotatedCode.querySelector("pre code");
+          // 获取纯文本
+          codeContent = codeElement.textContent || codeElement.innerText;
+        } else if (annotatedCode.innerHTML.includes("<pre")) {
+          // 备用方案：如果找不到code元素但有pre标签
+          const tempElement = document.createElement("div");
+          tempElement.innerHTML = annotatedCode.innerHTML;
+          const preElement = tempElement.querySelector("pre");
+          if (preElement) {
+            codeContent = preElement.textContent || preElement.innerText;
+          } else {
+            codeContent = tempElement.textContent || tempElement.innerText;
+          }
         } else {
-          codeContent = tempElement.textContent || tempElement.innerText;
+          // 否则获取普通文本内容
+          codeContent = annotatedCode.textContent || annotatedCode.innerText;
         }
-      } else {
-        // 否则获取普通文本内容
-        codeContent = annotatedCode.textContent || annotatedCode.innerText;
-      }
 
-      // 解码HTML实体
-      codeContent = decodeHtmlEntities(codeContent);
+        // 解码HTML实体
+        codeContent = decodeHtmlEntities(codeContent);
 
-      // 创建下载文件
-      const blob = new Blob([codeContent], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "annotated-code.txt";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        // 创建下载文件
+        const blob = new Blob([codeContent], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "annotated-code.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-      // 显示成功提示
-      showToast(
-        "success",
-        "Download Complete",
-        "Your annotated code has been downloaded"
-      );
-    });
+        // 显示成功提示
+        showToast(
+          "success",
+          "Download Complete",
+          "Your annotated code has been downloaded"
+        );
+      }, 300)
+    );
   }
 
   // 辅助函数：解码HTML实体
@@ -2001,5 +2013,50 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 2000);
       });
     }
+  }
+
+  // 防抖函数
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+
+  // 复制文本到剪贴板
+  function copyToClipboard(text) {
+    return new Promise((resolve, reject) => {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          showToast(
+            "success",
+            "Copy successful",
+            "Code has been copied to clipboard."
+          );
+          resolve();
+        })
+        .catch((err) => {
+          showToast("error", "Copy failed", "Failed to copy code.");
+          console.error("Could not copy text: ", err);
+          reject(err);
+        });
+    });
+  }
+
+  // 复制按钮点击事件
+  const copyBtn = document.getElementById("copy-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener(
+      "click",
+      debounce(function () {
+        const annotatedCode = document.getElementById("annotated-code");
+        if (annotatedCode) {
+          copyToClipboard(annotatedCode.textContent);
+        }
+      }, 300)
+    );
   }
 });
