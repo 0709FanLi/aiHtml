@@ -848,11 +848,82 @@ document.addEventListener("DOMContentLoaded", function () {
       if (codeInputCard) codeInputCard.style.display = "block";
       // 不默认显示结果卡片，只在点击Annotate按钮后显示
       if (resultsCard) resultsCard.style.display = "none";
-      if (isLoggedIn && userDashboard) userDashboard.style.display = "block";
+      // 用户仪表盘在Features页面不显示，移至History页面
+      if (userDashboard) userDashboard.style.display = "none";
     }
 
     // 显示价格部分
     if (pricingSection) pricingSection.style.display = "block";
+
+    // 滚动到顶部
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // 添加新的History页面展示功能
+  function showHistoryPage() {
+    if (mainContent) {
+      // 获取所有卡片
+      const contentCards = mainContent.querySelectorAll(".card");
+
+      // 首先隐藏所有卡片
+      for (let i = 0; i < contentCards.length; i++) {
+        if (contentCards[i]) contentCards[i].style.display = "none";
+      }
+
+      // 隐藏功能相关卡片
+      if (codeInputCard) codeInputCard.style.display = "none";
+      if (resultsCard) resultsCard.style.display = "none";
+
+      // 仅显示用户仪表盘
+      if (userDashboard) {
+        userDashboard.style.display = isLoggedIn ? "block" : "none";
+
+        // 如果用户已登录，确保History标签是激活状态并加载历史记录
+        if (isLoggedIn) {
+          const historyTab = document.querySelector(
+            '[data-dashboard-tab="history"]'
+          );
+          if (historyTab) {
+            // 确保History标签被激活
+            const dashboardTabs = document.querySelectorAll(".dashboard-tab");
+            dashboardTabs.forEach((tab) => tab.classList.remove("active"));
+            historyTab.classList.add("active");
+
+            // 确保History内容被显示
+            const dashboardContents =
+              document.querySelectorAll(".dashboard-content");
+            dashboardContents.forEach((content) =>
+              content.classList.remove("active")
+            );
+            const historyContent = document.querySelector(
+              '[data-dashboard-content="history"]'
+            );
+            if (historyContent) {
+              historyContent.classList.add("active");
+            }
+
+            // 加载历史记录
+            fetchCodeRecords(1, 10);
+          }
+        } else {
+          // 如果未登录，显示登录提示
+          showToast(
+            "info",
+            "Login Required",
+            "Please login to view your history"
+          );
+
+          // 可选：显示登录弹窗
+          const loginModal = document.getElementById("login-modal");
+          if (loginModal) {
+            loginModal.classList.add("active");
+          }
+        }
+      }
+    }
+
+    // 隐藏价格部分
+    if (pricingSection) pricingSection.style.display = "none";
 
     // 滚动到顶部
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -883,6 +954,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const homeLink = document.querySelector(".nav-links li:nth-child(1) a");
   const pricingLink = document.querySelector(".nav-links li:nth-child(2) a");
   const featuresLink = document.querySelector(".nav-links li:nth-child(3) a");
+  const historyLink = document.querySelector(".nav-links li:nth-child(4) a");
 
   // 页脚链接
   const footerHomeLink = document.querySelector(".footer-links a:nth-child(1)");
@@ -897,6 +969,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (homeLink) {
     homeLink.addEventListener("click", function (e) {
       e.preventDefault();
+      window.location.hash = "home";
       showHomePage();
     });
   }
@@ -904,6 +977,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (featuresLink) {
     featuresLink.addEventListener("click", function (e) {
       e.preventDefault();
+      window.location.hash = "features";
       showFeaturesPage();
     });
   }
@@ -911,7 +985,16 @@ document.addEventListener("DOMContentLoaded", function () {
   if (pricingLink) {
     pricingLink.addEventListener("click", function (e) {
       e.preventDefault();
+      window.location.hash = "pricing";
       showPricingPage();
+    });
+  }
+
+  if (historyLink) {
+    historyLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.location.hash = "history";
+      showHistoryPage();
     });
   }
 
@@ -934,6 +1017,44 @@ document.addEventListener("DOMContentLoaded", function () {
     footerPricingLink.addEventListener("click", function (e) {
       e.preventDefault();
       showPricingPage();
+    });
+  }
+
+  // Try Service Now按钮
+  const tryServiceBtn = document.getElementById("try-service-btn");
+  if (tryServiceBtn) {
+    tryServiceBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.location.hash = "features";
+      showFeaturesPage();
+    });
+  }
+
+  // About页面的Get Started Now按钮
+  const aboutCtaBtn = document.getElementById("about-cta-btn");
+  if (aboutCtaBtn) {
+    aboutCtaBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.location.hash = "features";
+      showFeaturesPage();
+    });
+  }
+
+  // 下拉菜单中的History链接
+  const historyDropdownLink = document.getElementById("history-dropdown-link");
+  if (historyDropdownLink) {
+    historyDropdownLink.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      // 关闭下拉菜单
+      const userDropdown = document.querySelector(".dropdown-menu");
+      if (userDropdown) {
+        userDropdown.classList.remove("active");
+      }
+
+      // 更新哈希值并显示History页面
+      window.location.hash = "history";
+      showHistoryPage();
     });
   }
 
@@ -2689,21 +2810,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // 隐藏功能相关卡片
       if (codeInputCard) codeInputCard.style.display = "none";
       if (resultsCard) resultsCard.style.display = "none";
-
-      // 根据登录状态显示仪表盘
-      if (userDashboard) {
-        userDashboard.style.display = isLoggedIn ? "block" : "none";
-
-        // 如果用户已登录，加载历史记录
-        if (isLoggedIn) {
-          const historyTab = document.querySelector(
-            '[data-dashboard-tab="history"]'
-          );
-          if (historyTab && historyTab.classList.contains("active")) {
-            fetchCodeRecords(1, 10);
-          }
-        }
-      }
+      if (userDashboard) userDashboard.style.display = "none";
     }
 
     // 隐藏价格部分
@@ -2711,5 +2818,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 初始化Dashboard标签页切换
     initDashboardTabs();
+
+    // 处理URL哈希，如果存在则导航到对应页面
+    const hash = window.location.hash;
+    if (hash) {
+      switch (hash) {
+        case "#features":
+          showFeaturesPage();
+          break;
+        case "#pricing":
+          showPricingPage();
+          break;
+        case "#history":
+          showHistoryPage();
+          break;
+        default:
+          // 默认显示首页
+          showHomePage();
+      }
+    }
+
+    // 监听哈希变化
+    window.addEventListener("hashchange", function () {
+      const hash = window.location.hash;
+      switch (hash) {
+        case "#features":
+          showFeaturesPage();
+          break;
+        case "#pricing":
+          showPricingPage();
+          break;
+        case "#history":
+          showHistoryPage();
+          break;
+        case "#home":
+        case "":
+          showHomePage();
+          break;
+      }
+    });
   }
 });
