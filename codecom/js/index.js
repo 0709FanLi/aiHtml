@@ -218,37 +218,50 @@ document.addEventListener("DOMContentLoaded", function () {
       header.appendChild(dateEl);
       historyItem.appendChild(header);
 
+      // 创建外层容器来包含预览和操作按钮
+      const contentWrapper = document.createElement("div");
+      contentWrapper.className = "history-content-wrapper";
+      historyItem.appendChild(contentWrapper);
+
       // 提取代码预览
       const preview = document.createElement("div");
       preview.className = "history-preview";
 
       let previewText = "No preview available";
       if (record.content) {
-        // 解析HTML内容
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = record.content;
+        try {
+          // 解析HTML内容
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = record.content;
 
-        // 获取代码元素
-        const codeEl = tempDiv.querySelector("code");
-        if (codeEl) {
-          // 获取纯文本内容
-          const codeText = codeEl.textContent || codeEl.innerText || "";
-          // 分割成行并找到第一个非空行
-          const lines = codeText.split("\n");
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed) {
-              previewText =
-                trimmed.length > 100
-                  ? trimmed.substring(0, 100) + "..."
-                  : trimmed;
-              break;
+          // 获取code元素（可能在pre标签内）
+          const codeEl =
+            tempDiv.querySelector("code") || tempDiv.querySelector("pre");
+
+          if (codeEl) {
+            // 获取纯文本内容
+            const codeText = codeEl.textContent || codeEl.innerText || "";
+            // 分割成行并找到第一个非空行
+            const lines = codeText.split("\n");
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed) {
+                previewText =
+                  trimmed.length > 100
+                    ? trimmed.substring(0, 100) + "..."
+                    : trimmed;
+                break;
+              }
             }
           }
+        } catch (error) {
+          console.error("Error extracting code preview:", error);
+          previewText = "Error extracting preview";
         }
       }
+
       preview.textContent = previewText;
-      historyItem.appendChild(preview);
+      contentWrapper.appendChild(preview);
 
       // 创建操作按钮
       const actions = document.createElement("div");
@@ -268,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       actions.appendChild(viewBtn);
       actions.appendChild(deleteBtn);
-      historyItem.appendChild(actions);
+      contentWrapper.appendChild(actions);
 
       // 添加历史记录项到容器
       container.appendChild(historyItem);
@@ -408,30 +421,47 @@ document.addEventListener("DOMContentLoaded", function () {
           // 清空之前的内容
           annotatedCode.innerHTML = "";
 
-          // 设置新内容
-          annotatedCode.innerHTML = record.content;
+          try {
+            // 设置新内容
+            annotatedCode.innerHTML = record.content;
 
-          // 添加样式确保代码显示正确
-          const preElements = annotatedCode.querySelectorAll("pre");
-          if (preElements.length > 0) {
-            preElements.forEach((pre) => {
-              pre.style.maxWidth = "100%";
-              pre.style.overflow = "auto";
-              pre.style.whiteSpace = "pre-wrap";
-              pre.style.wordBreak = "break-word";
-              pre.style.margin = "0 auto";
-              pre.style.boxSizing = "border-box";
-            });
+            // 添加样式确保代码显示正确
+            const preElements = annotatedCode.querySelectorAll("pre");
+            if (preElements.length > 0) {
+              preElements.forEach((pre) => {
+                pre.style.maxWidth = "100%";
+                pre.style.overflow = "auto";
+                pre.style.whiteSpace = "pre-wrap";
+                pre.style.wordBreak = "break-word";
+                pre.style.margin = "0 auto";
+                pre.style.boxSizing = "border-box";
+
+                // 如果有code标签，应用样式
+                const codeElement = pre.querySelector("code");
+                if (codeElement) {
+                  codeElement.style.display = "block";
+                  codeElement.style.padding = "0 15px";
+                  codeElement.style.fontFamily = "var(--font-mono)";
+                }
+              });
+            }
+
+            // 滚动到结果卡片
+            resultsCard.scrollIntoView({ behavior: "smooth" });
+
+            showToast(
+              "success",
+              "Record Loaded",
+              "Code record has been loaded successfully."
+            );
+          } catch (error) {
+            console.error("Error displaying code record:", error);
+            showToast(
+              "error",
+              "Display Error",
+              "There was a problem displaying the code record."
+            );
           }
-
-          // 滚动到结果卡片
-          resultsCard.scrollIntoView({ behavior: "smooth" });
-
-          showToast(
-            "success",
-            "Record Loaded",
-            "Code record has been loaded successfully."
-          );
         }
       }
     } else {
