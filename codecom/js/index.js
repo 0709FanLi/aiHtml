@@ -1177,11 +1177,7 @@ document.addEventListener("DOMContentLoaded", function () {
     annotateBtn.addEventListener("click", function () {
       // 检查用户是否登录
       if (!isLoggedIn || !currentUser) {
-        // 事件内即时获取loginModal，确保不为undefined
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) {
-          loginModal.classList.add("active");
-        }
+        showModal("login-modal");
         return;
       }
 
@@ -2135,12 +2131,10 @@ document.addEventListener("DOMContentLoaded", function () {
             closeModalAndClearForm(signupModal);
 
             // 打开登录模态框并填入邮箱
-            if (loginModal) {
-              loginModal.classList.add("active");
-              const loginEmailInput = document.getElementById("login-email");
-              if (loginEmailInput) {
-                loginEmailInput.value = email;
-              }
+            showModal("login-modal");
+            const loginEmailInput = document.getElementById("login-email");
+            if (loginEmailInput) {
+              loginEmailInput.value = email;
             }
           } else {
             // 注册失败

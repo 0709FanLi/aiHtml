@@ -1417,9 +1417,9 @@ footer {
 /* Toast通知样式 */
 .toast-container {
   position: fixed;
-  top: 20px;
+  top: 70px; /* header高度约55px+间距，防止被遮挡 */
   right: 20px;
-  z-index: 10000;
+  z-index: 20001; /* 高于header和modal */
   width: 300px;
 }
 
