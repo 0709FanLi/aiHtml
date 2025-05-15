@@ -1490,22 +1490,39 @@ async function fetchHistoryItemFromAPI(id) {
   }
 
   try {
-    const url = `/api/v1/gourmet/record/${id}`;
+    // 使用指定的URL和POST方法
+    const url = "http://web.aigastronome.com/api/v1/gourmet/detail";
+    console.log("调用详情API，参数id:", id);
+    console.log("请求地址:", url);
+    console.log(
+      "请求头Authorization:",
+      `Bearer ${state.user.access_token.substring(0, 10)}...`
+    );
+
+    const requestBody = {
+      id: id, // 将id作为请求体参数
+    };
+    console.log("请求体:", JSON.stringify(requestBody));
+
     const response = await fetch(url, {
-      method: "GET",
+      method: "POST", // 改为POST请求
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${state.user.access_token}`,
       },
+      body: JSON.stringify(requestBody),
     });
 
+    console.log("API响应状态:", response.status);
     const data = await response.json();
+    console.log("API响应内容:", data);
 
     if (data.ok !== 1) {
       console.error("API error:", data.message);
       return null;
     }
 
+    console.log("获取到的详情数据:", data.data);
     return data.data;
   } catch (error) {
     console.error("Error fetching history item:", error);
@@ -1619,43 +1636,76 @@ async function updateHistoryView() {
       historyItem.className = "history-item";
       historyItem.dataset.id = item.id;
 
-      // 历史记录项不再显示图片
+      // 添加基础样式
+      historyItem.style.display = "flex";
+      historyItem.style.border = "1px solid #eee";
+      historyItem.style.borderRadius = "8px";
+      historyItem.style.marginBottom = "15px";
+      historyItem.style.overflow = "hidden";
+      historyItem.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+      historyItem.style.transition = "transform 0.2s, box-shadow 0.2s";
+      historyItem.style.backgroundColor = "#fff";
+
+      // 添加hover效果
+      historyItem.addEventListener("mouseenter", () => {
+        historyItem.style.transform = "translateY(-2px)";
+        historyItem.style.boxShadow = "0 5px 15px rgba(0,0,0,0.1)";
+      });
+
+      historyItem.addEventListener("mouseleave", () => {
+        historyItem.style.transform = "translateY(0)";
+        historyItem.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+      });
+
       historyItem.innerHTML = `
-                    <div class="history-content">
-                        <div class="history-date">${new Date(
-                          item.created_at
-                        ).toLocaleString()}</div>
-                        <h3 class="history-title">${
-                          item.food_name || "Analyzed Food"
-                        }</h3>
-                        <div class="history-meta">
-                            <div><i class="fas fa-fire"></i> ${
-                              item.calorie_content || "N/A"
-                            }</div>
-                            <div>
-                                <i class="fas ${
-                                  item.summary?.includes("Healthy")
-                                    ? "fa-check-circle"
-                                    : "fa-exclamation-circle"
-                                }" 
-                                   style="color: var(${
-                                     item.summary?.includes("Healthy")
-                                       ? "--success-color"
-                                       : "--warning-color"
-                                   });"></i> 
-                                ${item.summary || "Food Analysis"}
-                            </div>
+                    <div class="history-content" style="display: flex; flex-direction: column; flex: 1; padding: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h3 class="history-title" style="margin: 0; font-size: 18px; color: #333;">${
+                              item.food_name || "Analyzed Food"
+                            }</h3>
+                            <div class="history-date" style="font-size: 13px; color: #777;">${new Date(
+                              item.created_at
+                            ).toLocaleString()}</div>
                         </div>
-                    </div>
-                    <div class="history-actions">
-                        <button class="btn-icon view-detail" title="View Details">
-                            <i class="fas fa-eye"></i>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                            <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555; display: flex; align-items: center;">
+                                <i class="fas fa-fire" style="color: #ff6b6b; margin-right: 5px;"></i> ${
+                                  item.calorie_content || "N/A"
+                                }
+                            </span>
+                            <span style="background: ${
+                              item.summary?.includes("Healthy")
+                                ? "rgba(40, 167, 69, 0.1)"
+                                : "rgba(255, 193, 7, 0.1)"
+                            }; 
+                                   padding: 5px 10px; 
+                                   border-radius: 20px; 
+                                   font-size: 13px; 
+                                   color: ${
+                                     item.summary?.includes("Healthy")
+                                       ? "var(--success-color)"
+                                       : "var(--warning-color)"
+                                   }; 
+                                   display: flex; 
+                                   align-items: center;">
+                                    <i class="fas ${
+                                      item.summary?.includes("Healthy")
+                                        ? "fa-check-circle"
+                                        : "fa-exclamation-circle"
+                                    }" style="margin-right: 5px;"></i>
+                                ${item.summary || "Food Analysis"}
+                            </span>
+                                </div>
+                            </div>
+                    <div class="history-actions" style="display: flex; gap: 5px; padding: 10px; border-left: 1px solid #eee;">
+                        <button class="btn-icon view-detail" title="View Details" style="background: #f8f9fa; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: background 0.2s;">
+                            <i class="fas fa-eye" style="color: #4caf50;"></i>
                         </button>
-                        <button class="btn-icon delete-item" title="Delete">
-                            <i class="fas fa-trash"></i>
+                        <button class="btn-icon delete-item" title="Delete" style="background: #f8f9fa; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: background 0.2s;">
+                            <i class="fas fa-trash" style="color: #f44336;"></i>
                         </button>
-                    </div>
-                `;
+                        </div>
+                    `;
 
       historyContainer.appendChild(historyItem);
 
@@ -1665,7 +1715,28 @@ async function updateHistoryView() {
 
       viewDetailBtn.addEventListener("click", function (e) {
         e.stopPropagation(); // 防止冒泡到卡片
-        showHistoryDetailModal(item);
+        // 从API获取详细信息，而不是直接使用当前的数据
+        const itemId = item.id;
+        console.log("点击查看详情，获取ID:", itemId);
+
+        // 显示加载状态
+        showNotification("Loading details...", "info", 1000);
+
+        // 从API获取历史记录项目详情
+        fetchHistoryItemFromAPI(itemId)
+          .then((detailItem) => {
+            if (detailItem) {
+              console.log("成功获取详情数据:", detailItem);
+              showHistoryDetailModal(detailItem);
+            } else {
+              console.error("获取详情数据失败");
+              showNotification("Failed to load history details", "error");
+            }
+          })
+          .catch((error) => {
+            console.error("获取详情数据出错:", error);
+            showNotification("Error loading history details", "error");
+          });
       });
 
       deleteItemBtn.addEventListener("click", function (e) {
@@ -1674,8 +1745,16 @@ async function updateHistoryView() {
       });
     });
   } else {
-    // 没有记录显示提示
-    historyContainer.innerHTML = `<p style="text-align: center; padding: 20px;">没有食物分析记录</p>`;
+    // 修改没有记录时的提示信息
+    historyContainer.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; background: #f9f9fa; border-radius: 8px; margin: 20px 0;">
+        <i class="fas fa-history" style="font-size: 48px; color: #ddd; margin-bottom: 15px; display: block;"></i>
+        <h3 style="color: #777; font-weight: normal; margin-bottom: 10px;">No Food Analysis Records</h3>
+        <p style="color: #999; max-width: 300px; margin: 0 auto;">
+          You haven't analyzed any food yet. Upload a food image and analyze it to see the record here.
+        </p>
+      </div>
+    `;
   }
 }
 
@@ -1812,7 +1891,7 @@ function showDeleteConfirmModal(itemId) {
   modal.style.display = "flex";
 }
 
-// 显示历史记录详情弹窗
+// 修改显示历史记录详情弹窗函数
 function showHistoryDetailModal(item) {
   // 对于食物分析类型，使用历史记录弹窗
   const modal = document.getElementById("historyDetailModal");
@@ -1820,29 +1899,147 @@ function showHistoryDetailModal(item) {
   const detailContent = document.getElementById("historyDetailContent");
 
   detailTitle.textContent = "Food Analysis Details";
+
+  // 替换为新的样式设计，适配API返回的新数据结构
   detailContent.innerHTML = `
-    <div style="margin-bottom: 15px;">
-      <h3 style="margin-bottom: 10px;">${item.food_name || "Analyzed Food"}</h3>
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-        <span class="result-tag">${item.calorie_content || "N/A"}</span>
-        <span class="result-tag ${
-          item.summary?.includes("Healthy") ? "tag-success" : "tag-warning"
-        }">
-          ${item.summary || "Food Analysis"}
-        </span>
+    <div style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-size: 22px; color: #333;">${
+          item.analysis_result || "Analyzed Food"
+        }</h3>
+        <div style="display: flex; gap: 8px;">
+          <span style="background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 14px; color: #555; display: flex; align-items: center;">
+            <i class="fas fa-fire" style="color: #ff6b6b; margin-right: 5px;"></i> ${
+              item.calorie_content || "N/A"
+            }
+          </span>
+        </div>
       </div>
-      <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
-        <p style="margin: 0; line-height: 1.6;">${
-          item.analysis_result || "No detailed analysis available."
-        }</p>
+      
+      <div style="margin-top: 20px;">
+        <h4 style="margin-bottom: 12px; color: #555; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;">Analysis Result</h4>
+        <div style="background: #f9f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+          <p style="margin: 0; line-height: 1.7; color: #444;">${
+            item.summary || "No detailed analysis available."
+          }</p>
+        </div>
       </div>
     </div>
-    <div>
-      <p style="color: #666; font-size: 0.9em;">Analysis Time: ${new Date(
-        item.created_at
-      ).toLocaleString()}</p>
+    
+    <div style="margin-top: 15px; display: flex; align-items: center; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #eee;">
+      <span style="color: #777; font-size: 0.9em;">
+        <i class="fas fa-clock" style="margin-right: 5px;"></i> ${new Date(
+          item.created_at
+        ).toLocaleString()}
+      </span>
     </div>
   `;
+
+  // 检查是否有菜谱推荐并显示
+  if (
+    item.content &&
+    item.content.diet_recommendations &&
+    item.content.diet_recommendations.length > 0
+  ) {
+    let recommendationsHTML = `
+      <div style="margin-top: 30px;">
+        <h4 style="margin-bottom: 16px; color: #555; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+          <i class="fas fa-utensils" style="margin-right: 8px; color: var(--primary-color);"></i>
+          Recommended Recipes
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+    `;
+
+    // 添加每个推荐菜谱
+    item.content.diet_recommendations.forEach((recommendation, index) => {
+      const details = recommendation.dish_details;
+
+      // 提取营养数据
+      const calories = details.nutrition_data?.calories || "N/A";
+      const protein = details.nutrition_data?.protein || "N/A";
+      const carbs = details.nutrition_data?.carbohydrates || "N/A";
+      const fat = details.nutrition_data?.fat || "N/A";
+
+      // 转换健康提示中的markdown加粗语法为HTML
+      let healthTipsHtml = "";
+      if (details.health_tips && details.health_tips.length > 0) {
+        healthTipsHtml = details.health_tips
+          .map((tip) => tip.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"))
+          .join("<br>");
+      }
+
+      // 创建菜谱卡片
+      recommendationsHTML += `
+        <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;" 
+             onmouseenter="this.style.transform='translateY(-5px)';this.style.boxShadow='0 5px 15px rgba(0,0,0,0.1)';" 
+             onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)';">
+          <div style="padding: 20px;">
+            <h5 style="margin: 0 0 10px 0; font-size: 18px; color: var(--primary-color);">${details.dish_name}</h5>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${recommendation.recommendation_reason}</p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+              <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555; display: flex; align-items: center;">
+                <i class="fas fa-fire" style="color: #ff6b6b; margin-right: 5px;"></i> ${calories}
+              </span>
+              <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555; display: flex; align-items: center;">
+                <i class="fas fa-drumstick-bite" style="color: #4d96ff; margin-right: 5px;"></i> ${protein}
+              </span>
+              <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555; display: flex; align-items: center;">
+                <i class="fas fa-bread-slice" style="color: #ffc078; margin-right: 5px;"></i> ${carbs}
+              </span>
+            </div>
+            
+            <button class="view-recipe-details-btn" data-index="${index}" style="background: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; display: flex; align-items: center; margin-top: 10px;">
+              <i class="fas fa-eye" style="margin-right: 5px;"></i> View Details
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    recommendationsHTML += `
+        </div>
+      </div>
+    `;
+
+    // 添加到详情内容中
+    detailContent.innerHTML += recommendationsHTML;
+
+    // 添加查看菜谱详情按钮的事件处理
+    setTimeout(() => {
+      const recipeButtons = document.querySelectorAll(
+        ".view-recipe-details-btn"
+      );
+      recipeButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+          const index = parseInt(this.getAttribute("data-index"));
+          const recommendation = item.content.diet_recommendations[index];
+          const details = recommendation.dish_details;
+
+          // 显示菜谱详情弹窗
+          showRecipeDetailsModal({
+            id: `recipe-${Date.now()}`, // 生成一个唯一ID
+            title: details.dish_name,
+            image: "", // 没有图片时使用空字符串
+            calories: details.nutrition_data?.calories || "N/A",
+            protein: details.nutrition_data?.protein || "N/A",
+            carbs: details.nutrition_data?.carbohydrates || "N/A",
+            fat: details.nutrition_data?.fat || "N/A",
+            time: details.cooking_time?.match(/总计(\d+)分钟/)?.[1] || "15",
+            healthTips:
+              details.health_tips
+                ?.map((tip) =>
+                  tip.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                )
+                .join("<br>") || "",
+            ingredients: details.ingredients || [],
+            steps:
+              details.steps?.map((step) => step.replace(/^\d+\.\s*/, "")) || [],
+          });
+        });
+      });
+    }, 100);
+  }
 
   modal.style.display = "flex";
 }
@@ -1858,32 +2055,71 @@ function showRecipeDetailsModal(recipe) {
 
   // 填充弹窗内容
   document.getElementById("modalRecipeTitle").textContent = recipe.title;
-  document.getElementById("modalRecipeImage").src = recipe.image;
-  document.getElementById("modalRecipeCalories").textContent = recipe.calories;
+
+  // 处理图片：有图像则显示，没有则隐藏图像元素
+  const imageElement = document.getElementById("modalRecipeImage");
+  if (recipe.image && recipe.image.trim().length > 0) {
+    imageElement.src = recipe.image;
+    imageElement.style.display = "block";
+  } else {
+    imageElement.style.display = "none";
+  }
+
+  document.getElementById("modalRecipeCalories").textContent = recipe.calories
+    .toString()
+    .replace(/ kcal.*$/, "");
   document.getElementById("modalRecipeProtein").textContent = recipe.protein;
   document.getElementById("modalRecipeCarbs").textContent = recipe.carbs;
   document.getElementById("modalRecipeFat").textContent = recipe.fat;
-  document.getElementById("modalRecipeTime").textContent = recipe.time;
-  document.getElementById("modalRecipeHealthTips").textContent =
-    recipe.healthTips;
+
+  // 处理烹饪时间，可能是数字或字符串
+  let cookingTime = recipe.time;
+  if (typeof cookingTime === "string" && cookingTime.includes("总计")) {
+    const match = cookingTime.match(/总计(\d+)分钟/);
+    cookingTime = match ? match[1] : cookingTime;
+  }
+  document.getElementById("modalRecipeTime").textContent = cookingTime;
+
+  // 处理健康提示，可能包含HTML
+  const healthTipsContainer = document.getElementById("modalRecipeHealthTips");
+  if (
+    typeof recipe.healthTips === "string" &&
+    recipe.healthTips.includes("<")
+  ) {
+    healthTipsContainer.innerHTML = recipe.healthTips;
+  } else {
+    healthTipsContainer.textContent = recipe.healthTips;
+  }
 
   // 填充食材列表
   const ingredientsList = document.getElementById("modalRecipeIngredients");
   ingredientsList.innerHTML = "";
-  recipe.ingredients.forEach((ingredient) => {
-    const li = document.createElement("li");
-    li.textContent = ingredient;
-    ingredientsList.appendChild(li);
-  });
+  if (Array.isArray(recipe.ingredients)) {
+    recipe.ingredients.forEach((ingredient) => {
+      const li = document.createElement("li");
+      // 移除行首的数字标记（如果有）
+      const cleanIngredient =
+        typeof ingredient === "string"
+          ? ingredient.replace(/^\d+\.\s*/, "")
+          : ingredient;
+      li.textContent = cleanIngredient;
+      ingredientsList.appendChild(li);
+    });
+  }
 
   // 填充步骤列表
   const stepsList = document.getElementById("modalRecipeSteps");
   stepsList.innerHTML = "";
-  recipe.steps.forEach((step) => {
-    const li = document.createElement("li");
-    li.textContent = step;
-    stepsList.appendChild(li);
-  });
+  if (Array.isArray(recipe.steps)) {
+    recipe.steps.forEach((step) => {
+      const li = document.createElement("li");
+      // 移除行首的数字标记（如果有）
+      const cleanStep =
+        typeof step === "string" ? step.replace(/^\d+\.\s*/, "") : step;
+      li.textContent = cleanStep;
+      stepsList.appendChild(li);
+    });
+  }
 
   // 显示弹窗
   modal.style.display = "flex";
@@ -2046,29 +2282,8 @@ document.addEventListener("click", function (e) {
     }
   }
 
-  // 处理历史记录中的详情按钮点击
-  if (e.target.closest(".history-item .view-detail")) {
-    e.preventDefault();
-    e.stopPropagation(); // 防止冒泡到父元素
-
-    const historyItem = e.target.closest(".history-item");
-    if (historyItem) {
-      const itemId = historyItem.getAttribute("data-id");
-      // 从API获取历史记录项目详情
-      fetchHistoryItemFromAPI(itemId)
-        .then((item) => {
-          if (item) {
-            showHistoryDetailModal(item);
-          } else {
-            showNotification("Failed to load history detail", "error");
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading history item:", error);
-          showNotification("Error loading history detail", "error");
-        });
-    }
-  }
+  // 历史记录详情按钮的点击事件已在updateHistoryView中处理
+  // 在全局事件委托中不再重复处理
 
   // 处理食谱详情弹窗关闭按钮点击
   if (e.target.closest("#recipeDetailsModal button.btn-outline")) {
