@@ -1,1 +1,1483 @@
-{"openapi":"3.1.0","info":{"title":"FastBase","description":"高性能FastAPI后端模板","version":"0.1.0"},"paths":{"/health":{"post":{"summary":"Health Check","description":"健康检查API。\n\nReturns:\n    dict: 健康状态信息","operationId":"health_check_health_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{}}}}}}},"/api/v1/auth/register":{"post":{"tags":["认证"],"summary":"Register","description":"用户注册接口。","operationId":"register_api_v1_auth_register_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserCreate"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_UserResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/auth/login":{"post":{"tags":["认证"],"summary":"Login","description":"用户登录接口。","operationId":"login_api_v1_auth_login_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserLogin"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_LoginResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/auth/logout":{"post":{"tags":["认证"],"summary":"Logout","description":"用户退出登录接口。\n\n说明: 前端需要移除存储的令牌。\n服务器端JWT无状态，因此这里只返回成功消息。","operationId":"logout_api_v1_auth_logout_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response"}}}}}}},"/api/v1/auth/email-verification":{"post":{"tags":["认证"],"summary":"Get Email Verification","description":"获取邮箱验证码接口。\n\n说明：向用户邮箱发送验证码，用于忘记密码等操作。","operationId":"get_email_verification_api_v1_auth_email_verification_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/EmailVerificationRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/auth/forgot-password":{"post":{"tags":["认证"],"summary":"Forgot Password","description":"忘记密码接口。\n\n说明: 验证邮箱验证码，验证成功后直接重置密码。","operationId":"forgot_password_api_v1_auth_forgot_password_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserForgotPassword"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/auth/refresh-token":{"post":{"tags":["认证"],"summary":"Refresh Token","description":"刷新令牌接口。\n\n说明：使用有效的刷新令牌获取新的访问令牌和刷新令牌。","operationId":"refresh_token_api_v1_auth_refresh_token_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TokenRefresh"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_LoginResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}}}},"/api/v1/user/update":{"post":{"tags":["用户"],"summary":"Update User Info","description":"更新用户信息接口。\n\n说明: 更新当前登录用户的基本信息。","operationId":"update_user_info_api_v1_user_update_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserUpdate"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_UserResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/user/change-password":{"post":{"tags":["用户"],"summary":"Change Password","description":"修改密码接口。\n\n说明: 修改当前登录用户的密码。","operationId":"change_password_api_v1_user_change_password_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserChangePassword"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/user/credits":{"post":{"tags":["用户"],"summary":"Get User Credits","description":"查询用户积分接口。\n\n说明: 获取当前登录用户的积分余额。\n\nReturns:\n    Response[Dict[str, int]]: 包含积分信息的响应","operationId":"get_user_credits_api_v1_user_credits_post","responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_Dict_str__int__"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/travel/generate":{"post":{"tags":["旅行规划"],"summary":"Create Travel Plan","description":"生成旅行计划接口。\n\nArgs:\n    request: 包含目的地、时间、人数等信息\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelGenerateResponse]: 包含生成的旅行计划","operationId":"create_travel_plan_api_v1_travel_generate_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TravelGenerateRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_TravelGenerateResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/travel/records":{"post":{"tags":["旅行规划"],"summary":"List Travel Records","description":"获取旅行历史记录列表接口。\n\nArgs:\n    request: 包含页码和每页数量的请求\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelRecordListResponse]: 包含旅行记录列表","operationId":"list_travel_records_api_v1_travel_records_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TravelRecordListRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_TravelRecordListResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/travel/detail":{"post":{"tags":["旅行规划"],"summary":"Get Travel Record Detail","description":"获取旅行详情接口。\n\nArgs:\n    request: 包含记录ID的请求\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelRecordDetailResponse]: 包含旅行详情","operationId":"get_travel_record_detail_api_v1_travel_detail_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TravelRecordDetailRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_TravelRecordDetailResponse_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}},"/api/v1/travel/delete":{"post":{"tags":["旅行规划"],"summary":"Delete Record","description":"删除旅行记录接口。\n\nArgs:\n    request: 包含要删除的记录ID\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[bool]: 删除操作结果","operationId":"delete_record_api_v1_travel_delete_post","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TravelDeleteRequest"}}},"required":true},"responses":{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Response_bool_"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HTTPValidationError"}}}}},"security":[{"OAuth2PasswordBearer":[]}]}}},"components":{"schemas":{"EmailVerificationRequest":{"properties":{"email":{"type":"string","format":"email","title":"Email"}},"type":"object","required":["email"],"title":"EmailVerificationRequest","description":"请求邮箱验证码模式。\n\nAttributes:\n    email: 用户邮箱"},"HTTPValidationError":{"properties":{"detail":{"items":{"$ref":"#/components/schemas/ValidationError"},"type":"array","title":"Detail"}},"type":"object","title":"HTTPValidationError"},"LoginResponse":{"properties":{"access_token":{"type":"string","title":"Access Token"},"refresh_token":{"type":"string","title":"Refresh Token"},"token_type":{"type":"string","title":"Token Type","default":"bearer"},"access_token_expires":{"type":"integer","title":"Access Token Expires"},"refresh_token_expires":{"type":"integer","title":"Refresh Token Expires"},"user":{"$ref":"#/components/schemas/UserResponse"}},"type":"object","required":["access_token","refresh_token","access_token_expires","refresh_token_expires","user"],"title":"LoginResponse","description":"登录响应模式。\n\nAttributes:\n    access_token: 访问令牌\n    refresh_token: 刷新令牌\n    token_type: 令牌类型\n    access_token_expires: 访问令牌过期时间戳\n    refresh_token_expires: 刷新令牌过期时间戳\n    user: 用户信息"},"Response":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{},{"type":"null"}],"title":"Data"}},"type":"object","title":"Response","description":"标准API响应模型，支持泛型数据。\n\nAttributes:\n    data: 响应数据"},"Response_Dict_str__int__":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"additionalProperties":{"type":"integer"},"type":"object"},{"type":"null"}],"title":"Data"}},"type":"object","title":"Response[Dict[str, int]]"},"Response_LoginResponse_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"$ref":"#/components/schemas/LoginResponse"},{"type":"null"}]}},"type":"object","title":"Response[LoginResponse]"},"Response_TravelGenerateResponse_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"$ref":"#/components/schemas/TravelGenerateResponse"},{"type":"null"}]}},"type":"object","title":"Response[TravelGenerateResponse]"},"Response_TravelRecordDetailResponse_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"$ref":"#/components/schemas/TravelRecordDetailResponse"},{"type":"null"}]}},"type":"object","title":"Response[TravelRecordDetailResponse]"},"Response_TravelRecordListResponse_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"$ref":"#/components/schemas/TravelRecordListResponse"},{"type":"null"}]}},"type":"object","title":"Response[TravelRecordListResponse]"},"Response_UserResponse_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"$ref":"#/components/schemas/UserResponse"},{"type":"null"}]}},"type":"object","title":"Response[UserResponse]"},"Response_bool_":{"properties":{"ok":{"type":"integer","title":"Ok","default":1},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"request_id":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Request Id"},"data":{"anyOf":[{"type":"boolean"},{"type":"null"}],"title":"Data"}},"type":"object","title":"Response[bool]"},"TokenRefresh":{"properties":{"refresh_token":{"type":"string","title":"Refresh Token"}},"type":"object","required":["refresh_token"],"title":"TokenRefresh","description":"刷新令牌模式。\n\nAttributes:\n    refresh_token: 刷新令牌"},"TravelDeleteRequest":{"properties":{"id":{"type":"integer","title":"Id","description":"记录ID"}},"type":"object","required":["id"],"title":"TravelDeleteRequest","description":"旅行记录删除请求模型"},"TravelGenerateRequest":{"properties":{"destination":{"type":"string","title":"Destination","description":"目的地"},"start_time":{"type":"string","title":"Start Time","description":"开始时间"},"end_time":{"type":"string","title":"End Time","description":"结束时间"},"people_count":{"type":"integer","minimum":1.0,"title":"People Count","description":"人数"}},"type":"object","required":["destination","start_time","end_time","people_count"],"title":"TravelGenerateRequest","description":"旅行生成请求模型"},"TravelGenerateResponse":{"properties":{"id":{"type":"integer","title":"Id","description":"旅行记录ID"},"destination":{"type":"string","title":"Destination","description":"目的地"},"start_time":{"type":"string","title":"Start Time","description":"开始时间"},"end_time":{"type":"string","title":"End Time","description":"结束时间"},"people_count":{"type":"integer","title":"People Count","description":"人数"},"content":{"items":{"additionalProperties":true,"type":"object"},"type":"array","title":"Content","description":"生成的旅行内容列表"}},"type":"object","required":["id","destination","start_time","end_time","people_count","content"],"title":"TravelGenerateResponse","description":"旅行生成响应模型"},"TravelRecordDetailRequest":{"properties":{"id":{"type":"integer","title":"Id","description":"记录ID"}},"type":"object","required":["id"],"title":"TravelRecordDetailRequest","description":"旅行记录详情请求模型"},"TravelRecordDetailResponse":{"properties":{"id":{"type":"integer","title":"Id","description":"记录ID"},"destination":{"type":"string","title":"Destination","description":"目的地"},"start_time":{"type":"string","title":"Start Time","description":"开始时间"},"end_time":{"type":"string","title":"End Time","description":"结束时间"},"people_count":{"type":"integer","title":"People Count","description":"人数"},"content":{"items":{"additionalProperties":true,"type":"object"},"type":"array","title":"Content","description":"生成的旅行内容列表"},"created_at":{"type":"string","format":"date-time","title":"Created At","description":"创建时间"}},"type":"object","required":["id","destination","start_time","end_time","people_count","content","created_at"],"title":"TravelRecordDetailResponse","description":"旅行记录详情响应模型"},"TravelRecordItem":{"properties":{"id":{"type":"integer","title":"Id","description":"记录ID"},"destination":{"type":"string","title":"Destination","description":"目的地"},"start_time":{"type":"string","title":"Start Time","description":"开始时间"},"end_time":{"type":"string","title":"End Time","description":"结束时间"},"people_count":{"type":"integer","title":"People Count","description":"人数"},"created_at":{"type":"string","format":"date-time","title":"Created At","description":"创建时间"}},"type":"object","required":["id","destination","start_time","end_time","people_count","created_at"],"title":"TravelRecordItem","description":"旅行记录项目模型"},"TravelRecordListRequest":{"properties":{"page":{"type":"integer","minimum":1.0,"title":"Page","description":"页码，从1开始","default":1},"page_size":{"type":"integer","maximum":100.0,"minimum":1.0,"title":"Page Size","description":"每页数量，最大100","default":10}},"type":"object","title":"TravelRecordListRequest","description":"旅行记录列表请求模型"},"TravelRecordListResponse":{"properties":{"total":{"type":"integer","title":"Total","description":"总记录数"},"items":{"items":{"$ref":"#/components/schemas/TravelRecordItem"},"type":"array","title":"Items","description":"记录列表"},"has_more":{"type":"integer","title":"Has More","description":"是否有更多记录"}},"type":"object","required":["total","items","has_more"],"title":"TravelRecordListResponse","description":"旅行记录列表响应模型"},"UserChangePassword":{"properties":{"current_password":{"type":"string","title":"Current Password"},"new_password":{"type":"string","title":"New Password"},"password_confirm":{"type":"string","title":"Password Confirm"}},"type":"object","required":["current_password","new_password","password_confirm"],"title":"UserChangePassword","description":"用户修改密码模式。\n\nAttributes:\n    current_password: 当前密码\n    new_password: 新密码\n    password_confirm: 确认新密码"},"UserCreate":{"properties":{"email":{"type":"string","format":"email","title":"Email"},"name":{"type":"string","title":"Name"},"password":{"type":"string","title":"Password"},"password_confirm":{"type":"string","title":"Password Confirm"}},"type":"object","required":["email","name","password","password_confirm"],"title":"UserCreate","description":"用户创建模式。\n\nAttributes:\n    password: 用户密码\n    password_confirm: 确认密码"},"UserForgotPassword":{"properties":{"email":{"type":"string","format":"email","title":"Email"},"verification_code":{"type":"string","title":"Verification Code"},"password":{"type":"string","title":"Password"},"password_confirm":{"type":"string","title":"Password Confirm"}},"type":"object","required":["email","verification_code","password","password_confirm"],"title":"UserForgotPassword","description":"用户忘记密码模式。\n\nAttributes:\n    email: 用户邮箱\n    verification_code: 邮箱验证码\n    password: 新密码\n    password_confirm: 确认新密码"},"UserLogin":{"properties":{"email":{"type":"string","format":"email","title":"Email"},"password":{"type":"string","title":"Password"}},"type":"object","required":["email","password"],"title":"UserLogin","description":"用户登录模式。\n\nAttributes:\n    email: 用户邮箱\n    password: 用户密码"},"UserResponse":{"properties":{"email":{"type":"string","format":"email","title":"Email"},"name":{"type":"string","title":"Name"},"id":{"type":"integer","title":"Id"},"avatar_url":{"type":"string","title":"Avatar Url"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"last_login_at":{"anyOf":[{"type":"string","format":"date-time"},{"type":"null"}],"title":"Last Login At"},"credits":{"type":"integer","title":"Credits"}},"type":"object","required":["email","name","id","avatar_url","created_at","credits"],"title":"UserResponse","description":"用户响应模式。\n\nAttributes:\n    id: 用户ID\n    avatar_url: 头像URL\n    created_at: 创建时间\n    last_login_at: 最后登录时间\n    credits: 剩余积分"},"UserUpdate":{"properties":{"name":{"type":"string","title":"Name"}},"type":"object","required":["name"],"title":"UserUpdate","description":"用户信息更新模式。\n\nAttributes:\n    name: 用户名"},"ValidationError":{"properties":{"loc":{"items":{"anyOf":[{"type":"string"},{"type":"integer"}]},"type":"array","title":"Location"},"msg":{"type":"string","title":"Message"},"type":{"type":"string","title":"Error Type"}},"type":"object","required":["loc","msg","type"],"title":"ValidationError"}},"securitySchemes":{"OAuth2PasswordBearer":{"type":"oauth2","flows":{"password":{"scopes":{},"tokenUrl":"/api/v1/auth/login"}}}}}}
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastBase",
+    "description": "高性能FastAPI后端模板",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "post": {
+        "summary": "Health Check",
+        "description": "健康检查API。\n\nReturns:\n    dict: 健康状态信息",
+        "operationId": "health_check_health_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Register",
+        "description": "用户注册接口。",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_UserResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Login",
+        "description": "用户登录接口。",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_LoginResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Logout",
+        "description": "用户退出登录接口。\n\n说明: 前端需要移除存储的令牌。\n服务器端JWT无状态，因此这里只返回成功消息。",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/email-verification": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Get Email Verification",
+        "description": "获取邮箱验证码接口。\n\n说明：向用户邮箱发送验证码，用于忘记密码等操作。",
+        "operationId": "get_email_verification_api_v1_auth_email_verification_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Forgot Password",
+        "description": "忘记密码接口。\n\n说明: 验证邮箱验证码，验证成功后直接重置密码。",
+        "operationId": "forgot_password_api_v1_auth_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForgotPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "认证"
+        ],
+        "summary": "Refresh Token",
+        "description": "刷新令牌接口。\n\n说明：使用有效的刷新令牌获取新的访问令牌和刷新令牌。",
+        "operationId": "refresh_token_api_v1_auth_refresh_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_LoginResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/update": {
+      "post": {
+        "tags": [
+          "用户"
+        ],
+        "summary": "Update User Info",
+        "description": "更新用户信息接口。\n\n说明: 更新当前登录用户的基本信息。",
+        "operationId": "update_user_info_api_v1_user_update_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_UserResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/change-password": {
+      "post": {
+        "tags": [
+          "用户"
+        ],
+        "summary": "Change Password",
+        "description": "修改密码接口。\n\n说明: 修改当前登录用户的密码。",
+        "operationId": "change_password_api_v1_user_change_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserChangePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/user/credits": {
+      "post": {
+        "tags": [
+          "用户"
+        ],
+        "summary": "Get User Credits",
+        "description": "查询用户积分接口。\n\n说明: 获取当前登录用户的积分余额。\n\nReturns:\n    Response[Dict[str, int]]: 包含积分信息的响应",
+        "operationId": "get_user_credits_api_v1_user_credits_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_Dict_str__int__"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/travel/generate": {
+      "post": {
+        "tags": [
+          "旅行规划"
+        ],
+        "summary": "Create Travel Plan",
+        "description": "生成旅行计划接口。\n\nArgs:\n    request: 包含目的地、时间、人数等信息\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelGenerateResponse]: 包含生成的旅行计划",
+        "operationId": "create_travel_plan_api_v1_travel_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TravelGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TravelGenerateResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/travel/records": {
+      "post": {
+        "tags": [
+          "旅行规划"
+        ],
+        "summary": "List Travel Records",
+        "description": "获取旅行历史记录列表接口。\n\nArgs:\n    request: 包含页码和每页数量的请求\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelRecordListResponse]: 包含旅行记录列表",
+        "operationId": "list_travel_records_api_v1_travel_records_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TravelRecordListRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TravelRecordListResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/travel/detail": {
+      "post": {
+        "tags": [
+          "旅行规划"
+        ],
+        "summary": "Get Travel Record Detail",
+        "description": "获取旅行详情接口。\n\nArgs:\n    request: 包含记录ID的请求\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[TravelRecordDetailResponse]: 包含旅行详情",
+        "operationId": "get_travel_record_detail_api_v1_travel_detail_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TravelRecordDetailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_TravelRecordDetailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/travel/delete": {
+      "post": {
+        "tags": [
+          "旅行规划"
+        ],
+        "summary": "Delete Record",
+        "description": "删除旅行记录接口。\n\nArgs:\n    request: 包含要删除的记录ID\n    db: 数据库会话\n    current_user: 当前登录用户\n    \nReturns:\n    Response[bool]: 删除操作结果",
+        "operationId": "delete_record_api_v1_travel_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TravelDeleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response_bool_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmailVerificationRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "EmailVerificationRequest",
+        "description": "请求邮箱验证码模式。\n\nAttributes:\n    email: 用户邮箱"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "access_token_expires": {
+            "type": "integer",
+            "title": "Access Token Expires"
+          },
+          "refresh_token_expires": {
+            "type": "integer",
+            "title": "Refresh Token Expires"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "access_token_expires",
+          "refresh_token_expires",
+          "user"
+        ],
+        "title": "LoginResponse",
+        "description": "登录响应模式。\n\nAttributes:\n    access_token: 访问令牌\n    refresh_token: 刷新令牌\n    token_type: 令牌类型\n    access_token_expires: 访问令牌过期时间戳\n    refresh_token_expires: 刷新令牌过期时间戳\n    user: 用户信息"
+      },
+      "Response": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "title": "Response",
+        "description": "标准API响应模型，支持泛型数据。\n\nAttributes:\n    data: 响应数据"
+      },
+      "Response_Dict_str__int__": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "title": "Response[Dict[str, int]]"
+      },
+      "Response_LoginResponse_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LoginResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Response[LoginResponse]"
+      },
+      "Response_TravelGenerateResponse_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelGenerateResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Response[TravelGenerateResponse]"
+      },
+      "Response_TravelRecordDetailResponse_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelRecordDetailResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Response[TravelRecordDetailResponse]"
+      },
+      "Response_TravelRecordListResponse_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TravelRecordListResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Response[TravelRecordListResponse]"
+      },
+      "Response_UserResponse_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "Response[UserResponse]"
+      },
+      "Response_bool_": {
+        "properties": {
+          "ok": {
+            "type": "integer",
+            "title": "Ok",
+            "default": 1
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "title": "Response[bool]"
+      },
+      "TokenRefresh": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "TokenRefresh",
+        "description": "刷新令牌模式。\n\nAttributes:\n    refresh_token: 刷新令牌"
+      },
+      "TravelDeleteRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录ID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "TravelDeleteRequest",
+        "description": "旅行记录删除请求模型"
+      },
+      "TravelGenerateRequest": {
+        "properties": {
+          "destination": {
+            "type": "string",
+            "title": "Destination",
+            "description": "目的地"
+          },
+          "start_time": {
+            "type": "string",
+            "title": "Start Time",
+            "description": "开始时间"
+          },
+          "end_time": {
+            "type": "string",
+            "title": "End Time",
+            "description": "结束时间"
+          },
+          "people_count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "People Count",
+            "description": "人数"
+          }
+        },
+        "type": "object",
+        "required": [
+          "destination",
+          "start_time",
+          "end_time",
+          "people_count"
+        ],
+        "title": "TravelGenerateRequest",
+        "description": "旅行生成请求模型"
+      },
+      "TravelGenerateResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "旅行记录ID"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination",
+            "description": "目的地"
+          },
+          "start_time": {
+            "type": "string",
+            "title": "Start Time",
+            "description": "开始时间"
+          },
+          "end_time": {
+            "type": "string",
+            "title": "End Time",
+            "description": "结束时间"
+          },
+          "people_count": {
+            "type": "integer",
+            "title": "People Count",
+            "description": "人数"
+          },
+          "content": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Content",
+            "description": "生成的旅行内容列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "destination",
+          "start_time",
+          "end_time",
+          "people_count",
+          "content"
+        ],
+        "title": "TravelGenerateResponse",
+        "description": "旅行生成响应模型"
+      },
+      "TravelRecordDetailRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录ID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "TravelRecordDetailRequest",
+        "description": "旅行记录详情请求模型"
+      },
+      "TravelRecordDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录ID"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination",
+            "description": "目的地"
+          },
+          "start_time": {
+            "type": "string",
+            "title": "Start Time",
+            "description": "开始时间"
+          },
+          "end_time": {
+            "type": "string",
+            "title": "End Time",
+            "description": "结束时间"
+          },
+          "people_count": {
+            "type": "integer",
+            "title": "People Count",
+            "description": "人数"
+          },
+          "content": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Content",
+            "description": "生成的旅行内容列表"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "创建时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "destination",
+          "start_time",
+          "end_time",
+          "people_count",
+          "content",
+          "created_at"
+        ],
+        "title": "TravelRecordDetailResponse",
+        "description": "旅行记录详情响应模型"
+      },
+      "TravelRecordItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录ID"
+          },
+          "destination": {
+            "type": "string",
+            "title": "Destination",
+            "description": "目的地"
+          },
+          "start_time": {
+            "type": "string",
+            "title": "Start Time",
+            "description": "开始时间"
+          },
+          "end_time": {
+            "type": "string",
+            "title": "End Time",
+            "description": "结束时间"
+          },
+          "people_count": {
+            "type": "integer",
+            "title": "People Count",
+            "description": "人数"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "创建时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "destination",
+          "start_time",
+          "end_time",
+          "people_count",
+          "created_at"
+        ],
+        "title": "TravelRecordItem",
+        "description": "旅行记录项目模型"
+      },
+      "TravelRecordListRequest": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page",
+            "description": "页码，从1开始",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Page Size",
+            "description": "每页数量，最大100",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "title": "TravelRecordListRequest",
+        "description": "旅行记录列表请求模型"
+      },
+      "TravelRecordListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "总记录数"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TravelRecordItem"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "记录列表"
+          },
+          "has_more": {
+            "type": "integer",
+            "title": "Has More",
+            "description": "是否有更多记录"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "items",
+          "has_more"
+        ],
+        "title": "TravelRecordListResponse",
+        "description": "旅行记录列表响应模型"
+      },
+      "UserChangePassword": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "title": "New Password"
+          },
+          "password_confirm": {
+            "type": "string",
+            "title": "Password Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password",
+          "password_confirm"
+        ],
+        "title": "UserChangePassword",
+        "description": "用户修改密码模式。\n\nAttributes:\n    current_password: 当前密码\n    new_password: 新密码\n    password_confirm: 确认新密码"
+      },
+      "UserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "password_confirm": {
+            "type": "string",
+            "title": "Password Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "password",
+          "password_confirm"
+        ],
+        "title": "UserCreate",
+        "description": "用户创建模式。\n\nAttributes:\n    password: 用户密码\n    password_confirm: 确认密码"
+      },
+      "UserForgotPassword": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "verification_code": {
+            "type": "string",
+            "title": "Verification Code"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "password_confirm": {
+            "type": "string",
+            "title": "Password Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "verification_code",
+          "password",
+          "password_confirm"
+        ],
+        "title": "UserForgotPassword",
+        "description": "用户忘记密码模式。\n\nAttributes:\n    email: 用户邮箱\n    verification_code: 邮箱验证码\n    password: 新密码\n    password_confirm: 确认新密码"
+      },
+      "UserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin",
+        "description": "用户登录模式。\n\nAttributes:\n    email: 用户邮箱\n    password: 用户密码"
+      },
+      "UserResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "avatar_url": {
+            "type": "string",
+            "title": "Avatar Url"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "last_login_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login At"
+          },
+          "credits": {
+            "type": "integer",
+            "title": "Credits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name",
+          "id",
+          "avatar_url",
+          "created_at",
+          "credits"
+        ],
+        "title": "UserResponse",
+        "description": "用户响应模式。\n\nAttributes:\n    id: 用户ID\n    avatar_url: 头像URL\n    created_at: 创建时间\n    last_login_at: 最后登录时间\n    credits: 剩余积分"
+      },
+      "UserUpdate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "UserUpdate",
+        "description": "用户信息更新模式。\n\nAttributes:\n    name: 用户名"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  }
+}

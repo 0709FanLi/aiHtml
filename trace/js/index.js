@@ -41,105 +41,123 @@ const showTermsSignup = document.getElementById("showTermsSignup");
 const showPrivacySignup = document.getElementById("showPrivacySignup");
 const footerTerms = document.getElementById("footerTerms");
 const footerPrivacy = document.getElementById("footerPrivacy");
+const userName = document.getElementById("userName");
+const userInitial = document.getElementById("userInitial");
+const userCredits = document.getElementById("userCredits");
 let activeModal = null;
 let sourceElement = null;
 
 // App State
 let isLoggedIn = false;
-let usageCount = 0;
+let usageCount = parseInt(localStorage.getItem("usageCount") || 0);
 let currentPlan = null;
 let history = [];
+let userData = null;
 
-// Sample Data for History
-const sampleHistory = [
-  {
-    id: 1,
-    title: "A Day in New York City",
-    location: "New York, USA",
-    startTime: "09:00",
-    endTime: "18:00",
-    travelers: 2,
-    date: "2023-05-15",
-  },
-  {
-    id: 2,
-    title: "Tokyo Adventure",
-    location: "Tokyo, Japan",
-    startTime: "10:00",
-    endTime: "20:00",
-    travelers: 1,
-    date: "2023-04-22",
-  },
-  {
-    id: 3,
-    title: "Romantic Paris Getaway",
-    location: "Paris, France",
-    startTime: "11:00",
-    endTime: "22:00",
-    travelers: 2,
-    date: "2023-03-10",
-  },
-];
-
-// Event Listeners
-window.addEventListener("DOMContentLoaded", initApp);
-menuToggle.addEventListener("click", toggleMenu);
-loginBtn.addEventListener("click", openLoginModal);
-signupBtn.addEventListener("click", openSignupModal);
-closeAuthModal.addEventListener("click", closeModal);
-switchToSignup.addEventListener("click", switchToSignupForm);
-switchToLogin.addEventListener("click", switchToLoginForm);
-loginForm.addEventListener("submit", handleLogin);
-signupForm.addEventListener("submit", handleSignup);
-plannerForm.addEventListener("submit", generatePlan);
-logoutBtn.addEventListener("click", handleLogout);
-downloadPlan.addEventListener("click", handleDownloadPlan);
-sharePlan.addEventListener("click", handleSharePlan);
-showTermsLogin.addEventListener("click", (e) => showTerms(e, "login"));
-showPrivacyLogin.addEventListener("click", (e) => showPrivacy(e, "login"));
-showTermsSignup.addEventListener("click", (e) => showTerms(e, "signup"));
-showPrivacySignup.addEventListener("click", (e) => showPrivacy(e, "signup"));
-closeTermsModal.addEventListener("click", closeTerms);
-closePrivacyModal.addEventListener("click", closePrivacy);
-acceptTerms.addEventListener("click", handleAcceptTerms);
-acceptPrivacy.addEventListener("click", handleAcceptPrivacy);
-forgotPassword.addEventListener("click", showForgotPassword);
-backToLogin.addEventListener("click", backToLoginForm);
-requestCodeBtn.addEventListener("click", requestVerificationCode);
-forgotPasswordForm.addEventListener("submit", resetPassword);
-
-footerTerms.addEventListener("click", (e) => showTerms(e, "footer"));
-footerPrivacy.addEventListener("click", (e) => showPrivacy(e, "footer"));
-showTermsLogin.addEventListener("click", (e) => showTerms(e, "login"));
-showPrivacyLogin.addEventListener("click", (e) => showPrivacy(e, "login"));
-
-buyPlanButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const plan = button.getAttribute("data-plan");
-    handleBuyPlan(plan);
-  });
-});
+// 添加页面加载事件监听器
+document.addEventListener("DOMContentLoaded", initApp);
 
 // Initialize App
 function initApp() {
-  // Check if user is logged in (using local storage in this demo)
-  const savedLogin = localStorage.getItem("isLoggedIn");
-  if (savedLogin === "true") {
-    isLoggedIn = true;
-    document.body.classList.remove("logged-out");
-    document.body.classList.add("logged-in");
+  // 从本地存储加载用户状态
+  isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-    // Load history
-    loadHistory();
-
-    // Load usage count
-    const savedUsage = localStorage.getItem("usageCount");
-    if (savedUsage) {
-      usageCount = parseInt(savedUsage);
+  // 如果已登录，加载用户数据
+  if (isLoggedIn) {
+    try {
+      userData = JSON.parse(localStorage.getItem("userData") || "null");
+      if (userData) {
+        updateUserDisplay(userData);
+      } else {
+        // 数据不存在，视为未登录
+        isLoggedIn = false;
+        localStorage.removeItem("isLoggedIn");
+      }
+    } catch (e) {
+      console.error("Error parsing user data:", e);
+      // 数据解析错误，视为未登录
+      isLoggedIn = false;
+      localStorage.removeItem("isLoggedIn");
     }
   }
 
-  // Animate elements when they come into view
+  // 更新UI状态
+  updateUIState();
+
+  // 加载历史记录（只有登录后才加载）
+  if (isLoggedIn) {
+    loadHistory();
+  }
+
+  // 添加事件监听器
+  menuToggle.addEventListener("click", toggleMenu);
+  loginBtn.addEventListener("click", openLoginModal);
+  signupBtn.addEventListener("click", openSignupModal);
+  logoutBtn.addEventListener("click", handleLogout);
+  closeAuthModal.addEventListener("click", closeModal);
+  switchToSignup.addEventListener("click", switchToSignupForm);
+  switchToLogin.addEventListener("click", switchToLoginForm);
+  document.getElementById("doLoginBtn").addEventListener("click", handleLogin);
+  document
+    .getElementById("doSignupBtn")
+    .addEventListener("click", handleSignup);
+  document
+    .getElementById("forgotPassword")
+    .addEventListener("click", showForgotPassword);
+  document
+    .getElementById("backToLogin")
+    .addEventListener("click", backToLoginForm);
+  document
+    .getElementById("requestCodeBtn")
+    .addEventListener("click", requestVerificationCode);
+  document
+    .getElementById("forgotPasswordForm")
+    .addEventListener("submit", resetPassword);
+  document
+    .getElementById("acceptTerms")
+    .addEventListener("click", handleAcceptTerms);
+  document
+    .getElementById("acceptPrivacy")
+    .addEventListener("click", handleAcceptPrivacy);
+  document
+    .getElementById("footerTerms")
+    .addEventListener("click", (e) => showTerms(e, "footer"));
+  document
+    .getElementById("footerPrivacy")
+    .addEventListener("click", (e) => showPrivacy(e, "footer"));
+  document
+    .getElementById("showTermsLogin")
+    .addEventListener("click", (e) => showTerms(e, "login"));
+  document
+    .getElementById("showPrivacyLogin")
+    .addEventListener("click", (e) => showPrivacy(e, "login"));
+  document
+    .getElementById("showTermsSignup")
+    .addEventListener("click", (e) => showTerms(e, "signup"));
+  document
+    .getElementById("showPrivacySignup")
+    .addEventListener("click", (e) => showPrivacy(e, "signup"));
+  document
+    .getElementById("closeTermsModal")
+    .addEventListener("click", closeTerms);
+  document
+    .getElementById("closePrivacyModal")
+    .addEventListener("click", closePrivacy);
+  document
+    .getElementById("plannerForm")
+    .addEventListener("submit", generatePlan);
+  document
+    .getElementById("downloadPlan")
+    .addEventListener("click", handleDownloadPlan);
+  document
+    .getElementById("sharePlan")
+    .addEventListener("click", handleSharePlan);
+  document.querySelectorAll(".buy-plan").forEach((btn) => {
+    btn.addEventListener("click", () => handleBuyPlan(btn.dataset.plan));
+  });
+
+  // 初始化滚动动画
+  window.addEventListener("scroll", animateOnScroll);
   animateOnScroll();
 }
 
@@ -189,142 +207,258 @@ function switchToLoginForm(e) {
 function handleLogin(e) {
   e.preventDefault();
 
-  // Clear previous errors
-  clearFormErrors(loginForm);
-
   // Get form values
-  const email = document.getElementById("loginEmail");
-  const password = document.getElementById("loginPassword");
-  const agreeTerms = document.getElementById("agreeTerms");
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
 
-  // Validate form
-  let isValid = true;
-
-  if (!email.value || !isValidEmail(email.value)) {
-    showError(email, "loginEmailError");
-    isValid = false;
-  }
-
-  if (!password.value) {
-    showError(password, "loginPasswordError");
-    isValid = false;
-  }
-
-  if (!agreeTerms.checked) {
-    showToast(
-      "You must agree to the Terms of Service and Privacy Policy",
-      "error"
+  // Validate agreement checkbox
+  const agreement = document.getElementById("agreeTerms");
+  if (!agreement.checked) {
+    showNotification(
+      "You must agree to the Terms of Service and Privacy Policy before logging in.",
+      "warning"
     );
-    isValid = false;
+    return;
   }
 
-  if (!isValid) return;
+  // Basic validation
+  if (!email || !password) {
+    showNotification("Please fill in all required fields.", "warning");
+    return;
+  }
 
-  // Simulate login API call
-  setTimeout(() => {
-    // Success - in a real app, this would check credentials with a server
-    isLoggedIn = true;
-    usageCount = 0; // Reset usage count for demo
+  // Disable button to prevent multiple submissions
+  const submitBtn = document.getElementById("doLoginBtn");
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
 
-    // Save login state to local storage
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("usageCount", usageCount);
+  // Encrypt password with MD5
+  const hashedPassword = md5(password);
 
-    // Update UI
-    document.body.classList.remove("logged-out");
-    document.body.classList.add("logged-in");
+  // Prepare request data
+  const requestData = {
+    email: email,
+    password: hashedPassword,
+  };
 
-    // Load history
-    loadHistory();
+  // API call for login
+  fetch("http://web.doaitravel.com/api/v1/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestData),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Login";
 
-    // Close modal
-    closeModal();
+      if (data.ok === 1) {
+        // Login successful
+        // Save user data
+        userData = data.data.user;
 
-    // Show success message
-    showToast("Logged in successfully", "success");
+        // Save access token and user info
+        localStorage.setItem("accessToken", data.data.access_token);
+        localStorage.setItem("refreshToken", data.data.refresh_token);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("isLoggedIn", "true");
 
-    // Reset form
-    loginForm.reset();
-  }, 1000);
+        // Update state
+        isLoggedIn = true;
+
+        // Update UI
+        updateUserDisplay(userData);
+        updateUIState();
+
+        // 加载历史记录
+        loadHistory();
+
+        // Close modal
+        closeModal();
+
+        // Show success message
+        showNotification("Login successful", "success");
+
+        // Reset form
+        loginForm.reset();
+      } else {
+        // Login failed
+        showNotification(
+          data.message || "Login failed. Please check your credentials.",
+          "error"
+        );
+      }
+    })
+    .catch((error) => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Login";
+      showNotification(
+        "An error occurred during login. Please try again.",
+        "error"
+      );
+      console.error("Login error:", error);
+    });
+}
+
+// 更新用户显示信息
+function updateUserDisplay(user) {
+  if (user) {
+    // 显示用户名
+    userName.textContent = user.name || user.email;
+
+    // 获取首字母作为头像
+    if (user.name && user.name.trim()) {
+      userInitial.textContent = user.name.charAt(0).toUpperCase();
+    } else if (user.email) {
+      userInitial.textContent = user.email.charAt(0).toUpperCase();
+    }
+
+    // 显示剩余旅行生成次数
+    userCredits.textContent = user.credits || 0;
+  } else {
+    // 默认状态
+    userName.textContent = "User";
+    userInitial.textContent = "U";
+    userCredits.textContent = "0";
+  }
+}
+
+// 更新UI状态（登录/未登录）
+function updateUIState() {
+  document.body.classList.toggle("logged-in", isLoggedIn);
+  document.body.classList.toggle("logged-out", !isLoggedIn);
 }
 
 // Handle Signup
 function handleSignup(e) {
   e.preventDefault();
 
-  // Clear previous errors
-  clearFormErrors(signupForm);
-
   // Get form values
-  const name = document.getElementById("signupName");
-  const email = document.getElementById("signupEmail");
-  const password = document.getElementById("signupPassword");
-  const agreeTerms = document.getElementById("agreeTermsSignup");
+  const name = document.getElementById("signupName").value;
+  const email = document.getElementById("signupEmail").value;
+  const password = document.getElementById("signupPassword").value;
+  const passwordConfirm = document.getElementById(
+    "signupPasswordConfirm"
+  ).value;
 
-  // Validate form
-  let isValid = true;
-
-  if (!name.value) {
-    showError(name, "signupNameError");
-    isValid = false;
-  }
-
-  if (!email.value || !isValidEmail(email.value)) {
-    showError(email, "signupEmailError");
-    isValid = false;
-  }
-
-  if (!password.value || password.value.length < 6) {
-    showError(password, "signupPasswordError");
-    isValid = false;
-  }
-
-  if (!agreeTerms.checked) {
-    showToast(
-      "You must agree to the Terms of Service and Privacy Policy",
-      "error"
+  // Validate terms agreement
+  const agreement = document.getElementById("agreeTermsSignup");
+  if (!agreement.checked) {
+    showNotification(
+      "You must agree to the Terms of Service and Privacy Policy before signing up.",
+      "warning"
     );
-    isValid = false;
+    return;
   }
 
-  if (!isValid) return;
+  // Basic validation
+  if (!name || !email || !password || !passwordConfirm) {
+    showNotification("Please fill in all required fields.", "warning");
+    return;
+  }
 
-  // Simulate signup API call
-  setTimeout(() => {
-    // Success - in a real app, this would register the user with a server
-    isLoggedIn = true;
-    usageCount = 0;
+  // Validate password match
+  if (password !== passwordConfirm) {
+    document.getElementById("passwordMatchError").style.display = "block";
+    showNotification("Passwords do not match.", "warning");
+    return;
+  } else {
+    document.getElementById("passwordMatchError").style.display = "none";
+  }
 
-    // Save login state to local storage
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("usageCount", usageCount);
+  // Disable button to prevent multiple submissions
+  const submitBtn = document.getElementById("doSignupBtn");
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing up...';
 
-    // Update UI
-    document.body.classList.remove("logged-out");
-    document.body.classList.add("logged-in");
+  // Encrypt password with MD5
+  const hashedPassword = md5(password);
 
-    // Close modal
-    closeModal();
+  // Prepare request data
+  const requestData = {
+    name: name,
+    email: email,
+    password: hashedPassword,
+    password_confirmation: hashedPassword,
+  };
 
-    // Show success message
-    showToast("Account created successfully", "success");
+  // API call for registration
+  fetch("http://web.doaitravel.com/api/v1/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestData),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Sign Up";
 
-    // Reset form
-    signupForm.reset();
-  }, 1000);
+      if (data.ok === 1) {
+        // Registration successful
+        // Save user data
+        userData = data.data.user;
+
+        // Save access token and user info
+        localStorage.setItem("accessToken", data.data.access_token);
+        localStorage.setItem("refreshToken", data.data.refresh_token);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        localStorage.setItem("isLoggedIn", "true");
+
+        // Update state
+        isLoggedIn = true;
+
+        // Update UI
+        updateUserDisplay(userData);
+        updateUIState();
+
+        // Close modal
+        closeModal();
+
+        // Show success message
+        showNotification("Account created successfully", "success");
+
+        // Reset form
+        signupForm.reset();
+      } else {
+        // Registration failed
+        showNotification(
+          data.message || "Registration failed. Please try again.",
+          "error"
+        );
+      }
+    })
+    .catch((error) => {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Sign Up";
+      showNotification(
+        "An error occurred during registration. Please try again.",
+        "error"
+      );
+      console.error("Registration error:", error);
+    });
 }
 
 // Handle Logout
 function handleLogout() {
   // Update state
   isLoggedIn = false;
+  userData = null;
 
   // Clear local storage
   localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("userData");
 
   // Update UI
-  document.body.classList.remove("logged-in");
-  document.body.classList.add("logged-out");
+  updateUIState();
+
+  // 隐藏历史部分
+  document.getElementById("history").classList.remove("active");
 
   // Show message
   showToast("Logged out successfully", "success");
@@ -334,11 +468,26 @@ function handleLogout() {
 function generatePlan(e) {
   e.preventDefault();
 
-  // Check usage limit for non-logged in users
-  if (!isLoggedIn && usageCount >= 1) {
-    showToast("Free usage limit reached. Please sign up to continue.", "error");
-    openSignupModal();
-    return;
+  // Check if user is logged in and has credits
+  if (isLoggedIn) {
+    if (userData && userData.credits < 1) {
+      showToast(
+        "You don't have enough credits. Please purchase a plan to continue.",
+        "error"
+      );
+      document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+  } else {
+    // For non-logged in users
+    if (usageCount >= 1) {
+      showToast(
+        "Free usage limit reached. Please sign up to continue.",
+        "error"
+      );
+      openSignupModal();
+      return;
+    }
   }
 
   // Get form values
@@ -357,10 +506,15 @@ function generatePlan(e) {
   planLoader.classList.add("active");
   results.classList.remove("active");
 
-  // Increment usage count
-  usageCount++;
-  if (isLoggedIn) {
+  // Increment usage count for non-logged in users
+  if (!isLoggedIn) {
+    usageCount++;
     localStorage.setItem("usageCount", usageCount);
+  } else {
+    // Decrement credits for logged-in users
+    userData.credits--;
+    localStorage.setItem("userData", JSON.stringify(userData));
+    updateUserDisplay(userData);
   }
 
   // Simulate API call to generate plan
@@ -615,22 +769,23 @@ function addToHistory(plan) {
 
 // Load History
 function loadHistory() {
-  // In a real app, this would fetch from a server
-  const savedHistory = localStorage.getItem("travelHistory");
-
-  if (savedHistory) {
-    history = JSON.parse(savedHistory);
+  // 只在登录状态下加载历史记录
+  if (isLoggedIn) {
+    const savedHistory = localStorage.getItem("travelHistory");
+    if (savedHistory) {
+      history = JSON.parse(savedHistory);
+      displayHistory();
+    } else {
+      history = [];
+      displayHistory();
+    }
+    // 显示历史部分
+    document.getElementById("history").classList.add("active");
   } else {
-    // Use sample data for demo
-    history = sampleHistory;
-    localStorage.setItem("travelHistory", JSON.stringify(history));
+    // 未登录时隐藏历史部分
+    document.getElementById("history").classList.remove("active");
+    history = [];
   }
-
-  // Display history
-  displayHistory();
-
-  // Show history section
-  document.getElementById("history").classList.add("active");
 }
 
 // Display History
