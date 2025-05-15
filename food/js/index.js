@@ -302,6 +302,7 @@ const state = {
   historyPageSize: 10,
   historySearchTerm: "",
   itemToDelete: null,
+  historyTotal: 0,
 };
 
 // Helper function to show a view
@@ -787,9 +788,12 @@ function initEventListeners() {
               };
 
               addToHistory({
-                type: "analysis",
-                food: safeFood,
-                date: new Date(),
+                food: {
+                  name: safeFood.name,
+                  calories: safeFood.calories,
+                  analysis: safeFood.analysis,
+                  isHealthy: safeFood.isHealthy,
+                },
               });
             } catch (err) {
               console.error("添加历史记录出错:", err);
@@ -1094,13 +1098,14 @@ function showRecipeDetail(recipeId) {
   });
 
   // Add to history if logged in
-  if (state.user) {
-    addToHistory({
-      type: "recipe",
-      recipe: recipe,
-      date: new Date(),
-    });
-  }
+  // Recipe history is no longer supported with the new API
+  // if (state.user) {
+  //   addToHistory({
+  //     type: "recipe",
+  //     recipe: recipe,
+  //     date: new Date(),
+  //   });
+  // }
 }
 
 // Login function
@@ -1313,50 +1318,47 @@ function setupLogoutButton() {
 }
 
 // Add item to history
-function addToHistory(item) {
-  if (!state.user) return;
+async function addToHistory(item) {
+  if (!state.user || !state.user.access_token) return;
 
   try {
-    // 确保历史记录数组存在
-    if (!state.user.history) {
-      state.user.history = [];
+    // Note: 我们假设item的结构适合直接发送到API
+    // 在实际使用时可能需要转换数据格式
+    const url = "/api/v1/gourmet/record";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.user.access_token}`,
+      },
+      body: JSON.stringify({
+        food_name: item.food.name,
+        calorie_content: item.food.calories,
+        analysis_result: item.food.analysis,
+        summary: item.food.isHealthy
+          ? "Healthy Choice"
+          : "Occasional Consumption",
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.ok !== 1) {
+      console.error("API error when adding to history:", data.message);
+      return;
     }
 
-    // 移除图片数据以减少存储大小
-    if (item.type === "analysis" && item.food) {
-      item = {
-        ...item,
-        food: {
-          ...item.food,
-          image: null, // 不存储图片
-        },
-      };
-    } else if (item.type === "recipe" && item.recipe) {
-      item = {
-        ...item,
-        recipe: {
-          ...item.recipe,
-          image: null, // 不存储图片
-        },
-      };
+    // 如果成功，增加total计数
+    if (typeof state.historyTotal === "number") {
+      state.historyTotal++;
     }
 
-    // 添加到历史记录前面
-    state.user.history.unshift(item);
-
-    // 限制历史记录大小，最多10条
-    if (state.user.history.length > 10) {
-      state.user.history = state.user.history.slice(0, 10);
-    }
-
-    // 尝试更新本地存储，但不抛出错误以确保程序继续运行
-    try {
-      updateLocalStorage();
-    } catch (e) {
-      console.error("保存历史记录到本地存储失败:", e);
+    // 刷新历史记录视图（如果当前在历史页面）
+    if (state.currentView === "history") {
+      updateHistoryView();
     }
   } catch (error) {
-    console.error("添加历史记录时出错:", error);
+    console.error("Error adding to history:", error);
   }
 }
 
@@ -1436,8 +1438,114 @@ function updateLocalStorage() {
   }
 }
 
+// 新增函数：从API获取历史记录
+async function fetchHistoryFromAPI(page = 1, pageSize = 10, searchTerm = "") {
+  if (!state.user || !state.user.access_token) {
+    console.error("User not logged in or missing access token");
+    return { items: [], total: 0 };
+  }
+
+  try {
+    const url = "http://web.aigastronome.com/api/v1/gourmet/records";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.user.access_token}`,
+      },
+      body: JSON.stringify({
+        page: page,
+        page_size: pageSize,
+        keyword: searchTerm,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.ok !== 1) {
+      console.error("API error:", data.message);
+      return { items: [], total: 0 };
+    }
+
+    // 把API数据的total保存到state中
+    if (page === 1 && data.data && typeof data.data.total === "number") {
+      state.historyTotal = data.data.total;
+    }
+
+    return {
+      items: data.data?.items || [],
+      total: data.data?.total || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching history:", error);
+    return { items: [], total: 0 };
+  }
+}
+
+// 修改：从API获取单条历史记录详情
+async function fetchHistoryItemFromAPI(id) {
+  if (!state.user || !state.user.access_token) {
+    console.error("User not logged in or missing access token");
+    return null;
+  }
+
+  try {
+    const url = `/api/v1/gourmet/record/${id}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.user.access_token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.ok !== 1) {
+      console.error("API error:", data.message);
+      return null;
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Error fetching history item:", error);
+    return null;
+  }
+}
+
+// 删除历史记录项
+async function deleteHistoryItemFromAPI(id) {
+  if (!state.user || !state.user.access_token) {
+    console.error("User not logged in or missing access token");
+    return false;
+  }
+
+  try {
+    const url = `/api/v1/gourmet/record/${id}`;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${state.user.access_token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.ok !== 1) {
+      console.error("API error:", data.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting history item:", error);
+    return false;
+  }
+}
+
 // Update history view
-function updateHistoryView() {
+async function updateHistoryView() {
   console.log("更新历史记录视图...");
 
   if (!state.user) {
@@ -1465,12 +1573,15 @@ function updateHistoryView() {
   loginPrompt.style.display = "none";
   historyContent.style.display = "block";
 
-  // 获取过滤后的历史记录
-  const filteredHistory = getFilteredHistory();
-  console.log("过滤后的历史记录数量:", filteredHistory.length);
+  // 使用API获取历史记录
+  const { items: pageItems, total } = await fetchHistoryFromAPI(
+    state.historyPage,
+    state.historyPageSize,
+    state.historySearchTerm
+  );
 
   // 计算分页信息
-  const totalItems = filteredHistory.length;
+  const totalItems = total;
   const totalPages = Math.max(1, Math.ceil(totalItems / state.historyPageSize));
   state.historyPage = Math.min(state.historyPage, totalPages);
 
@@ -1490,14 +1601,7 @@ function updateHistoryView() {
   prevPageBtn.disabled = state.historyPage <= 1;
   nextPageBtn.disabled = state.historyPage >= totalPages;
 
-  // 获取当前页的数据
-  const startIndex = (state.historyPage - 1) * state.historyPageSize;
-  const pageItems = filteredHistory.slice(
-    startIndex,
-    startIndex + state.historyPageSize
-  );
-
-  // 直接获取分析历史容器，不再有Recipe Browse标签
+  // 直接获取分析历史容器
   const historyContainer = document.getElementById("analysisHistory");
 
   if (!historyContainer) {
@@ -1511,37 +1615,35 @@ function updateHistoryView() {
   // 添加当前页的历史记录项
   if (pageItems.length > 0) {
     pageItems.forEach((item) => {
-      // 只处理food analysis类型的记录，忽略recipe类型
-      if (item.type !== "analysis") return;
-
       const historyItem = document.createElement("div");
       historyItem.className = "history-item";
-      const itemId = item.food.id || JSON.stringify(item.food.name);
-      historyItem.dataset.id = itemId;
+      historyItem.dataset.id = item.id;
 
       // 历史记录项不再显示图片
       historyItem.innerHTML = `
                     <div class="history-content">
                         <div class="history-date">${new Date(
-                          item.date
+                          item.created_at
                         ).toLocaleString()}</div>
-                        <h3 class="history-title">${item.food.name}</h3>
+                        <h3 class="history-title">${
+                          item.food_name || "Analyzed Food"
+                        }</h3>
                         <div class="history-meta">
                             <div><i class="fas fa-fire"></i> ${
-                              item.food.calories
+                              item.calorie_content || "N/A"
                             }</div>
                             <div>
                                 <i class="fas ${
-                                  item.food.isHealthy
+                                  item.summary?.includes("Healthy")
                                     ? "fa-check-circle"
                                     : "fa-exclamation-circle"
                                 }" 
                                    style="color: var(${
-                                     item.food.isHealthy
+                                     item.summary?.includes("Healthy")
                                        ? "--success-color"
                                        : "--warning-color"
                                    });"></i> 
-                                ${item.food.isHealthy ? "健康选择" : "偶尔食用"}
+                                ${item.summary || "Food Analysis"}
                             </div>
                         </div>
                     </div>
@@ -1568,7 +1670,7 @@ function updateHistoryView() {
 
       deleteItemBtn.addEventListener("click", function (e) {
         e.stopPropagation(); // 防止冒泡到卡片
-        showDeleteConfirmModal(itemId);
+        showDeleteConfirmModal(item.id);
       });
     });
   } else {
@@ -1581,7 +1683,6 @@ function updateHistoryView() {
 function setupHistoryPageEvents() {
   console.log("设置历史记录页面事件...");
 
-  // 不再需要标签切换按钮的事件处理
   // 分页控制
   const prevPageBtn = document.getElementById("prevPageBtn");
   const nextPageBtn = document.getElementById("nextPageBtn");
@@ -1596,9 +1697,8 @@ function setupHistoryPageEvents() {
     });
 
     nextPageBtn.addEventListener("click", function () {
-      const totalPages = Math.ceil(
-        getFilteredHistory().length / state.historyPageSize
-      );
+      // 使用存储在state中的总数来计算总页数
+      const totalPages = Math.ceil(state.historyTotal / state.historyPageSize);
       if (state.historyPage < totalPages) {
         state.historyPage++;
         updateHistoryView();
@@ -1629,71 +1729,80 @@ function setupHistoryPageEvents() {
   // 清空历史按钮
   const clearHistoryBtn = document.getElementById("clearHistoryBtn");
   if (clearHistoryBtn) {
-    clearHistoryBtn.addEventListener("click", function () {
-      showDeleteConfirmModal("all");
-    });
-  } else {
-    console.error("未找到清空历史按钮");
-  }
-
-  // 绑定详情和删除按钮的事件（会在updateHistoryView中动态绑定）
-
-  // 确认删除弹窗
-  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-
-  if (cancelDeleteBtn && confirmDeleteBtn) {
-    cancelDeleteBtn.addEventListener("click", function () {
-      document.getElementById("deleteConfirmModal").style.display = "none";
-    });
-
-    confirmDeleteBtn.addEventListener("click", function () {
-      const itemToDelete = state.itemToDelete;
-      if (itemToDelete === "all") {
-        // 清空所有历史
-        if (state.user) {
-          state.user.history = [];
-          updateLocalStorage();
-          showNotification("History cleared", "success");
-        }
-      } else {
-        // 删除特定的历史记录
-        if (state.user && state.user.history.length > 0) {
-          state.user.history = state.user.history.filter((item) => {
-            if (item.type === "analysis" && item.food.id === itemToDelete)
-              return false;
-            if (item.type === "recipe" && item.recipe.id === itemToDelete)
-              return false;
-            return true;
+    clearHistoryBtn.addEventListener("click", async function () {
+      if (confirm("Are you sure you want to clear all history records?")) {
+        try {
+          const url = "/api/v1/gourmet/records/clear";
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${state.user.access_token}`,
+            },
           });
-          updateLocalStorage();
-          showNotification("Record deleted", "success");
+
+          const data = await response.json();
+
+          if (data.ok === 1) {
+            showNotification("History cleared successfully", "success");
+            state.historyTotal = 0;
+            updateHistoryView();
+          } else {
+            showNotification(
+              "Failed to clear history: " + data.message,
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error clearing history:", error);
+          showNotification("An error occurred while clearing history", "error");
         }
       }
-
-      document.getElementById("deleteConfirmModal").style.display = "none";
-      updateHistoryView();
     });
-  } else {
-    console.error("未找到确认删除弹窗按钮");
   }
 
-  // 关闭详情弹窗
+  // 删除确认弹窗按钮
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+
+  if (confirmDeleteBtn && cancelDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async function () {
+      const modal = document.getElementById("deleteConfirmModal");
+      modal.style.display = "none";
+
+      if (state.itemToDelete) {
+        const success = await deleteHistoryItemFromAPI(state.itemToDelete);
+        if (success) {
+          showNotification("Record deleted successfully", "success");
+          if (state.historyTotal > 0) state.historyTotal--;
+          updateHistoryView();
+        } else {
+          showNotification("Failed to delete record", "error");
+        }
+        state.itemToDelete = null;
+      }
+    });
+
+    cancelDeleteBtn.addEventListener("click", function () {
+      const modal = document.getElementById("deleteConfirmModal");
+      modal.style.display = "none";
+      state.itemToDelete = null;
+    });
+  }
+
+  // 历史记录详情弹窗关闭按钮
   const closeDetailBtn = document.getElementById("closeDetailBtn");
   if (closeDetailBtn) {
     closeDetailBtn.addEventListener("click", function () {
-      document.getElementById("historyDetailModal").style.display = "none";
+      const modal = document.getElementById("historyDetailModal");
+      modal.style.display = "none";
     });
-  } else {
-    console.error("未找到关闭详情弹窗按钮");
   }
+}
 
-  // 初始化历史记录状态
-  if (!state.historyPage) {
-    state.historyPage = 1;
-    state.historyPageSize = 10;
-    state.historySearchTerm = "";
-  }
+// 初始化状态中添加历史总数字段
+if (!state.historyTotal) {
+  state.historyTotal = 0;
 }
 
 // 显示删除确认弹窗
@@ -1705,56 +1814,37 @@ function showDeleteConfirmModal(itemId) {
 
 // 显示历史记录详情弹窗
 function showHistoryDetailModal(item) {
-  // 使用新的modal弹窗展示详情
-  if (item.type === "recipe") {
-    // 对于食谱类型，使用新的食谱详情弹窗
-    const recipeData = {
-      id: item.recipe.id,
-      title: item.recipe.name,
-      image:
-        item.recipe.image ||
-        "https://images.unsplash.com/photo-1484723091739-30a097e8f929", // 默认图片
-      calories: item.recipe.calories,
-      protein: item.recipe.protein,
-      carbs: item.recipe.carbs,
-      fat: item.recipe.fat,
-      time: item.recipe.time,
-      healthTips: item.recipe.healthTips,
-      ingredients: item.recipe.ingredients,
-      steps: item.recipe.steps,
-    };
-    showRecipeDetailsModal(recipeData);
-  } else {
-    // 对于食物分析类型，使用老的历史记录弹窗，但更新文本为英文
-    const modal = document.getElementById("historyDetailModal");
-    const detailTitle = document.getElementById("detailTitle");
-    const detailContent = document.getElementById("historyDetailContent");
+  // 对于食物分析类型，使用历史记录弹窗
+  const modal = document.getElementById("historyDetailModal");
+  const detailTitle = document.getElementById("detailTitle");
+  const detailContent = document.getElementById("historyDetailContent");
 
-    detailTitle.textContent = "Food Analysis Details";
-    detailContent.innerHTML = `
-      <div style="margin-bottom: 15px;">
-        <h3 style="margin-bottom: 10px;">${item.food.name}</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-          <span class="result-tag">${item.food.calories}</span>
-          <span class="result-tag ${
-            item.food.isHealthy ? "tag-success" : "tag-warning"
-          }">
-            ${item.food.isHealthy ? "Healthy Choice" : "Occasional Consumption"}
-          </span>
-        </div>
-        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
-          <p style="margin: 0; line-height: 1.6;">${item.food.analysis}</p>
-        </div>
+  detailTitle.textContent = "Food Analysis Details";
+  detailContent.innerHTML = `
+    <div style="margin-bottom: 15px;">
+      <h3 style="margin-bottom: 10px;">${item.food_name || "Analyzed Food"}</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        <span class="result-tag">${item.calorie_content || "N/A"}</span>
+        <span class="result-tag ${
+          item.summary?.includes("Healthy") ? "tag-success" : "tag-warning"
+        }">
+          ${item.summary || "Food Analysis"}
+        </span>
       </div>
-      <div>
-        <p style="color: #666; font-size: 0.9em;">Analysis Time: ${new Date(
-          item.date
-        ).toLocaleString()}</p>
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 10px 0;">
+        <p style="margin: 0; line-height: 1.6;">${
+          item.analysis_result || "No detailed analysis available."
+        }</p>
       </div>
-    `;
+    </div>
+    <div>
+      <p style="color: #666; font-size: 0.9em;">Analysis Time: ${new Date(
+        item.created_at
+      ).toLocaleString()}</p>
+    </div>
+  `;
 
-    modal.style.display = "flex";
-  }
+  modal.style.display = "flex";
 }
 
 // 显示食谱详情弹窗 - 新增函数
@@ -1797,24 +1887,6 @@ function showRecipeDetailsModal(recipe) {
 
   // 显示弹窗
   modal.style.display = "flex";
-}
-
-// 获取过滤后的历史记录
-function getFilteredHistory() {
-  if (!state.user || !state.user.history) return [];
-
-  return state.user.history.filter((item) => {
-    // 只返回分析类型的历史记录
-    if (item.type !== "analysis") return false;
-
-    // 搜索筛选
-    if (state.historySearchTerm) {
-      const name = item.food.name;
-      return name.toLowerCase().includes(state.historySearchTerm.toLowerCase());
-    }
-
-    return true;
-  });
 }
 
 // Initialize the app
@@ -1982,19 +2054,19 @@ document.addEventListener("click", function (e) {
     const historyItem = e.target.closest(".history-item");
     if (historyItem) {
       const itemId = historyItem.getAttribute("data-id");
-
-      // 从历史记录中找到对应的项目
-      if (state.user && state.user.history) {
-        const item = state.user.history.find((item) => {
-          if (item.type === "analysis" && item.food.id === itemId) return true;
-          if (item.type === "recipe" && item.recipe.id == itemId) return true;
-          return false;
+      // 从API获取历史记录项目详情
+      fetchHistoryItemFromAPI(itemId)
+        .then((item) => {
+          if (item) {
+            showHistoryDetailModal(item);
+          } else {
+            showNotification("Failed to load history detail", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading history item:", error);
+          showNotification("Error loading history detail", "error");
         });
-
-        if (item) {
-          showHistoryDetailModal(item);
-        }
-      }
     }
   }
 
