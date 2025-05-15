@@ -893,52 +893,54 @@ document
   });
 
 // 获取验证码按钮事件
-document
-  .getElementById("getVerificationCodeBtn")
-  .addEventListener("click", function () {
-    const email = document.getElementById("resetEmail").value;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    // 验证邮箱
-    if (!email || !emailRegex.test(email)) {
+const getCodeBtn = document.getElementById("getVerificationCodeBtn");
+if (getCodeBtn) {
+  getCodeBtn.onclick = function () {
+    const email = document.getElementById("resetEmail").value.trim();
+    // 自定义邮箱规则
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!email) {
+      document.getElementById("resetEmailError").textContent =
+        "Please enter your email address.";
+      document.getElementById("resetEmailError").style.display = "block";
+      return;
+    } else if (!emailRegex.test(email)) {
+      document.getElementById("resetEmailError").textContent =
+        "Please enter a valid email address.";
       document.getElementById("resetEmailError").style.display = "block";
       return;
     } else {
       document.getElementById("resetEmailError").style.display = "none";
     }
-
     // 显示加载状态
-    const btn = document.getElementById("getVerificationCodeBtn");
+    const btn = getCodeBtn;
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Sending...";
-
-    // 发送获取验证码请求
-    fetch(
-      `http://web.aigastronome.com/api/v1/auth/send-verification?email=${encodeURIComponent(
-        email
-      )}`,
-      {
-        method: "GET",
-        credentials: "omit",
-      }
-    )
+    // 发送POST请求
+    fetch("http://web.aigastronome.com/api/v1/auth/email-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+      credentials: "omit",
+    })
       .then((response) => {
         if (response.ok) {
           return response.json();
         } else {
           return response.json().then((data) => {
-            throw new Error(data.message || "Failed to send verification code");
+            throw new Error(
+              data.message || "Failed to send verification code."
+            );
           });
         }
       })
-      .then((data) => {
-        alert("Verification code sent to " + email);
-
+      .then(() => {
+        // 成功
+        document.getElementById("resetEmailError").style.display = "none";
         // 倒计时效果
         let countdown = 60;
         btn.textContent = `Resend (${countdown}s)`;
-
         const timer = setInterval(() => {
           countdown--;
           if (countdown <= 0) {
@@ -951,49 +953,63 @@ document
         }, 1000);
       })
       .catch((error) => {
-        alert("Error: " + error.message);
+        document.getElementById("resetEmailError").textContent = error.message;
+        document.getElementById("resetEmailError").style.display = "block";
         btn.disabled = false;
         btn.textContent = originalText;
       });
-  });
+  };
+}
 
 // 重置密码按钮事件
-document
-  .getElementById("resetPasswordBtn")
-  .addEventListener("click", function () {
-    const email = document.getElementById("resetEmail").value;
-    const code = document.getElementById("resetVerificationCode").value;
+const resetBtn = document.getElementById("resetPasswordBtn");
+if (resetBtn) {
+  resetBtn.onclick = function () {
+    const email = document.getElementById("resetEmail").value.trim();
+    const code = document.getElementById("resetVerificationCode").value.trim();
     const password = document.getElementById("resetPassword").value;
     const confirmPassword = document.getElementById(
       "resetPasswordConfirm"
     ).value;
-
-    // 验证
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // 自定义邮箱规则
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     let isValid = true;
-
-    if (!email || !emailRegex.test(email)) {
+    // 邮箱校验
+    if (!email) {
+      document.getElementById("resetEmailError").textContent =
+        "Please enter your email address.";
+      document.getElementById("resetEmailError").style.display = "block";
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      document.getElementById("resetEmailError").textContent =
+        "Please enter a valid email address.";
       document.getElementById("resetEmailError").style.display = "block";
       isValid = false;
     } else {
       document.getElementById("resetEmailError").style.display = "none";
     }
-
+    // 验证码校验
     if (!code) {
+      document.getElementById("verificationCodeError").textContent =
+        "Verification code is required.";
       document.getElementById("verificationCodeError").style.display = "block";
       isValid = false;
     } else {
       document.getElementById("verificationCodeError").style.display = "none";
     }
-
+    // 密码校验
     if (!password || password.length < 6) {
+      document.getElementById("resetPasswordError").textContent =
+        "Password must be at least 6 characters.";
       document.getElementById("resetPasswordError").style.display = "block";
       isValid = false;
     } else {
       document.getElementById("resetPasswordError").style.display = "none";
     }
-
+    // 确认密码校验
     if (password !== confirmPassword) {
+      document.getElementById("resetPasswordConfirmError").textContent =
+        "Passwords do not match.";
       document.getElementById("resetPasswordConfirmError").style.display =
         "block";
       isValid = false;
@@ -1001,30 +1017,22 @@ document
       document.getElementById("resetPasswordConfirmError").style.display =
         "none";
     }
-
     if (!isValid) return;
-
     // 显示加载状态
-    const btn = document.getElementById("resetPasswordBtn");
+    const btn = resetBtn;
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Resetting...";
-
-    // 准备请求数据
-    const requestData = {
-      email: email,
-      verification_code: code,
-      password: password,
-      password_confirmation: confirmPassword,
-    };
-
-    // 发送重置密码请求
-    fetch("http://web.aigastronome.com/api/v1/auth/reset-password", {
+    // 发送POST请求
+    fetch("http://web.aigastronome.com/api/v1/auth/forgot-password", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        verification_code: code,
+        password: md5(password),
+        password_confirm: md5(confirmPassword),
+      }),
       credentials: "omit",
     })
       .then((response) => {
@@ -1032,30 +1040,26 @@ document
           return response.json();
         } else {
           return response.json().then((data) => {
-            throw new Error(data.message || "Password reset failed");
+            throw new Error(data.message || "Password reset failed.");
           });
         }
       })
-      .then((data) => {
-        alert(
-          "Password reset successfully! Please login with your new password."
-        );
-
-        // 关闭忘记密码弹窗
+      .then(() => {
+        // 成功
         document.getElementById("forgotPasswordModal").style.display = "none";
-
-        // 自动填充登录邮箱
         document.getElementById("loginEmail").value = email;
       })
       .catch((error) => {
-        alert("Error: " + error.message);
+        document.getElementById("resetPasswordError").textContent =
+          error.message;
+        document.getElementById("resetPasswordError").style.display = "block";
       })
       .finally(() => {
-        // 恢复按钮状态
         btn.disabled = false;
         btn.textContent = originalText;
       });
-  });
+  };
+}
 
 // 全局美观通知
 function showNotification(message, type = "success", duration = 3000) {
