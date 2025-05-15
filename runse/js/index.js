@@ -680,7 +680,7 @@ registerSubmitBtn.addEventListener("click", () => {
       name: name,
       email: email,
       password: md5Password,
-      password_confirmation: md5ConfirmPassword,
+      password_confirm: md5ConfirmPassword,
     }),
   })
     .then((response) => response.json())
@@ -689,13 +689,17 @@ registerSubmitBtn.addEventListener("click", () => {
       loadingOverlay.style.display = "none";
 
       if (data.ok === 1) {
-        // Save user data in localStorage
-        saveUserData(data.data);
-
-        // Update the UI
-        updateUIAfterLogin(data.data);
-
-        // Show success message
+        // 适配新接口：data为用户对象，需手动构造userData结构
+        const userData = {
+          user: data.data, // 直接用data.data作为user
+          access_token: null,
+          refresh_token: null,
+          access_token_expires: null,
+          refresh_token_expires: null,
+          token_type: null,
+        };
+        saveUserData(userData);
+        updateUIAfterLogin(userData);
         showToast("Account created successfully!", "success");
       } else {
         showToast(data.message || "Registration failed", "error");
@@ -711,36 +715,23 @@ registerSubmitBtn.addEventListener("click", () => {
 
 // Update UI after login
 function updateUIAfterLogin(userData) {
-  // 设置全局登录状态为true
+  // 兼容新注册接口：userData.user 直接为用户对象
+  const user = userData.user || userData;
   isLoggedIn = true;
-  // 更新积分数量
-  usageCredits = userData.user.credits;
-
-  // 隐藏登录和注册按钮
+  usageCredits = user.credits;
   loginBtn.style.display = "none";
   signupBtn.style.display = "none";
-
-  // 显示用户信息
   userProfile.style.display = "flex";
-
-  // 更新用户名和积分
-  document.getElementById("userName").textContent = userData.user.name;
-  document.getElementById("creditCount").textContent = userData.user.credits;
-
-  // 更新悬浮的积分显示
-  document.getElementById("badgeCredits").textContent = userData.user.credits;
+  document.getElementById("userName").textContent = user.name;
+  document.getElementById("creditCount").textContent = user.credits;
+  document.getElementById("badgeCredits").textContent = user.credits;
   document.getElementById("creditsBadge").style.display = "flex";
-
-  // 更新头像 - 只在有有效头像URL时才更新src
+  // 头像逻辑
   const userAvatar = userProfile.querySelector("img");
-  if (userData.user.avatar_url && userData.user.avatar_url.trim() !== "") {
-    userAvatar.src = userData.user.avatar_url;
+  if (user.avatar_url && user.avatar_url.trim() !== "") {
+    userAvatar.src = user.avatar_url;
   }
-  // 否则保持默认的Base64头像
-
-  // 关闭登录模态框
   authModal.style.display = "none";
-
   showToast("Login successful", "success");
 }
 
@@ -1796,20 +1787,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // 存储用户登录信息到localStorage
 function saveUserData(userData) {
-  localStorage.setItem("user", JSON.stringify(userData.user));
-  localStorage.setItem("access_token", userData.access_token);
-  localStorage.setItem("refresh_token", userData.refresh_token);
-  localStorage.setItem("access_token_expires", userData.access_token_expires);
-  localStorage.setItem("refresh_token_expires", userData.refresh_token_expires);
-  localStorage.setItem("token_type", userData.token_type);
+  // 兼容新注册接口：userData.user 直接为用户对象
+  const user = userData.user || userData;
+  localStorage.setItem("user", JSON.stringify(user));
+  if (userData.access_token)
+    localStorage.setItem("access_token", userData.access_token);
+  if (userData.refresh_token)
+    localStorage.setItem("refresh_token", userData.refresh_token);
+  if (userData.access_token_expires)
+    localStorage.setItem("access_token_expires", userData.access_token_expires);
+  if (userData.refresh_token_expires)
+    localStorage.setItem(
+      "refresh_token_expires",
+      userData.refresh_token_expires
+    );
+  if (userData.token_type)
+    localStorage.setItem("token_type", userData.token_type);
 }
 
 // 从localStorage获取用户信息
 function getUserData() {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const access_token = localStorage.getItem("access_token");
-
-  if (user && access_token) {
+  // 兼容新注册接口：无token时只返回user
+  if (user && access_token !== null) {
     return {
       user,
       access_token,
@@ -1818,8 +1819,9 @@ function getUserData() {
       refresh_token_expires: localStorage.getItem("refresh_token_expires"),
       token_type: localStorage.getItem("token_type"),
     };
+  } else if (user) {
+    return { user };
   }
-
   return null;
 }
 

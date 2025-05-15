@@ -1,1688 +1,1878 @@
 <script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
+  var gk_isXlsx = false;
+  var gk_xlsxFileLookup = {};
+  var gk_fileData = {};
+  function filledCell(cell) {
+    return cell !== "" && cell != null;
+  }
+  function loadFileData(filename) {
+    if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+      try {
+        var workbook = XLSX.read(gk_fileData[filename], { type: "base64" });
+        var firstSheetName = workbook.SheetNames[0];
+        var worksheet = workbook.Sheets[firstSheetName];
 
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
+        // Convert sheet to JSON to filter blank rows
+        var jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          blankrows: false,
+          defval: "",
+        });
+        // Filter out blank rows (rows where all cells are empty, null, or undefined)
+        var filteredData = jsonData.filter((row) => row.some(filledCell));
 
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
+        // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+        var headerRowIndex = filteredData.findIndex(
+          (row, index) =>
+            row.filter(filledCell).length >=
+            filteredData[index + 1]?.filter(filledCell).length
+        );
+        // Fallback
+        if (headerRowIndex === -1 || headerRowIndex > 25) {
+          headerRowIndex = 0;
+        }
 
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+        // Convert filtered JSON back to CSV
+        var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+        csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+        return csv;
+      } catch (e) {
+        console.error(e);
+        return "";
+      }
+    }
+    return gk_fileData[filename] || "";
+  }
+</script>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Healthy Diet Advisor - Your Personal Weight Loss Assistant</title>
     <style>
-        /* Base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #2196F3;
-            --accent-color: #FF9800;
-            --text-color: #333;
-            --light-text: #666;
-            --lighter-text: #999;
-            --background-color: #f9f9f9;
-            --card-color: #fff;
-            --border-color: #e0e0e0;
-            --success-color: #4CAF50;
-            --warning-color: #FFC107;
-            --danger-color: #F44336;
-        }
-        
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-        
-        /* Layout */
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .view {
-            display: none;
-            padding: 20px 0;
-            min-height: calc(100vh - 60px);
-        }
-        
-        .active {
-            display: block;
-        }
-        
-        /* Header */
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 60px;
-            padding: 0 20px;
-        }
-        
-        .logo {
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-        
-        .logo i {
-            margin-right: 10px;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        /* Button styles */
-        .btn {
-            padding: 10px 20px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #388E3C;
-        }
-        
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #1976D2;
-        }
-        
-        .btn-accent {
-            background-color: var(--accent-color);
-            color: white;
-        }
-        
-        .btn-accent:hover {
-            background-color: #F57C00;
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        /* Card styles */
-        .card {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            margin-bottom: 20px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        
-        .card-content {
-            padding: 15px;
-        }
-        
-        .card-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: var(--text-color);
-        }
-        
-        .card-text {
-            font-size: 14px;
-            color: var(--light-text);
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--lighter-text);
-        }
-        
-        /* Hero section */
-        .hero {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 50px 0;
-            text-align: center;
-            border-radius: 0 0 20px 20px;
-            margin-bottom: 30px;
-        }
-        
-        .hero h1 {
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-        
-        .hero p {
-            font-size: 16px;
-            max-width: 600px;
-            margin: 0 auto 25px;
-            opacity: 0.9;
-        }
-        
-        /* Grid layouts */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        
-        /* Upload section */
-        .upload-container {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .upload-area {
-            border: 2px dashed var(--border-color);
-            border-radius: 4px;
-            padding: 30px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .upload-area:hover {
-            border-color: var(--primary-color);
-            background-color: rgba(76, 175, 80, 0.05);
-        }
-        
-        .upload-area i {
-            font-size: 40px;
-            color: var(--light-text);
-            margin-bottom: 15px;
-        }
-        
-        .upload-text {
-            color: var(--light-text);
-        }
-        
-        /* Recipe detail */
-        .recipe-detail {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 30px;
-        }
-        
-        .recipe-header {
-            position: relative;
-            height: 250px;
-        }
-        
-        .recipe-header img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .recipe-title-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-            color: white;
-        }
-        
-        .recipe-body {
-            padding: 20px;
-        }
-        
-        .recipe-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .stat {
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: var(--light-text);
-        }
-        
-        .recipe-section {
-            margin-bottom: 20px;
-        }
-        
-        .recipe-section h3 {
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
-        
-        .ingredient-list, .step-list {
-            list-style-position: inside;
-            padding-left: 10px;
-        }
-        
-        .ingredient-list li, .step-list li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-        
-        /* Analysis result */
-        .analysis-result {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .result-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .result-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 15px;
-        }
-        
-        .result-title {
-            flex: 1;
-        }
-        
-        .result-title h3 {
-            margin-bottom: 5px;
-        }
-        
-        .result-tag {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        
-        .tag-success {
-            background-color: rgba(76, 175, 80, 0.1);
-            color: var(--success-color);
-        }
-        
-        .tag-warning {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: var(--warning-color);
-        }
-        
-        .tag-danger {
-            background-color: rgba(244, 67, 54, 0.1);
-            color: var(--danger-color);
-        }
-        
-        .result-body {
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-        }
-        
-        /* Pricing section */
-        .pricing-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin: 30px 0;
-        }
-        
-        .pricing-card {
-            background-color: var(--card-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            flex: 1 1 250px;
-            max-width: 300px;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .pricing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .pricing-header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        . pricing-name {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .pricing-price {
-            font-size: 32px;
-            font-weight: bold;
-        }
-        
-        .pricing-period {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        .pricing-features {
-            padding: 20px;
-            list-style: none;
-        }
-        
-        .pricing-features li {
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-        }
-        
-        .pricing-features li:last-child {
-            border-bottom: none;
-        }
-        
-        .pricing-features i {
-            color: var(--success-color);
-            margin-right: 8px;
-        }
-        
-        .pricing-footer {
-            padding: 0 20px 20px;
-            text-align: center;
-        }
-        
-        /* Login/Signup forms */
-        .auth-container {
-            max-width: 400px;
-            margin: 30px auto;
-            background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .auth-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        
-        .auth-form-group {
-            margin-bottom: 20px;
-        }
-        
-        .auth-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-        
-        .auth-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .auth-input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        
-        .auth-footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: var(--light-text);
-        }
-        
-        .auth-footer a {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        /* History section */
-        .history-item {
-            display: flex;
-            margin-bottom: 15px;
-            background-color: var(--card-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        
-        .history-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-        }
-        
-        .history-content {
-            padding: 15px;
-            flex: 1;
-        }
-        
-        .history-date {
-            font-size: 12px;
-            color: var(--lighter-text);
-            margin-bottom: 5px;
-        }
-        
-        .history-title {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-        
-        .history-meta {
-            display: flex;
-            font-size: 12px;
-            color: var(--light-text);
-        }
-        
-        .history-meta div {
-            margin-right: 15px;
-        }
-        
-        /* Recommendations section */
-        .recommendations {
-            margin: 30px 0;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .see-all {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        /* User info section */
-        .user-info {
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-        
-        .credits-tag {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        /* Mobile menu */
+      /* Base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      :root {
+        --primary-color: #4caf50;
+        --secondary-color: #2196f3;
+        --accent-color: #ff9800;
+        --text-color: #333;
+        --light-text: #666;
+        --lighter-text: #999;
+        --background-color: #f9f9f9;
+        --card-color: #fff;
+        --border-color: #e0e0e0;
+        --success-color: #4caf50;
+        --warning-color: #ffc107;
+        --danger-color: #f44336;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+
+      /* Layout */
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .view {
+        display: none;
+        padding: 20px 0;
+        min-height: calc(100vh - 60px);
+      }
+
+      .active {
+        display: block;
+      }
+
+      /* Header */
+      header {
+        background-color: var(--primary-color);
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 60px;
+        padding: 0 20px;
+      }
+
+      .logo {
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo i {
+        margin-right: 10px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 20px;
+      }
+
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+
+      .nav-links a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Button styles */
+      .btn {
+        padding: 10px 20px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #388e3c;
+      }
+
+      .btn-secondary {
+        background-color: var(--secondary-color);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #1976d2;
+      }
+
+      .btn-accent {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .btn-accent:hover {
+        background-color: #f57c00;
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+      }
+
+      .btn-outline:hover {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      /* Card styles */
+      .card {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+
+      .card-content {
+        padding: 15px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: var(--text-color);
+      }
+
+      .card-text {
+        font-size: 14px;
+        color: var(--light-text);
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+
+      .card-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--lighter-text);
+      }
+
+      /* Hero section */
+      .hero {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        padding: 50px 0;
+        text-align: center;
+        border-radius: 0 0 20px 20px;
+        margin-bottom: 30px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+        margin-bottom: 15px;
+      }
+
+      .hero p {
+        font-size: 16px;
+        max-width: 600px;
+        margin: 0 auto 25px;
+        opacity: 0.9;
+      }
+
+      /* Grid layouts */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      /* Upload section */
+      .upload-container {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        padding: 25px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: 4px;
+        padding: 30px;
+        margin: 20px 0;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .upload-area:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(76, 175, 80, 0.05);
+      }
+
+      .upload-area i {
+        font-size: 40px;
+        color: var(--light-text);
+        margin-bottom: 15px;
+      }
+
+      .upload-text {
+        color: var(--light-text);
+      }
+
+      /* Recipe detail */
+      .recipe-detail {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 30px;
+      }
+
+      .recipe-header {
+        position: relative;
+        height: 250px;
+      }
+
+      .recipe-header img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .recipe-title-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        color: white;
+      }
+
+      .recipe-body {
+        padding: 20px;
+      }
+
+      .recipe-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--primary-color);
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--light-text);
+      }
+
+      .recipe-section {
+        margin-bottom: 20px;
+      }
+
+      .recipe-section h3 {
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+
+      .ingredient-list,
+      .step-list {
+        list-style-position: inside;
+        padding-left: 10px;
+      }
+
+      .ingredient-list li,
+      .step-list li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+      }
+
+      /* Analysis result */
+      .analysis-result {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .result-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .result-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 15px;
+      }
+
+      .result-title {
+        flex: 1;
+      }
+
+      .result-title h3 {
+        margin-bottom: 5px;
+      }
+
+      .result-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .tag-success {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: var(--success-color);
+      }
+
+      .tag-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: var(--warning-color);
+      }
+
+      .tag-danger {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: var(--danger-color);
+      }
+
+      .result-body {
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* Pricing section */
+      .pricing-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin: 30px 0;
+      }
+
+      .pricing-card {
+        background-color: var(--card-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        flex: 1 1 250px;
+        max-width: 300px;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .pricing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .pricing-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      . pricing-name {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .pricing-price {
+        font-size: 32px;
+        font-weight: bold;
+      }
+
+      .pricing-period {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      .pricing-features {
+        padding: 20px;
+        list-style: none;
+      }
+
+      .pricing-features li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+      }
+
+      .pricing-features li:last-child {
+        border-bottom: none;
+      }
+
+      .pricing-features i {
+        color: var(--success-color);
+        margin-right: 8px;
+      }
+
+      .pricing-footer {
+        padding: 0 20px 20px;
+        text-align: center;
+      }
+
+      /* Login/Signup forms */
+      .auth-container {
+        max-width: 400px;
+        margin: 30px auto;
+        background-color: var(--card-color);
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .auth-header {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .auth-form-group {
+        margin-bottom: 20px;
+      }
+
+      .auth-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .auth-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      .auth-input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+      }
+
+      .auth-footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: var(--light-text);
+      }
+
+      .auth-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      /* History section */
+      .history-item {
+        display: flex;
+        margin-bottom: 15px;
+        background-color: var(--card-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .history-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+      }
+
+      .history-content {
+        padding: 15px;
+        flex: 1;
+      }
+
+      .history-date {
+        font-size: 12px;
+        color: var(--lighter-text);
+        margin-bottom: 5px;
+      }
+
+      .history-title {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+
+      .history-meta {
+        display: flex;
+        font-size: 12px;
+        color: var(--light-text);
+      }
+
+      .history-meta div {
+        margin-right: 15px;
+      }
+
+      /* Recommendations section */
+      .recommendations {
+        margin: 30px 0;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .see-all {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      /* User info section */
+      .user-info {
+        display: none;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      .credits-tag {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Mobile menu */
+      .menu-toggle {
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 30px;
+        height: 21px;
+        cursor: pointer;
+      }
+
+      .menu-toggle span {
+        height: 3px;
+        width: 100%;
+        background-color: white;
+        border-radius: 3px;
+      }
+
+      /* Footer */
+      footer {
+        background-color: #333;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 30px 0;
+        margin-top: auto;
+      }
+
+      .footer-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 30px;
+      }
+
+      .footer-section {
+        flex: 1 1 200px;
+      }
+
+      .footer-title {
+        color: white;
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
+
+      .footer-links {
+        list-style: none;
+      }
+
+      .footer-links li {
+        margin-bottom: 8px;
+      }
+
+      .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-links a:hover {
+        color: white;
+      }
+
+      .copyright {
+        text-align: center;
+        padding-top: 20px;
+        margin-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 14px;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
         .menu-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 21px;
-            cursor: pointer;
+          display: flex;
         }
-        
-        .menu-toggle span {
-            height: 3px;
-            width: 100%;
-            background-color: white;
-            border-radius: 3px;
+
+        .nav-links {
+          position: absolute;
+          top: 60px;
+          left: 0;
+          right: 0;
+          background-color: var(--primary-color);
+          flex-direction: column;
+          padding: 20px;
+          gap: 15px;
+          display: none;
         }
-        
-        /* Footer */
-        footer {
-            background-color: #333;
-            color: rgba(255, 255, 255, 0.7);
-            padding: 30px 0;
-            margin-top: auto;
+
+        .nav-links.show {
+          display: flex;
         }
-        
-        .footer-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
+
+        .hero h1 {
+          font-size: 24px;
         }
-        
-        .footer-section {
-            flex: 1 1 200px;
+
+        .hero p {
+          font-size: 14px;
         }
-        
-        .footer-title {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 16px;
+
+        .pricing-container {
+          flex-direction: column;
+          align-items: center;
         }
-        
-        .footer-links {
-            list-style: none;
+
+        .pricing-card {
+          width: 100%;
+          max-width: none;
         }
-        
-        .footer-links li {
-            margin-bottom: 8px;
+
+        .history-image {
+          width: 80px;
+          height: 80px;
         }
-        
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: color 0.3s;
+      }
+
+      /* Animation keyframes */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
-        
-        .footer-links a:hover {
-            color: white;
+        to {
+          opacity: 1;
         }
-        
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            margin-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 14px;
-        }
-        
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: flex;
-            }
-            
-            .nav-links {
-                position: absolute;
-                top: 60px;
-                left: 0;
-                right: 0;
-                background-color: var(--primary-color);
-                flex-direction: column;
-                padding: 20px;
-                gap: 15px;
-                display: none;
-            }
-            
-            .nav-links.show {
-                display: flex;
-            }
-            
-            .hero h1 {
-                font-size: 24px;
-            }
-            
-            .hero p {
-                font-size: 14px;
-            }
-            
-            .pricing-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .pricing-card {
-                width: 100%;
-                max-width: none;
-            }
-            
-            .history-image {
-                width: 80px;
-                height: 80px;
-            }
-        }
-        
-        /* Animation keyframes */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
     </style>
     <!-- Font Awesome CDN for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <!-- Header -->
     <header>
-        <div class="header-container">
-            <div class="logo">
-                <i class="fas fa-leaf"></i> Healthy Diet Advisor
-            </div>
-            
-            <div class="menu-toggle" id="menuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            
-            <div class="nav-links" id="navLinks">
-                <a href="#" class="nav-home">Home</a>
-                <a href="#" class="nav-pricing">Pricing</a>
-                <a href="#" class="nav-history">History</a>
-                <a href="#" class="nav-login" id="loginBtn">Login/Signup</a>
-            </div>
-            
-            <div class="user-info" id="userInfo">
-                <div class="user-avatar">U</div>
-                <div class="credits-tag">
-                    <i class="fas fa-star"></i>
-                    <span id="userCredits">0</span> Credits
-                </div>
-            </div>
+      <div class="header-container">
+        <div class="logo"><i class="fas fa-leaf"></i> Healthy Diet Advisor</div>
+
+        <div class="menu-toggle" id="menuToggle">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
+
+        <div class="nav-links" id="navLinks">
+          <a href="#" class="nav-home">Home</a>
+          <a href="#" class="nav-pricing">Pricing</a>
+          <a href="#" class="nav-history">History</a>
+          <a href="#" class="nav-login" id="loginBtn">Login/Signup</a>
+        </div>
+
+        <div class="user-info" id="userInfo">
+          <div class="user-avatar">U</div>
+          <div class="credits-tag">
+            <i class="fas fa-star"></i>
+            <span id="userCredits">0</span> Credits
+          </div>
+        </div>
+      </div>
     </header>
-    
+
     <!-- Main Content -->
     <main>
-        <!-- Home View -->
-        <div class="view active" id="homeView">
-            <div class="hero">
-                <div class="container">
-                    <h1>Discover Smart Choices for Healthy Eating</h1>
-                    <p>Upload food pictures to get professional nutritional analysis, helping you manage weight easily and enjoy a healthy lifestyle.</p>
-                    <button class="btn btn-accent" id="uploadBtn">
-                        <i class="fas fa-upload"></i> Upload Food Picture
-                    </button>
-                </div>
-            </div>
-            
-            <div class="container">
-                <div class="upload-container">
-                    <h2>Analyze Your Food</h2>
-                    <p>Upload food pictures to get calorie information and health advice</p>
-                    
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p class="upload-text">Click or drag and drop image here</p>
-                        <input type="file" id="foodImageInput" style="display: none" accept="image/*">
-                    </div>
-                    
-                    <button class="btn btn-primary" id="analyzeBtn" disabled>
-                        <i class="fas fa-search"></i> Analyze Food
-                    </button>
-                </div>
-                
-                <div class="recommendations">
-                    <div class="section-header">
-                        <h2 class="section-title">Today's Recommended Recipes</h2>
-                        <a href="#" class="see-all">See All</a>
-                    </div>
-                    
-                    <div class="grid">
-                        <div class="card recipe-card" data-id="1">
-                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c" alt="Healthy Salad" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">Rainbow Vegetable Salad</h3>
-                                <p class="card-text">Fresh vegetables mixed with low-fat dressing, rich in vitamins and fiber, highly satiating.</p>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-fire"></i> 180 Calories</span>
-                                    <span><i class="fasNSFW"></i> 15 Minutes</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card recipe-card" data-id="2">
-                            <img src="https://images.unsplash.com/photo-1484723091739-30a097e8f929" alt="Protein Bowl" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">High Protein Energy Bowl</h3>
-                                <p class="card-text">The perfect combination of quinoa, chicken breast, and avocado, promoting muscle recovery and growth.</p>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-fire"></i> 320 Calories</span>
-                                    <span><i class="fas fa-clock"></i> 20 Minutes</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card recipe-card" data-id="3">
-                            <img src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd" alt="Smoothie Bowl" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">Berry Chia Seed Smoothie Bowl</h3>
-                                <p class="card-text">Antioxidant-rich berries and chia seeds provide lasting energy, ideal pre-workout meal.</p>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-fire"></i> 250 Calories</span>
-                                    <span><i class="fas fa-clock"></i> 10 Minutes</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card recipe-card" data-id="4">
-                            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" alt="Grilled Chicken" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title">Herb Grilled Chicken Breast with Roasted Vegetables</h3>
-                                <p class="card-text">Low-fat, high-protein perfect dinner choice, rich in herbal flavors.</p>
-                                <div class="card-meta">
-                                    <span><i class="fas fa-fire"></i> 280 Calories</span>
-                                    <span><i class="fas fa-clock"></i> 30 Minutes</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Home View -->
+      <div class="view active" id="homeView">
+        <div class="hero">
+          <div class="container">
+            <h1>Discover Smart Choices for Healthy Eating</h1>
+            <p>
+              Upload food pictures to get professional nutritional analysis,
+              helping you manage weight easily and enjoy a healthy lifestyle.
+            </p>
+            <button class="btn btn-accent" id="uploadBtn">
+              <i class="fas fa-upload"></i> Upload Food Picture
+            </button>
+          </div>
         </div>
-        
-        <!-- Analysis Result View -->
-        <div class="view" id="analysisView">
-            <div class="container">
-                <div class="analysis-result">
-                    <div class="result-header">
-                        <img src="" alt="Analyzed Food" class="result-image" id="analyzedFoodImage">
-                        <div class="result-title">
-                            <h3 id="analyzedFoodName">Food Name</h3>
-                            <div>
-                                <span class="result-tag tag-success" id="foodHealthTag">Healthy Choice</span>
-                                <span class="result-tag" id="foodCaloriesTag">220 Calories</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-body">
-                        <p id="foodAnalysisText">Analysis results will be displayed here...</p>
-                        
-                        <div id="recommendationsSection" style="margin-top: 20px;">
-                            <h3>Related Healthy Meal Recommendations</h3>
-                            <div class="grid" id="relatedRecipes">
-                                <!-- Related recipes will be dynamically inserted here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn btn-outline" id="backToHomeBtn">
-                        <i class="fas fa-arrow-left"></i> Back to Home
-                    </button>
-                </div>
+
+        <div class="container">
+          <div class="upload-container">
+            <h2>Analyze Your Food</h2>
+            <p>
+              Upload food pictures to get calorie information and health advice
+            </p>
+
+            <div class="upload-area" id="uploadArea">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p class="upload-text">Click or drag and drop image here</p>
+              <input
+                type="file"
+                id="foodImageInput"
+                style="display: none"
+                accept="image/*"
+              />
             </div>
-        </div>
-        
-        <!-- Recipe Detail View -->
-        <div class="view" id="recipeDetailView">
-            <div class="container">
-                <div class="recipe-detail">
-                    <div class="recipe-header">
-                        <img src="" alt="Recipe" id="recipeDetailImage">
-                        <div class="recipe-title-container">
-                            <h2 id="recipeDetailTitle">Recipe Title</h2>
-                        </div>
-                    </div>
-                    
-                    <div class="recipe-body">
-                        <div class="recipe-stats">
-                            <div class="stat">
-                                <div class="stat-value" id="recipeCalories">250</div>
-                                <div class="stat-label">Calories</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="recipeProtein">18g</div>
-                                <div class="stat-label">Protein</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="recipeCarbs">30g</div>
-                                <div class="stat-label">Carbohydrates</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="recipeFat">10g</div>
-                                <div class="stat-label">Fat</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value" id="recipeTime">25</div>
-                                <div class="stat-label">Minutes</div>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3>Health Tips</h3>
-                            <p id="recipeHealthTips">Health tips will be displayed here...</p>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3>Ingredients</h3>
-                            <ul class="ingredient-list" id="recipeIngredients">
-                                <!-- Ingredients will be dynamically inserted here -->
-                            </ul>
-                        </div>
-                        
-                        <div class="recipe-section">
-                            <h3>Steps</h3>
-                            <ol class="step-list" id="recipeSteps">
-                                <!-- Steps will be dynamically inserted here -->
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn btn-outline" id="backFromRecipeBtn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                </div>
+
+            <button class="btn btn-primary" id="analyzeBtn" disabled>
+              <i class="fas fa-search"></i> Analyze Food
+            </button>
+          </div>
+
+          <div class="recommendations">
+            <div class="section-header">
+              <h2 class="section-title">Today's Recommended Recipes</h2>
+              <a href="#" class="see-all">See All</a>
             </div>
-        </div>
-        
-        <!-- Pricing View -->
-        <div class="view" id="pricingView">
-            <div class="container">
-                <div class="hero" style="background: linear-gradient(135deg, #2196F3, #4CAF50);">
-                    <h1>Choose Your Plan</h1>
-                    <p>Unlock all features and get personalized diet recommendations to help you achieve your health goals.</p>
+
+            <div class="grid">
+              <div class="card recipe-card" data-id="1">
+                <img
+                  src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+                  alt="Healthy Salad"
+                  class="card-image"
+                />
+                <div class="card-content">
+                  <h3 class="card-title">Rainbow Vegetable Salad</h3>
+                  <p class="card-text">
+                    Fresh vegetables mixed with low-fat dressing, rich in
+                    vitamins and fiber, highly satiating.
+                  </p>
+                  <div class="card-meta">
+                    <span><i class="fas fa-fire"></i> 180 Calories</span>
+                    <span><i class="fasNSFW"></i> 15 Minutes</span>
+                  </div>
                 </div>
-                
-                <div class="pricing-container">
-                    <div class="pricing-card">
-                        <div class="pricing-header" style="background-color: #FF9800;">
-                            <div class="pricing-name">Basic Plan</div>
-                            <div class="pricing-price">$0.99</div>
-                            <div class="pricing-period">3 Uses</div>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><i class="fas fa-check"></i> Food Analysis</li>
-                            <li><i class="fas fa-check"></i> Calorie Calculation</li>
-                            <li><i class="fas fa-check"></i> Health Advice</li>
-                            <li><i class="fas fa-check"></i> Recipe Recommendations</li>
-                        </ul>
-                        <div class="pricing-footer">
-                            <button class="btn btn-outline buy-credits" data-plan="basic">Buy</button>
-                        </div>
-                    </div>
-                    
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <div class="pricing-name">Value Plan</div>
-                            <div class="pricing-price">$1.99</div>
-                            <div class="pricing-period">8 Uses</div>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><i class="fas fa-check"></i> Food Analysis</li>
-                            <li><i class="fas fa-check"></i> Calorie Calculation</li>
-                            <li><i class="fas fa-check"></i> Health Advice</li>
-                            <li><i class="fas fa-check"></i> Recipe Recommendations</li>
-                            <li><i class="fas fa-check"></i> History</li>
-                        </ul>
-                        <div class="pricing-footer">
-                            <button class="btn btn-outline buy-credits" data-plan="value">Buy</button>
-                        </div>
-                    </div>
-                    
-                    <div class="pricing-card">
-                        <div class="pricing-header" style="background-color: #2196F3;">
-                            <div class="pricing-name">Monthly Subscription</div>
-                            <div class="pricing-price">$3.99</div>
-                            <div class="pricing-period">Monthly / 30 Uses</div>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><i class="fas fa-check"></i> Food Analysis</li>
-                            <li><i class="fas fa-check"></i> Calorie Calculation</li>
-                            <li><i class="fas fa-check"></i> Health Advice</li>
-                            <li><i class="fas fa-check"></i> Recipe Recommendations</li>
-                            <li><i class="fas fa-check"></i> History</li>
-                            <li><i class="fas fa-check"></i> Priority Analysis</li>
-                        </ul>
-                        <div class="pricing-footer">
-                            <button class="btn btn-outline buy-credits" data-plan="monthly">Subscribe</button>
-                        </div>
-                    </div>
-                    
-                    <div class="pricing-card">
-                        <div class="pricing-header" style="background-color: #9C27B0;">
-                            <div class="pricing-name">Annual Subscription</div>
-                            <div class="pricing-price">$39.99</div>
-                            <div class="pricing-period">Yearly / 500 Uses</div>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><i class="fas fa-check"></i> Food Analysis</li>
-                            <li><i class="fas fa-check"></i> Calorie Calculation</li>
-                            <li><i class="fas fa-check"></i> Health Advice</li>
-                            <li><i class="fas fa-check"></i> Recipe Recommendations</li>
-                            <li><i class="fas fa-check"></i> History</li>
-                            <li><i class="fas fa-check"></i> Priority Analysis</li>
-                            <li><i class="fas fa-check"></i> Premium Recipes</li>
-                            <li><i class="fas fa-check"></i> Personalized Diet Plan</li>
-                        </ul>
-                        <div class="pricing-footer">
-                            <button class="btn btn-outline buy-credits" data-plan="yearly">Subscribe</button>
-                        </div>
-                    </div>
+              </div>
+
+              <div class="card recipe-card" data-id="2">
+                <img
+                  src="https://images.unsplash.com/photo-1484723091739-30a097e8f929"
+                  alt="Protein Bowl"
+                  class="card-image"
+                />
+                <div class="card-content">
+                  <h3 class="card-title">High Protein Energy Bowl</h3>
+                  <p class="card-text">
+                    The perfect combination of quinoa, chicken breast, and
+                    avocado, promoting muscle recovery and growth.
+                  </p>
+                  <div class="card-meta">
+                    <span><i class="fas fa-fire"></i> 320 Calories</span>
+                    <span><i class="fas fa-clock"></i> 20 Minutes</span>
+                  </div>
                 </div>
+              </div>
+
+              <div class="card recipe-card" data-id="3">
+                <img
+                  src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd"
+                  alt="Smoothie Bowl"
+                  class="card-image"
+                />
+                <div class="card-content">
+                  <h3 class="card-title">Berry Chia Seed Smoothie Bowl</h3>
+                  <p class="card-text">
+                    Antioxidant-rich berries and chia seeds provide lasting
+                    energy, ideal pre-workout meal.
+                  </p>
+                  <div class="card-meta">
+                    <span><i class="fas fa-fire"></i> 250 Calories</span>
+                    <span><i class="fas fa-clock"></i> 10 Minutes</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card recipe-card" data-id="4">
+                <img
+                  src="https://images.unsplash.com/photo-1504674900247-0877df9cc836"
+                  alt="Grilled Chicken"
+                  class="card-image"
+                />
+                <div class="card-content">
+                  <h3 class="card-title">
+                    Herb Grilled Chicken Breast with Roasted Vegetables
+                  </h3>
+                  <p class="card-text">
+                    Low-fat, high-protein perfect dinner choice, rich in herbal
+                    flavors.
+                  </p>
+                  <div class="card-meta">
+                    <span><i class="fas fa-fire"></i> 280 Calories</span>
+                    <span><i class="fas fa-clock"></i> 30 Minutes</span>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-        
-        <!-- History View -->
-        <div class="view" id="historyView">
-            <div class="container">
-                <div class="hero" style="background: linear-gradient(135deg, #9C27B0, #2196F3);">
-                    <h1>Your History</h1>
-                    <p>Review and revisit previously analyzed foods and browsed recipes.</p>
+      </div>
+
+      <!-- Analysis Result View -->
+      <div class="view" id="analysisView">
+        <div class="container">
+          <div class="analysis-result">
+            <div class="result-header">
+              <img
+                src=""
+                alt="Analyzed Food"
+                class="result-image"
+                id="analyzedFoodImage"
+              />
+              <div class="result-title">
+                <h3 id="analyzedFoodName">Food Name</h3>
+                <div>
+                  <span class="result-tag tag-success" id="foodHealthTag"
+                    >Healthy Choice</span
+                  >
+                  <span class="result-tag" id="foodCaloriesTag"
+                    >220 Calories</span
+                  >
                 </div>
-                
-                <div id="loginPrompt" style="text-align: center; margin: 50px 0; display: none;">
-                    <i class="fas fa-lock" style="font-size: 48px; color: var(--light-text); margin-bottom: 15px;"></i>
-                    <h2>Please Login to View Your History</h2>
-                    <p style="margin-bottom: 20px;">Login to view all your analysis records and browsed recipes</p>
-                    <button class="btn btn-primary" id="historyLoginBtn">Login / Signup</button>
-                </div>
-                
-                <div id="historyContent">
-                    <div class="section-header">
-                        <h2 class="section-title">Recent Analysis</h2>
-                    </div>
-                    
-                    <div id="analysisHistory">
-                        <!-- Example history items -->
-                        <div class="history-item">
-                            <img src="https://images.unsplash.com/photo-1565299543923-37dd37887442" alt="Apple" class="history-image">
-                            <div class="history-content">
-                                <div class="history-date">2023-06-15 14:30</div>
-                                <h3 class="history-title">Red Apple</h3>
-                                <div class="history-meta">
-                                    <div><i class="fas fa-fire"></i> 95 Calories</div>
-                                    <div><i class="fas fa-check-circle" style="color: var(--success-color);"></i> Healthy Choice</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd" alt="Burger" class="history-image">
-                            <div class="history-content">
-                                <div class="history-date">2023-06-14 18:45</div>
-                                <h3 class="history-title">Cheeseburger</h3>
-                                <div class="history-meta">
-                                    <div><i class="fas fa-fire"></i> 450 Calories</div>
-                                    <div><i class="fas fa-exclamation-circle" style="color: var(--warning-color);"></i> Occasional Treat</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-header" style="margin-top: 30px;">
-                        <h2 class="section-title">Browsed Recipes</h2>
-                    </div>
-                    
-                    <div id="recipeHistory">
-                        <!-- Example recipe history items -->
-                        <div class="history-item recipe-card" data-id="1">
-                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c" alt="Salad" class="history-image">
-                            <div class="history-content">
-                                <div class="history-date">2023-06-15 15:10</div>
-                                <h3 class="history-title">Rainbow Vegetable Salad</h3>
-                                <div class="history-meta">
-                                    <div><i class="fas fa-fire"></i> 180 Calories</div>
-                                    <div><i class="fas fa-clock"></i> 15 Minutes</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="history-item recipe-card" data-id="3">
-                            <img src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd" alt="Smoothie Bowl" class="history-image">
-                            <div class="history-content">
-                                <div class="history-date">2023-06-14 09:20</div>
-                                <h3 class="history-title">Berry Chia Seed Smoothie Bowl</h3>
-                                <div class="history-meta">
-                                    <div><i class="fas fa-fire"></i> 250 Calories</div>
-                                    <div><i class="fas fa-clock"></i> 10 Minutes</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </div>
-        
-        <!-- Login/Signup View -->
-        <div class="view" id="authView">
-            <div class="container">
-                <div class="auth-container fade-in" id="loginForm">
-                    <div class="auth-header">
-                        <h2>Login</h2>
-                        <p>Login to your account to access more features</p>
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label for="loginEmail" class="auth-label">Email</label>
-                        <input type="email" id="loginEmail" class="auth-input" placeholder="Enter your email">
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label for="loginPassword" class="auth-label">Password</label>
-                        <input type="password" id="loginPassword" class="auth-input" placeholder="Enter your password">
-                    </div>
-                    
-                    <button class="btn btn-primary" style="width: 100%;" id="doLoginBtn">Login</button>
-                    
-                    <div class="auth-footer">
-                        Don't have an account? <a href="#" id="showSignupBtn">Sign up</a>
-                    </div>
+
+            <div class="result-body">
+              <p id="foodAnalysisText">
+                Analysis results will be displayed here...
+              </p>
+
+              <div id="recommendationsSection" style="margin-top: 20px">
+                <h3>Related Healthy Meal Recommendations</h3>
+                <div class="grid" id="relatedRecipes">
+                  <!-- Related recipes will be dynamically inserted here -->
                 </div>
-                
-                <div class="auth-container fade-in" id="signupForm" style="display: none;">
-                    <div class="auth-header">
-                        <h2>Sign Up</h2>
-                        <p>Create a new account to start your healthy eating journey</p>
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label for="signupName" class="auth-label">Name</label>
-                        <input type="text" id="signupName" class="auth-input" placeholder="Enter your name">
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label for="signupEmail" class="auth-label">Email</label>
-                        <input type="email" id="signupEmail" class="auth-input" placeholder="Enter your email">
-                    </div>
-                    
-                    <div class="auth-form-group">
-                        <label for="signupPassword" class="auth-label">Password</label>
-                        <input type="password" id="signupPassword" class="auth-input" placeholder="Create a password">
-                    </div>
-                    
-                    <button class="btn btn-primary" style="width: 100%;" id="doSignupBtn">Sign Up</button>
-                    
-                    <div class="auth-footer">
-                        Already have an account? <a href="#" id="showLoginBtn">Login</a>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px">
+            <button class="btn btn-outline" id="backToHomeBtn">
+              <i class="fas fa-arrow-left"></i> Back to Home
+            </button>
+          </div>
         </div>
+      </div>
+
+      <!-- Recipe Detail View -->
+      <div class="view" id="recipeDetailView">
+        <div class="container">
+          <div class="recipe-detail">
+            <div class="recipe-header">
+              <img src="" alt="Recipe" id="recipeDetailImage" />
+              <div class="recipe-title-container">
+                <h2 id="recipeDetailTitle">Recipe Title</h2>
+              </div>
+            </div>
+
+            <div class="recipe-body">
+              <div class="recipe-stats">
+                <div class="stat">
+                  <div class="stat-value" id="recipeCalories">250</div>
+                  <div class="stat-label">Calories</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="recipeProtein">18g</div>
+                  <div class="stat-label">Protein</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="recipeCarbs">30g</div>
+                  <div class="stat-label">Carbohydrates</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="recipeFat">10g</div>
+                  <div class="stat-label">Fat</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="recipeTime">25</div>
+                  <div class="stat-label">Minutes</div>
+                </div>
+              </div>
+
+              <div class="recipe-section">
+                <h3>Health Tips</h3>
+                <p id="recipeHealthTips">
+                  Health tips will be displayed here...
+                </p>
+              </div>
+
+              <div class="recipe-section">
+                <h3>Ingredients</h3>
+                <ul class="ingredient-list" id="recipeIngredients">
+                  <!-- Ingredients will be dynamically inserted here -->
+                </ul>
+              </div>
+
+              <div class="recipe-section">
+                <h3>Steps</h3>
+                <ol class="step-list" id="recipeSteps">
+                  <!-- Steps will be dynamically inserted here -->
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px">
+            <button class="btn btn-outline" id="backFromRecipeBtn">
+              <i class="fas fa-arrow-left"></i> Back
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing View -->
+      <div class="view" id="pricingView">
+        <div class="container">
+          <div
+            class="hero"
+            style="background: linear-gradient(135deg, #2196f3, #4caf50)"
+          >
+            <h1>Choose Your Plan</h1>
+            <p>
+              Unlock all features and get personalized diet recommendations to
+              help you achieve your health goals.
+            </p>
+          </div>
+
+          <div class="pricing-container">
+            <div class="pricing-card">
+              <div class="pricing-header" style="background-color: #ff9800">
+                <div class="pricing-name">Basic Plan</div>
+                <div class="pricing-price">$0.99</div>
+                <div class="pricing-period">3 Uses</div>
+              </div>
+              <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Food Analysis</li>
+                <li><i class="fas fa-check"></i> Calorie Calculation</li>
+                <li><i class="fas fa-check"></i> Health Advice</li>
+                <li><i class="fas fa-check"></i> Recipe Recommendations</li>
+              </ul>
+              <div class="pricing-footer">
+                <button class="btn btn-outline buy-credits" data-plan="basic">
+                  Buy
+                </button>
+              </div>
+            </div>
+
+            <div class="pricing-card">
+              <div class="pricing-header">
+                <div class="pricing-name">Value Plan</div>
+                <div class="pricing-price">$1.99</div>
+                <div class="pricing-period">8 Uses</div>
+              </div>
+              <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Food Analysis</li>
+                <li><i class="fas fa-check"></i> Calorie Calculation</li>
+                <li><i class="fas fa-check"></i> Health Advice</li>
+                <li><i class="fas fa-check"></i> Recipe Recommendations</li>
+                <li><i class="fas fa-check"></i> History</li>
+              </ul>
+              <div class="pricing-footer">
+                <button class="btn btn-outline buy-credits" data-plan="value">
+                  Buy
+                </button>
+              </div>
+            </div>
+
+            <div class="pricing-card">
+              <div class="pricing-header" style="background-color: #2196f3">
+                <div class="pricing-name">Monthly Subscription</div>
+                <div class="pricing-price">$3.99</div>
+                <div class="pricing-period">Monthly / 30 Uses</div>
+              </div>
+              <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Food Analysis</li>
+                <li><i class="fas fa-check"></i> Calorie Calculation</li>
+                <li><i class="fas fa-check"></i> Health Advice</li>
+                <li><i class="fas fa-check"></i> Recipe Recommendations</li>
+                <li><i class="fas fa-check"></i> History</li>
+                <li><i class="fas fa-check"></i> Priority Analysis</li>
+              </ul>
+              <div class="pricing-footer">
+                <button class="btn btn-outline buy-credits" data-plan="monthly">
+                  Subscribe
+                </button>
+              </div>
+            </div>
+
+            <div class="pricing-card">
+              <div class="pricing-header" style="background-color: #9c27b0">
+                <div class="pricing-name">Annual Subscription</div>
+                <div class="pricing-price">$39.99</div>
+                <div class="pricing-period">Yearly / 500 Uses</div>
+              </div>
+              <ul class="pricing-features">
+                <li><i class="fas fa-check"></i> Food Analysis</li>
+                <li><i class="fas fa-check"></i> Calorie Calculation</li>
+                <li><i class="fas fa-check"></i> Health Advice</li>
+                <li><i class="fas fa-check"></i> Recipe Recommendations</li>
+                <li><i class="fas fa-check"></i> History</li>
+                <li><i class="fas fa-check"></i> Priority Analysis</li>
+                <li><i class="fas fa-check"></i> Premium Recipes</li>
+                <li><i class="fas fa-check"></i> Personalized Diet Plan</li>
+              </ul>
+              <div class="pricing-footer">
+                <button class="btn btn-outline buy-credits" data-plan="yearly">
+                  Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History View -->
+      <div class="view" id="historyView">
+        <div class="container">
+          <div
+            class="hero"
+            style="background: linear-gradient(135deg, #9c27b0, #2196f3)"
+          >
+            <h1>Your History</h1>
+            <p>
+              Review and revisit previously analyzed foods and browsed recipes.
+            </p>
+          </div>
+
+          <div
+            id="loginPrompt"
+            style="text-align: center; margin: 50px 0; display: none"
+          >
+            <i
+              class="fas fa-lock"
+              style="
+                font-size: 48px;
+                color: var(--light-text);
+                margin-bottom: 15px;
+              "
+            ></i>
+            <h2>Please Login to View Your History</h2>
+            <p style="margin-bottom: 20px">
+              Login to view all your analysis records and browsed recipes
+            </p>
+            <button class="btn btn-primary" id="historyLoginBtn">
+              Login / Signup
+            </button>
+          </div>
+
+          <div id="historyContent">
+            <div class="section-header">
+              <h2 class="section-title">Recent Analysis</h2>
+            </div>
+
+            <div id="analysisHistory">
+              <!-- Example history items -->
+              <div class="history-item">
+                <img
+                  src="https://images.unsplash.com/photo-1565299543923-37dd37887442"
+                  alt="Apple"
+                  class="history-image"
+                />
+                <div class="history-content">
+                  <div class="history-date">2023-06-15 14:30</div>
+                  <h3 class="history-title">Red Apple</h3>
+                  <div class="history-meta">
+                    <div><i class="fas fa-fire"></i> 95 Calories</div>
+                    <div>
+                      <i
+                        class="fas fa-check-circle"
+                        style="color: var(--success-color)"
+                      ></i>
+                      Healthy Choice
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="history-item">
+                <img
+                  src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd"
+                  alt="Burger"
+                  class="history-image"
+                />
+                <div class="history-content">
+                  <div class="history-date">2023-06-14 18:45</div>
+                  <h3 class="history-title">Cheeseburger</h3>
+                  <div class="history-meta">
+                    <div><i class="fas fa-fire"></i> 450 Calories</div>
+                    <div>
+                      <i
+                        class="fas fa-exclamation-circle"
+                        style="color: var(--warning-color)"
+                      ></i>
+                      Occasional Treat
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-header" style="margin-top: 30px">
+              <h2 class="section-title">Browsed Recipes</h2>
+            </div>
+
+            <div id="recipeHistory">
+              <!-- Example recipe history items -->
+              <div class="history-item recipe-card" data-id="1">
+                <img
+                  src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+                  alt="Salad"
+                  class="history-image"
+                />
+                <div class="history-content">
+                  <div class="history-date">2023-06-15 15:10</div>
+                  <h3 class="history-title">Rainbow Vegetable Salad</h3>
+                  <div class="history-meta">
+                    <div><i class="fas fa-fire"></i> 180 Calories</div>
+                    <div><i class="fas fa-clock"></i> 15 Minutes</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="history-item recipe-card" data-id="3">
+                <img
+                  src="https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd"
+                  alt="Smoothie Bowl"
+                  class="history-image"
+                />
+                <div class="history-content">
+                  <div class="history-date">2023-06-14 09:20</div>
+                  <h3 class="history-title">Berry Chia Seed Smoothie Bowl</h3>
+                  <div class="history-meta">
+                    <div><i class="fas fa-fire"></i> 250 Calories</div>
+                    <div><i class="fas fa-clock"></i> 10 Minutes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login/Signup View -->
+      <div class="view" id="authView">
+        <div class="container">
+          <div class="auth-container fade-in" id="loginForm">
+            <div class="auth-header">
+              <h2>Login</h2>
+              <p>Login to your account to access more features</p>
+            </div>
+
+            <div class="auth-form-group">
+              <label for="loginEmail" class="auth-label">Email</label>
+              <input
+                type="email"
+                id="loginEmail"
+                class="auth-input"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div class="auth-form-group">
+              <label for="loginPassword" class="auth-label">Password</label>
+              <input
+                type="password"
+                id="loginPassword"
+                class="auth-input"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%" id="doLoginBtn">
+              Login
+            </button>
+
+            <div class="auth-footer">
+              Don't have an account? <a href="#" id="showSignupBtn">Sign up</a>
+            </div>
+          </div>
+
+          <div
+            class="auth-container fade-in"
+            id="signupForm"
+            style="display: none"
+          >
+            <div class="auth-header">
+              <h2>Sign Up</h2>
+              <p>Create a new account to start your healthy eating journey</p>
+            </div>
+
+            <div class="auth-form-group">
+              <label for="signupName" class="auth-label">Name</label>
+              <input
+                type="text"
+                id="signupName"
+                class="auth-input"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div class="auth-form-group">
+              <label for="signupEmail" class="auth-label">Email</label>
+              <input
+                type="email"
+                id="signupEmail"
+                class="auth-input"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div class="auth-form-group">
+              <label for="signupPassword" class="auth-label">Password</label>
+              <input
+                type="password"
+                id="signupPassword"
+                class="auth-input"
+                placeholder="Create a password"
+              />
+            </div>
+
+            <button
+              class="btn btn-primary"
+              style="width: 100%"
+              id="doSignupBtn"
+            >
+              Sign Up
+            </button>
+
+            <div class="auth-footer">
+              Already have an account? <a href="#" id="showLoginBtn">Login</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-    
+
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="footer-container">
-                <div class="footer-section">
-                    <h3 class="footer-title">Healthy Diet Advisor</h3>
-                    <p>Your personal weight loss assistant, providing professional dietary advice and healthy recipes.</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h3 class="footer-title">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" class="nav-home">Home</a></li>
-                        <li><a href="#" class="nav-pricing">Pricing</a></li>
-                        <li><a href="#" class="nav-history">History</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3 class="footer-title">About Us</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Company Profile</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Use</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3 class="footer-title">Contact Information</h3>
-                    <ul class="footer-links">
-                        <li><i class="fas fa-envelope"></i> support@healthydiet.com</li>
-                        <li><i class="fas fa-phone"></i> +1 (123) 456-7890</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="copyright">
-                © 2023 Healthy Diet Advisor | All Rights Reserved
-            </div>
+      <div class="container">
+        <div class="footer-container">
+          <div class="footer-section">
+            <h3 class="footer-title">Healthy Diet Advisor</h3>
+            <p>
+              Your personal weight loss assistant, providing professional
+              dietary advice and healthy recipes.
+            </p>
+          </div>
+
+          <div class="footer-section">
+            <h3 class="footer-title">Quick Links</h3>
+            <ul class="footer-links">
+              <li><a href="#" class="nav-home">Home</a></li>
+              <li><a href="#" class="nav-pricing">Pricing</a></li>
+              <li><a href="#" class="nav-history">History</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3 class="footer-title">About Us</h3>
+            <ul class="footer-links">
+              <li><a href="#">Company Profile</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Use</a></li>
+              <li><a href="#">Contact Us</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3 class="footer-title">Contact Information</h3>
+            <ul class="footer-links">
+              <li><i class="fas fa-envelope"></i> support@healthydiet.com</li>
+              <li><i class="fas fa-phone"></i> +1 (123) 456-7890</li>
+            </ul>
+          </div>
         </div>
+
+        <div class="copyright">
+          © 2023 Healthy Diet Advisor | All Rights Reserved
+        </div>
+      </div>
     </footer>
-    
+
     <script>
-        // Dummy database for recipes and food analysis
-        const recipes = [
-            {
-                id: 1,
-                name: 'Rainbow Vegetable Salad',
-                image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                description: 'Fresh vegetables mixed with low-fat dressing, rich in vitamins and fiber, highly satiating.',
-                calories: 180,
-                protein: '5g',
-                carbs: '18g',
-                fat: '9g',
-                time: 15,
-                healthTips: 'This salad is rich in various vitamins and dietary fiber, making it an ideal meal choice for weight loss. The variety of vegetables provides comprehensive nutrition, meeting the body\'s needs while controlling calorie intake. It is recommended to use olive oil and lemon juice as dressing, avoiding high-calorie salad dressings.',
-                ingredients: [
-                    'Fresh lettuce 100g',
-                    'Cherry tomatoes 50g',
-                    'Cucumber half',
-                    'Red bell pepper half',
-                    'Carrot half',
-                    'Purple onion 1/4',
-                    'Avocado half',
-                    'Olive oil 1 tsp',
-                    'Lemon juice to taste',
-                    'Salt and black pepper to taste'
-                ],
-                steps: [
-                    'Wash and drain all vegetables',
-                    'Tear lettuce into small pieces, slice cucumber, carrot, and bell pepper into thin strips',
-                    'Cut tomatoes in half, slice onion thinly',
-                    'Peel and pit avocado, cut into small pieces',
-                    'Place all ingredients in a large bowl, add olive oil and lemon juice',
-                    'Sprinkle with salt and black pepper, gently toss and serve'
-                ]
-            },
-            {
-                id: 2,
-                name: 'High Protein Energy Bowl',
-                image: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929',
-                description: 'The perfect combination of quinoa, chicken breast, and avocado, promoting muscle recovery and growth.',
-                calories: 320,
-                protein: '25g',
-                carbs: '30g',
-                fat: '12g',
-                time: 20,
-                healthTips: 'This energy bowl is an ideal meal for fitness enthusiasts, high in protein to aid muscle repair and growth, with quinoa providing complex carbohydrates for sustained energy. The healthy fats in avocado aid nutrient absorption, keeping you fuller post-workout.',
-                ingredients: [
-                    'Quinoa 100g',
-                    'Chicken breast 150g',
-                    'Broccoli 50g',
-                    'Bell pepper half',
-                    'Avocado half',
-                    'Olive oil 1 tsp',
-                    'Lemon half',
-                    'Salt and black pepper to taste',
-                    'Low-sodium soy sauce 1 tsp',
-                    'Sesame seeds a pinch'
-                ],
-                steps: [
-                    'Rinse quinoa thoroughly, cook with double the volume of water',
-                    'Marinate chicken breast with salt, black pepper, and olive oil for 10 minutes',
-                    'Grill chicken in a preheated pan over medium heat until golden and fully cooked',
-                    'Cut broccoli into small florets, blanch in boiling water for 1 minute, then drain',
-                    'Spread cooked quinoa in a bowl, top with sliced chicken, broccoli, bell pepper, and avocado',
-                    'Squeeze lemon juice, drizzle with low-sodium soy sauce, sprinkle with sesame seeds and serve'
-                ]
-            },
-            {
-                id: 3,
-                name: 'Berry Chia Seed Smoothie Bowl',
-                image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd',
-                description: 'Antioxidant-rich berries and chia seeds provide lasting energy, ideal pre-workout meal.',
-                calories: 250,
-                protein: '8g',
-                carbs: '35g',
-                fat: '10g',
-                time: 10,
-                healthTips: 'This smoothie bowl is rich in antioxidants and omega-3 fatty acids, helping reduce inflammation and promote heart health. Chia seeds absorb water and expand, increasing satiety, making it an ideal choice for weight control. Great for breakfast to provide sustained energy, perfect before a workout.',
-                ingredients: [
-                    'Frozen mixed berries 100g',
-                    'Banana 1',
-                    'Greek yogurt (non-fat) 100g',
-                    'Chia seeds 1 tbsp',
-                    'Honey or maple syrup 1 tsp (optional)',
-                    'Almond milk 100ml',
-                    'Nuts or granola for topping'
-                ],
-                steps: [
-                    'Soak chia seeds in a small amount of water for 10 minutes (can be prepared overnight)',
-                    'Blend frozen berries, banana, yogurt, and almond milk in a blender',
-                    'Blend until smooth and thick',
-                    'Pour mixture into a bowl, top with soaked chia seeds',
-                    'Add honey or maple syrup to taste',
-                    'Sprinkle with nuts or granola and serve'
-                ]
-            },
-            {
-                id: 4,
-                name: 'Herb Grilled Chicken Breast with Roasted Vegetables',
-                image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
-                description: 'Low-fat, high-protein perfect dinner choice, rich in herbal flavors.',
-                calories: 280,
-                protein: '35g',
-                carbs: '15g',
-                fat: '8g',
-                time: 30,
-                healthTips: 'This dish is an ideal choice for fat loss, with high-protein, low-fat chicken breast aiding muscle maintenance and satiety. A variety of roasted vegetables provide rich vitamins and minerals, while herbs add flavor without extra calories.',
-                ingredients: [
-                    'Chicken breast 200g',
-                    'Broccoli 100g',
-                    'Carrot 1',
-                    'Red onion half',
-                    'Zucchini half',
-                    'Cherry tomatoes 100g',
-                    'Olive oil 2 tsp',
-                    'Dried thyme 1 tsp',
-                    'Dried rosemary 1 tsp',
-                    'Garlic powder 1/2 tsp',
-                    'Salt and black pepper to taste'
-                ],
-                steps: [
-                    'Preheat oven to 200°C',
-                    'Pat chicken breast dry with paper towels, poke gently with a fork',
-                    'Mix olive oil, dried herbs, garlic powder, salt, and black pepper to make a marinade',
-                    'Coat chicken breast with half the marinade, let sit for 15 minutes',
-                    'Cut vegetables into appropriate sizes, toss with remaining marinade',
-                    'Place chicken breast in the center of a baking tray, surround with marinated vegetables',
-                    'Bake in preheated oven for 20-25 minutes until chicken is fully cooked',
-                    'Let rest for 5 minutes before slicing and serving'
-                ]
-            },
-            {
-                id: 5,
-                name: 'Mediterranean Grilled Salmon with Quinoa',
-                image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2',
-                description: 'Rich in omega-3 salmon with nutrient-dense quinoa, creating a perfectly balanced meal.',
-                calories: 350,
-                protein: '28g',
-                carbs: '25g',
-                fat: '15g',
-                time: 25,
-                healthTips: 'Salmon is rich in high-quality protein and omega-3 fatty acids, helping reduce inflammation and protect heart health. Quinoa is one of the few plant-based foods containing all nine essential amino acids, providing complex carbohydrates and dietary fiber to maintain stable blood sugar levels.',
-                ingredients: [
-                    'Salmon fillet 150g',
-                    'Quinoa 100g',
-                    'Lemon 1',
-                    'Olive oil 2 tsp',
-                    'Garlic 2 cloves',
-                    'Cherry tomatoes 100g',
-                    'Cucumber half',
-                    'Red onion 1/4',
-                    'Fresh parsley a pinch',
-                    'Greek olives a few',
-                    'Salt and black pepper to taste'
-                ],
-                steps: [
-                    'Rinse quinoa thoroughly, cook with double the volume of water and a pinch of salt',
-                    'Preheat oven to 190°C',
-                    'Place salmon fillet on a baking sheet lined with parchment paper',
-                    'Sprinkle salmon with lemon slices, minced garlic, olive oil, salt, and black pepper',
-                    'Bake salmon for 12-15 minutes until cooked through',
-                    'Cut tomatoes in half, dice cucumber and onion, mix into cooked quinoa',
-                    'Add remaining olive oil, lemon juice, salt, and black pepper for seasoning',
-                    'Place salmon on quinoa salad, garnish with chopped parsley and olives, and serve'
-                ]
-            }
-        ];
-        
-        // Food analysis data
-        const foodAnalysis = {
-            'apple': {
-                name: 'Apple',
-                image: 'https://images.unsplash.com/photo-1565299543923-37dd37887442',
-                calories: 95,
-                isHealthy: true,
-                analysis: 'Apples are a low-calorie, nutrient-rich fruit, high in dietary fiber and antioxidants. A medium-sized apple contains about 95 calories, making it an ideal choice for a weight-loss diet. The soluble fiber in apples helps control blood sugar levels, increases satiety, and reduces overall calorie intake.',
-                recommendations: [1, 3, 5]
-            },
-            'burger': {
-                name: 'Burger',
-                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd',
-                calories: 450,
-                isHealthy: false,
-                analysis: 'A typical burger contains about 450 calories, with high fat and carbohydrate content, as well as high sodium levels. While it provides protein, it’s not an ideal choice for weight loss. It’s recommended to consume occasionally or opt for healthier alternatives like chicken or veggie burgers, removing sauces and cheese, and adding more vegetables.',
-                recommendations: [1, 2, 4]
-            },
-            'salad': {
-                name: 'Salad',
-                image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                calories: 180,
-                isHealthy: true,
-                analysis: 'Vegetable salads are an excellent choice for weight-loss diets, low in calories but nutrient-rich. Be mindful of salad dressings, choosing low-fat or oil-and-vinegar dressings over creamy ones. Adding small amounts of high-quality protein like chicken breast, eggs, or beans can increase satiety and help control appetite.',
-                recommendations: [1, 2, 3]
-            },
-            'pasta': {
-                name: 'Pasta',
-                image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601',
-                calories: 380,
-                isHealthy: false,
-                analysis: 'Traditional pasta is mainly composed of refined carbohydrates, with high calories, about 380 calories per serving. For weight loss, choose whole-grain pasta, control portion sizes, increase vegetable proportions, use tomato-based sauces instead of creamy ones, and add lean protein like shrimp or chicken.',
-                recommendations: [2, 4, 5]
-            },
-            'chicken': {
-                name: 'Chicken Breast',
-                image: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791',
-                calories: 165,
-                isHealthy: true,
-                analysis: 'Chicken breast is an ideal protein source for weight loss, with only about 165 calories per 100g, low in fat and high in protein. Protein helps increase satiety and maintain muscle mass, especially important during a calorie deficit. It’s recommended to grill, steam, or boil, avoiding frying.',
-                recommendations: [2, 4, 5]
-            }
-        };
-        
-        // DOM elements
-        const elements = {
-            views: {
-                home: document.getElementById('homeView'),
-                analysis: document.getElementById('analysisView'),
-                recipe: document.getElementById('recipeDetailView'),
-                pricing: document.getElementById('pricingView'),
-                history: document.getElementById('historyView'),
-                auth: document.getElementById('authView')
-            },
-            nav: {
-                home: document.querySelectorAll('.nav-home'),
-                pricing: document.querySelectorAll('.nav-pricing'),
-                history: document.querySelectorAll('.nav-history'),
-                login: document.getElementById('loginBtn'),
-                menu: document.getElementById('menuToggle'),
-                links: document.getElementById('navLinks')
-            },
-            buttons: {
-                upload: document.getElementById('uploadBtn'),
-                analyze: document.getElementById('analyzeBtn'),
-                backToHome: document.getElementById('backToHomeBtn'),
-                backFromRecipe: document.getElementById('backFromRecipeBtn'),
-                showLogin: document.getElementById('showLoginBtn'),
-                showSignup: document.getElementById('showSignupBtn'),
-                doLogin: document.getElementById('doLoginBtn'),
-                doSignup: document.getElementById('doSignupBtn'),
-                historyLogin: document.getElementById('historyLoginBtn')
-            },
-            upload: {
-                area: document.getElementById('uploadArea'),
-                input: document.getElementById('foodImageInput')
-            },
-            analysis: {
-                image: document.getElementById('analyzedFoodImage'),
-                name: document.getElementById('analyzedFoodName'),
-                healthTag: document.getElementById('foodHealthTag'),
-                caloriesTag: document.getElementById('foodCaloriesTag'),
-                text: document.getElementById('foodAnalysisText'),
-                recipes: document.getElementById('relatedRecipes')
-            },
-            recipe: {
-                image: document.getElementById('recipeDetailImage'),
-                title: document.getElementById('recipeDetailTitle'),
-                calories: document.getElementById('recipeCalories'),
-                protein: document.getElementById('recipeProtein'),
-                carbs: document.getElementById('recipeCarbs'),
-                fat: document.getElementById('recipeFat'),
-                time: document.getElementById('recipeTime'),
-                healthTips: document.getElementById('recipeHealthTips'),
-                ingredients: document.getElementById('recipeIngredients'),
-                steps: document.getElementById('recipeSteps')
-            },
-            auth: {
-                loginForm: document.getElementById('loginForm'),
-                signupForm: document.getElementById('signupForm')
-            },
-            user: {
-                info: document.getElementById('userInfo'),
-                credits: document.getElementById('userCredits'),
-                loginPrompt: document.getElementById('loginPrompt'),
-                historyContent: document.getElementById('historyContent')
-            }
-        };
-        
-        // App state
-        const state = {
-            currentView: 'home',
-            previousView: null,
-            user: null,
-            uploadedImage: null,
-            currentFood: null,
-            currentRecipe: null,
-            creditsUsed: 0,
-            maxFreeCredits: 1
-        };
-        
-        // Helper function to show a view
-        function showView(viewName) {
-            state.previousView = state.currentView;
-            state.currentView = viewName;
-            
-            // Hide all views
-            Object.values(elements.views).forEach(view => {
-                view.classList.remove('active');
-            });
-            
-            // Show selected view
-            elements.views[viewName].classList.add('active');
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
-        }
-        
-        // Initialize event listeners
-        function initEventListeners() {
-            // Navigation
-            elements.nav.home.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showView('home');
-                });
-            });
-            
-            elements.nav.pricing.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showView('pricing');
-                });
-            });
-            
-            elements.nav.history.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showView('history');
-                    updateHistoryView();
-                });
-            });
-            
-            elements.nav.login.addEventListener('click', (e) => {
-                e.preventDefault();
-                showView('auth');
-            });
-            
-            elements.nav.menu.addEventListener('click', () => {
-                elements.nav.links.classList.toggle('show');
-            });
-            
-            // Upload functionality
-            elements.buttons.upload.addEventListener('click', () => {
-                elements.upload.input.click();
-            });
-            
-            elements.upload.area.addEventListener('click', () => {
-                elements.upload.input.click();
-            });
-            
-            elements.upload.input.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        state.uploadedImage = e.target.result;
-                        // Show preview
-                        elements.upload.area.innerHTML = `
+      // Dummy database for recipes and food analysis
+      const recipes = [
+        {
+          id: 1,
+          name: "Rainbow Vegetable Salad",
+          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+          description:
+            "Fresh vegetables mixed with low-fat dressing, rich in vitamins and fiber, highly satiating.",
+          calories: 180,
+          protein: "5g",
+          carbs: "18g",
+          fat: "9g",
+          time: 15,
+          healthTips:
+            "This salad is rich in various vitamins and dietary fiber, making it an ideal meal choice for weight loss. The variety of vegetables provides comprehensive nutrition, meeting the body's needs while controlling calorie intake. It is recommended to use olive oil and lemon juice as dressing, avoiding high-calorie salad dressings.",
+          ingredients: [
+            "Fresh lettuce 100g",
+            "Cherry tomatoes 50g",
+            "Cucumber half",
+            "Red bell pepper half",
+            "Carrot half",
+            "Purple onion 1/4",
+            "Avocado half",
+            "Olive oil 1 tsp",
+            "Lemon juice to taste",
+            "Salt and black pepper to taste",
+          ],
+          steps: [
+            "Wash and drain all vegetables",
+            "Tear lettuce into small pieces, slice cucumber, carrot, and bell pepper into thin strips",
+            "Cut tomatoes in half, slice onion thinly",
+            "Peel and pit avocado, cut into small pieces",
+            "Place all ingredients in a large bowl, add olive oil and lemon juice",
+            "Sprinkle with salt and black pepper, gently toss and serve",
+          ],
+        },
+        {
+          id: 2,
+          name: "High Protein Energy Bowl",
+          image: "https://images.unsplash.com/photo-1484723091739-30a097e8f929",
+          description:
+            "The perfect combination of quinoa, chicken breast, and avocado, promoting muscle recovery and growth.",
+          calories: 320,
+          protein: "25g",
+          carbs: "30g",
+          fat: "12g",
+          time: 20,
+          healthTips:
+            "This energy bowl is an ideal meal for fitness enthusiasts, high in protein to aid muscle repair and growth, with quinoa providing complex carbohydrates for sustained energy. The healthy fats in avocado aid nutrient absorption, keeping you fuller post-workout.",
+          ingredients: [
+            "Quinoa 100g",
+            "Chicken breast 150g",
+            "Broccoli 50g",
+            "Bell pepper half",
+            "Avocado half",
+            "Olive oil 1 tsp",
+            "Lemon half",
+            "Salt and black pepper to taste",
+            "Low-sodium soy sauce 1 tsp",
+            "Sesame seeds a pinch",
+          ],
+          steps: [
+            "Rinse quinoa thoroughly, cook with double the volume of water",
+            "Marinate chicken breast with salt, black pepper, and olive oil for 10 minutes",
+            "Grill chicken in a preheated pan over medium heat until golden and fully cooked",
+            "Cut broccoli into small florets, blanch in boiling water for 1 minute, then drain",
+            "Spread cooked quinoa in a bowl, top with sliced chicken, broccoli, bell pepper, and avocado",
+            "Squeeze lemon juice, drizzle with low-sodium soy sauce, sprinkle with sesame seeds and serve",
+          ],
+        },
+        {
+          id: 3,
+          name: "Berry Chia Seed Smoothie Bowl",
+          image: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd",
+          description:
+            "Antioxidant-rich berries and chia seeds provide lasting energy, ideal pre-workout meal.",
+          calories: 250,
+          protein: "8g",
+          carbs: "35g",
+          fat: "10g",
+          time: 10,
+          healthTips:
+            "This smoothie bowl is rich in antioxidants and omega-3 fatty acids, helping reduce inflammation and promote heart health. Chia seeds absorb water and expand, increasing satiety, making it an ideal choice for weight control. Great for breakfast to provide sustained energy, perfect before a workout.",
+          ingredients: [
+            "Frozen mixed berries 100g",
+            "Banana 1",
+            "Greek yogurt (non-fat) 100g",
+            "Chia seeds 1 tbsp",
+            "Honey or maple syrup 1 tsp (optional)",
+            "Almond milk 100ml",
+            "Nuts or granola for topping",
+          ],
+          steps: [
+            "Soak chia seeds in a small amount of water for 10 minutes (can be prepared overnight)",
+            "Blend frozen berries, banana, yogurt, and almond milk in a blender",
+            "Blend until smooth and thick",
+            "Pour mixture into a bowl, top with soaked chia seeds",
+            "Add honey or maple syrup to taste",
+            "Sprinkle with nuts or granola and serve",
+          ],
+        },
+        {
+          id: 4,
+          name: "Herb Grilled Chicken Breast with Roasted Vegetables",
+          image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+          description:
+            "Low-fat, high-protein perfect dinner choice, rich in herbal flavors.",
+          calories: 280,
+          protein: "35g",
+          carbs: "15g",
+          fat: "8g",
+          time: 30,
+          healthTips:
+            "This dish is an ideal choice for fat loss, with high-protein, low-fat chicken breast aiding muscle maintenance and satiety. A variety of roasted vegetables provide rich vitamins and minerals, while herbs add flavor without extra calories.",
+          ingredients: [
+            "Chicken breast 200g",
+            "Broccoli 100g",
+            "Carrot 1",
+            "Red onion half",
+            "Zucchini half",
+            "Cherry tomatoes 100g",
+            "Olive oil 2 tsp",
+            "Dried thyme 1 tsp",
+            "Dried rosemary 1 tsp",
+            "Garlic powder 1/2 tsp",
+            "Salt and black pepper to taste",
+          ],
+          steps: [
+            "Preheat oven to 200°C",
+            "Pat chicken breast dry with paper towels, poke gently with a fork",
+            "Mix olive oil, dried herbs, garlic powder, salt, and black pepper to make a marinade",
+            "Coat chicken breast with half the marinade, let sit for 15 minutes",
+            "Cut vegetables into appropriate sizes, toss with remaining marinade",
+            "Place chicken breast in the center of a baking tray, surround with marinated vegetables",
+            "Bake in preheated oven for 20-25 minutes until chicken is fully cooked",
+            "Let rest for 5 minutes before slicing and serving",
+          ],
+        },
+        {
+          id: 5,
+          name: "Mediterranean Grilled Salmon with Quinoa",
+          image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2",
+          description:
+            "Rich in omega-3 salmon with nutrient-dense quinoa, creating a perfectly balanced meal.",
+          calories: 350,
+          protein: "28g",
+          carbs: "25g",
+          fat: "15g",
+          time: 25,
+          healthTips:
+            "Salmon is rich in high-quality protein and omega-3 fatty acids, helping reduce inflammation and protect heart health. Quinoa is one of the few plant-based foods containing all nine essential amino acids, providing complex carbohydrates and dietary fiber to maintain stable blood sugar levels.",
+          ingredients: [
+            "Salmon fillet 150g",
+            "Quinoa 100g",
+            "Lemon 1",
+            "Olive oil 2 tsp",
+            "Garlic 2 cloves",
+            "Cherry tomatoes 100g",
+            "Cucumber half",
+            "Red onion 1/4",
+            "Fresh parsley a pinch",
+            "Greek olives a few",
+            "Salt and black pepper to taste",
+          ],
+          steps: [
+            "Rinse quinoa thoroughly, cook with double the volume of water and a pinch of salt",
+            "Preheat oven to 190°C",
+            "Place salmon fillet on a baking sheet lined with parchment paper",
+            "Sprinkle salmon with lemon slices, minced garlic, olive oil, salt, and black pepper",
+            "Bake salmon for 12-15 minutes until cooked through",
+            "Cut tomatoes in half, dice cucumber and onion, mix into cooked quinoa",
+            "Add remaining olive oil, lemon juice, salt, and black pepper for seasoning",
+            "Place salmon on quinoa salad, garnish with chopped parsley and olives, and serve",
+          ],
+        },
+      ];
+
+      // Food analysis data
+      const foodAnalysis = {
+        apple: {
+          name: "Apple",
+          image: "https://images.unsplash.com/photo-1565299543923-37dd37887442",
+          calories: 95,
+          isHealthy: true,
+          analysis:
+            "Apples are a low-calorie, nutrient-rich fruit, high in dietary fiber and antioxidants. A medium-sized apple contains about 95 calories, making it an ideal choice for a weight-loss diet. The soluble fiber in apples helps control blood sugar levels, increases satiety, and reduces overall calorie intake.",
+          recommendations: [1, 3, 5],
+        },
+        burger: {
+          name: "Burger",
+          image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+          calories: 450,
+          isHealthy: false,
+          analysis:
+            "A typical burger contains about 450 calories, with high fat and carbohydrate content, as well as high sodium levels. While it provides protein, it’s not an ideal choice for weight loss. It’s recommended to consume occasionally or opt for healthier alternatives like chicken or veggie burgers, removing sauces and cheese, and adding more vegetables.",
+          recommendations: [1, 2, 4],
+        },
+        salad: {
+          name: "Salad",
+          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+          calories: 180,
+          isHealthy: true,
+          analysis:
+            "Vegetable salads are an excellent choice for weight-loss diets, low in calories but nutrient-rich. Be mindful of salad dressings, choosing low-fat or oil-and-vinegar dressings over creamy ones. Adding small amounts of high-quality protein like chicken breast, eggs, or beans can increase satiety and help control appetite.",
+          recommendations: [1, 2, 3],
+        },
+        pasta: {
+          name: "Pasta",
+          image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601",
+          calories: 380,
+          isHealthy: false,
+          analysis:
+            "Traditional pasta is mainly composed of refined carbohydrates, with high calories, about 380 calories per serving. For weight loss, choose whole-grain pasta, control portion sizes, increase vegetable proportions, use tomato-based sauces instead of creamy ones, and add lean protein like shrimp or chicken.",
+          recommendations: [2, 4, 5],
+        },
+        chicken: {
+          name: "Chicken Breast",
+          image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791",
+          calories: 165,
+          isHealthy: true,
+          analysis:
+            "Chicken breast is an ideal protein source for weight loss, with only about 165 calories per 100g, low in fat and high in protein. Protein helps increase satiety and maintain muscle mass, especially important during a calorie deficit. It’s recommended to grill, steam, or boil, avoiding frying.",
+          recommendations: [2, 4, 5],
+        },
+      };
+
+      // DOM elements
+      const elements = {
+        views: {
+          home: document.getElementById("homeView"),
+          analysis: document.getElementById("analysisView"),
+          recipe: document.getElementById("recipeDetailView"),
+          pricing: document.getElementById("pricingView"),
+          history: document.getElementById("historyView"),
+          auth: document.getElementById("authView"),
+        },
+        nav: {
+          home: document.querySelectorAll(".nav-home"),
+          pricing: document.querySelectorAll(".nav-pricing"),
+          history: document.querySelectorAll(".nav-history"),
+          login: document.getElementById("loginBtn"),
+          menu: document.getElementById("menuToggle"),
+          links: document.getElementById("navLinks"),
+        },
+        buttons: {
+          upload: document.getElementById("uploadBtn"),
+          analyze: document.getElementById("analyzeBtn"),
+          backToHome: document.getElementById("backToHomeBtn"),
+          backFromRecipe: document.getElementById("backFromRecipeBtn"),
+          showLogin: document.getElementById("showLoginBtn"),
+          showSignup: document.getElementById("showSignupBtn"),
+          doLogin: document.getElementById("doLoginBtn"),
+          doSignup: document.getElementById("doSignupBtn"),
+          historyLogin: document.getElementById("historyLoginBtn"),
+        },
+        upload: {
+          area: document.getElementById("uploadArea"),
+          input: document.getElementById("foodImageInput"),
+        },
+        analysis: {
+          image: document.getElementById("analyzedFoodImage"),
+          name: document.getElementById("analyzedFoodName"),
+          healthTag: document.getElementById("foodHealthTag"),
+          caloriesTag: document.getElementById("foodCaloriesTag"),
+          text: document.getElementById("foodAnalysisText"),
+          recipes: document.getElementById("relatedRecipes"),
+        },
+        recipe: {
+          image: document.getElementById("recipeDetailImage"),
+          title: document.getElementById("recipeDetailTitle"),
+          calories: document.getElementById("recipeCalories"),
+          protein: document.getElementById("recipeProtein"),
+          carbs: document.getElementById("recipeCarbs"),
+          fat: document.getElementById("recipeFat"),
+          time: document.getElementById("recipeTime"),
+          healthTips: document.getElementById("recipeHealthTips"),
+          ingredients: document.getElementById("recipeIngredients"),
+          steps: document.getElementById("recipeSteps"),
+        },
+        auth: {
+          loginForm: document.getElementById("loginForm"),
+          signupForm: document.getElementById("signupForm"),
+        },
+        user: {
+          info: document.getElementById("userInfo"),
+          credits: document.getElementById("userCredits"),
+          loginPrompt: document.getElementById("loginPrompt"),
+          historyContent: document.getElementById("historyContent"),
+        },
+      };
+
+      // App state
+      const state = {
+        currentView: "home",
+        previousView: null,
+        user: null,
+        uploadedImage: null,
+        currentFood: null,
+        currentRecipe: null,
+        creditsUsed: 0,
+        maxFreeCredits: 1,
+      };
+
+      // Helper function to show a view
+      function showView(viewName) {
+        state.previousView = state.currentView;
+        state.currentView = viewName;
+
+        // Hide all views
+        Object.values(elements.views).forEach((view) => {
+          view.classList.remove("active");
+        });
+
+        // Show selected view
+        elements.views[viewName].classList.add("active");
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+      }
+
+      // Initialize event listeners
+      function initEventListeners() {
+        // Navigation
+        elements.nav.home.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            showView("home");
+          });
+        });
+
+        elements.nav.pricing.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            showView("pricing");
+          });
+        });
+
+        elements.nav.history.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            showView("history");
+            updateHistoryView();
+          });
+        });
+
+        elements.nav.login.addEventListener("click", (e) => {
+          e.preventDefault();
+          showView("auth");
+        });
+
+        elements.nav.menu.addEventListener("click", () => {
+          elements.nav.links.classList.toggle("show");
+        });
+
+        // Upload functionality
+        elements.buttons.upload.addEventListener("click", () => {
+          elements.upload.input.click();
+        });
+
+        elements.upload.area.addEventListener("click", () => {
+          elements.upload.input.click();
+        });
+
+        elements.upload.input.addEventListener("change", (e) => {
+          if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+              state.uploadedImage = e.target.result;
+              // Show preview
+              elements.upload.area.innerHTML = `
                             <img src="${state.uploadedImage}" alt="Uploaded Food" style="max-width: 100%; max-height: 200px; margin-bottom: 10px;">
                             <p class="upload-text">Click to change image</p>
                         `;
-                        elements.buttons.analyze.disabled = false;
-                    };
-                    
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // Analyze button
-            elements.buttons.analyze.addEventListener('click', () => {
-                // Check if user has credits
-                if (state.user) {
-                    if (state.user.credits <= 0) {
-                        alert('You have used up your credits. Please purchase more.');
-                        showView('pricing');
-                        return;
-                    }
-                    state.user.credits--;
-                    elements.user.credits.textContent = state.user.credits;
-                    updateLocalStorage();
-                } else {
-                    state.creditsUsed++;
-                    if (state.creditsUsed > state.maxFreeCredits) {
-                        alert('You have used up your free credits. Please login or purchase more.');
-                        showView('auth');
-                        return;
-                    }
-                }
-                
-                // Randomly select a food for analysis
-                const foodKeys = Object.keys(foodAnalysis);
-                const randomFood = foodAnalysis[foodKeys[Math.floor(Math.random() * foodKeys.length)]];
-                state.currentFood = randomFood;
-                
-                // Update analysis view
-                elements.analysis.image.src = randomFood.image;
-                elements.analysis.name.textContent = randomFood.name;
-                elements.analysis.caloriesTag.textContent = `${randomFood.calories} Calories`;
-                
-                if (randomFood.isHealthy) {
-                    elements.analysis.healthTag.textContent = 'Healthy Choice';
-                    elements.analysis.healthTag.className = 'result-tag tag-success';
-                } else {
-                    elements.analysis.healthTag.textContent = 'Occasional Treat';
-                    elements.analysis.healthTag.className = 'result-tag tag-warning';
-                }
-                
-                elements.analysis.text.textContent = randomFood.analysis;
-                
-                // Generate related recipes
-                elements.analysis.recipes.innerHTML = '';
-                randomFood.recommendations.forEach(recId => {
-                    const recipe = recipes.find(r => r.id === recId);
-                    if (recipe) {
-                        const recipeCard = document.createElement('div');
-                        recipeCard.className = 'card recipe-card';
-                        recipeCard.dataset.id = recipe.id;
-                        recipeCard.innerHTML = `
+              elements.buttons.analyze.disabled = false;
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Analyze button
+        elements.buttons.analyze.addEventListener("click", () => {
+          // Check if user has credits
+          if (state.user) {
+            if (state.user.credits <= 0) {
+              alert("You have used up your credits. Please purchase more.");
+              showView("pricing");
+              return;
+            }
+            state.user.credits--;
+            elements.user.credits.textContent = state.user.credits;
+            updateLocalStorage();
+          } else {
+            state.creditsUsed++;
+            if (state.creditsUsed > state.maxFreeCredits) {
+              alert(
+                "You have used up your free credits. Please login or purchase more."
+              );
+              showView("auth");
+              return;
+            }
+          }
+
+          // Randomly select a food for analysis
+          const foodKeys = Object.keys(foodAnalysis);
+          const randomFood =
+            foodAnalysis[foodKeys[Math.floor(Math.random() * foodKeys.length)]];
+          state.currentFood = randomFood;
+
+          // Update analysis view
+          elements.analysis.image.src = randomFood.image;
+          elements.analysis.name.textContent = randomFood.name;
+          elements.analysis.caloriesTag.textContent = `${randomFood.calories} Calories`;
+
+          if (randomFood.isHealthy) {
+            elements.analysis.healthTag.textContent = "Healthy Choice";
+            elements.analysis.healthTag.className = "result-tag tag-success";
+          } else {
+            elements.analysis.healthTag.textContent = "Occasional Treat";
+            elements.analysis.healthTag.className = "result-tag tag-warning";
+          }
+
+          elements.analysis.text.textContent = randomFood.analysis;
+
+          // Generate related recipes
+          elements.analysis.recipes.innerHTML = "";
+          randomFood.recommendations.forEach((recId) => {
+            const recipe = recipes.find((r) => r.id === recId);
+            if (recipe) {
+              const recipeCard = document.createElement("div");
+              recipeCard.className = "card recipe-card";
+              recipeCard.dataset.id = recipe.id;
+              recipeCard.innerHTML = `
                             <img src="${recipe.image}" alt="${recipe.name}" class="card-image">
                             <div class="card-content">
                                 <h3 class="card-title">${recipe.name}</h3>
@@ -1693,317 +1883,359 @@
                                 </div>
                             </div>
                         `;
-                        elements.analysis.recipes.appendChild(recipeCard);
-                        
-                        // Add click event to recipe card
-                        recipeCard.addEventListener('click', () => {
-                            showRecipeDetail(recipe.id);
-                        });
-                    }
-                });
-                
-                // Add to history if logged in
-                if (state.user) {
-                    addToHistory({
-                        type: 'analysis',
-                        food: randomFood,
-                        date: new Date()
-                    });
-                }
-                
-                showView('analysis');
-            });
-            
-            // Back buttons
-            elements.buttons.backToHome.addEventListener('click', () => {
-                showView('home');
-            });
-            
-            elements.buttons.backFromRecipe.addEventListener('click', () => {
-                if (state.previousView) {
-                    showView(state.previousView);
-                } else {
-                    showView('home');
-                }
-            });
-            
-            // Recipe cards click
-            document.querySelectorAll('.recipe-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const recipeId = parseInt(card.dataset.id);
-                    showRecipeDetail(recipeId);
-                });
-            });
-            
-            // Auth forms
-            elements.buttons.showSignup.addEventListener('click', (e) => {
-                e.preventDefault();
-                elements.auth.loginForm.style.display = 'none';
-                elements.auth.signupForm.style.display = 'block';
-            });
-            
-            elements.buttons.showLogin.addEventListener('click', (e) => {
-                e.preventDefault();
-                elements.auth.signupForm.style.display = 'none';
-                elements.auth.loginForm.style.display = 'block';
-            });
-            
-            elements.buttons.doLogin.addEventListener('click', () => {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                
-                if (!email || !password) {
-                    alert('Please fill in all fields');
-                    return;
-                }
-                
-                // In a real app, you would validate with a server
-                // For demo, just simulate a login
-                doLogin(email);
-            });
-            
-            elements.buttons.doSignup.addEventListener('click', () => {
-                const name = document.getElementById('signupName').value;
-                const email = document.getElementById('signupEmail').value;
-                const password = document.getElementById('signupPassword').value;
-                
-                if (!name || !email || !password) {
-                    alert('Please fill in all fields');
-                    return;
-                }
-                
-                // In a real app, you would register with a server
-                // For demo, just simulate a registration and login
-                doLogin(email, name);
-            });
-            
-            elements.buttons.historyLogin.addEventListener('click', () => {
-                showView('auth');
-            });
-            
-            // Buy credits buttons
-            document.querySelectorAll('.buy-credits').forEach(button => {
-                button.addEventListener('click', () => {
-                    const plan = button.dataset.plan;
-                    if (!state.user) {
-                        alert('Please login before purchasing credits');
-                        showView('auth');
-                        return;
-                    }
-                    
-                    let credits = 0;
-                    switch(plan) {
-                        case 'basic': credits = 3; break;
-                        case 'value': credits = 8; break;
-                        case 'monthly': credits = 30; break;
-                        case 'yearly': credits = 500; break;
-                    }
-                    
-                    // Simulate purchase
-                    state.user.credits += credits;
-                    elements.user.credits.textContent = state.user.credits;
-                    updateLocalStorage();
-                    
-                    alert(`Purchase successful! You now have ${state.user.credits} credits.`);
-                    showView('home');
-                });
-            });
-        }
-        
-        // Show recipe detail
-        function showRecipeDetail(recipeId) {
-            const recipe = recipes.find(r => r.id === recipeId);
-            if (!recipe) return;
-            
-            state.currentRecipe = recipe;
-            
-            // Update recipe detail view
-            elements.recipe.image.src = recipe.image;
-            elements.recipe.title.textContent = recipe.name;
-            elements.recipe.calories.textContent = recipe.calories;
-            elements.recipe.protein.textContent = recipe.protein;
-            elements.recipe.carbs.textContent = recipe.carbs;
-            elements.recipe.fat.textContent = recipe.fat;
-            elements.recipe.time.textContent = recipe.time;
-            elements.recipe.healthTips.textContent = recipe.healthTips;
-            
-            // Clear and rebuild ingredients list
-            elements.recipe.ingredients.innerHTML = '';
-            recipe.ingredients.forEach(ingredient => {
-                const li = document.createElement('li');
-                li.textContent = ingredient;
-                elements.recipe.ingredients.appendChild(li);
-            });
-            
-            // Clear and rebuild steps list
-            elements.recipe.steps.innerHTML = '';
-            recipe.steps.forEach(step => {
-                const li = document.createElement('li');
-                li.textContent = step;
-                elements.recipe.steps.appendChild(li);
-            });
-            
-            // Add to history if logged in
-            if (state.user) {
-                addToHistory({
-                    type: 'recipe',
-                    recipe: recipe,
-                    date: new Date()
-                });
+              elements.analysis.recipes.appendChild(recipeCard);
+
+              // Add click event to recipe card
+              recipeCard.addEventListener("click", () => {
+                showRecipeDetail(recipe.id);
+              });
             }
-            
-            showView('recipe');
-        }
-        
-        // Login function
-        function doLogin(email, name = null) {
-            // In a real app, this would verify credentials with a server
-            // For demo, just create a user object
-            const storedUser = localStorage.getItem('healthyDietUser');
-            let user;
-            
-            if (storedUser) {
-                user = JSON.parse(storedUser);
-            } else {
-                user = {
-                    name: name || email.split('@')[0],
-                    email: email,
-                    credits: 5, // Give some starter credits
-                    history: []
-                };
-                localStorage.setItem('healthyDietUser', JSON.stringify(user));
-            }
-            
-            state.user = user;
-            updateUserDisplay();
-            
-            alert('Login successful!');
-            showView(state.previousView || 'home');
-        }
-        
-        // Update user display
-        function updateUserDisplay() {
-            if (state.user) {
-                elements.nav.login.style.display = 'none';
-                elements.user.info.style.display = 'flex';
-                elements.user.credits.textContent = state.user.credits;
-                
-                // Set first letter of name as avatar
-                const userAvatar = document.querySelector('.user-avatar');
-                userAvatar.textContent = state.user.name.charAt(0).toUpperCase();
-            } else {
-                elements.nav.login.style.display = 'block';
-                elements.user.info.style.display = 'none';
-            }
-        }
-        
-        // Add item to history
-        function addToHistory(item) {
-            if (!state.user) return;
-            
-            state.user.history.unshift(item);
-            
-            // Limit history size
-            if (state.user.history.length > 20) {
-                state.user.history.pop();
-            }
-            
-            updateLocalStorage();
-        }
-        
-        // Update local storage
-        function updateLocalStorage() {
-            if (state.user) {
-                localStorage.setItem('healthyDietUser', JSON.stringify(state.user));
-            }
-        }
-        
-        // Update history view
-        function updateHistoryView() {
+          });
+
+          // Add to history if logged in
+          if (state.user) {
+            addToHistory({
+              type: "analysis",
+              food: randomFood,
+              date: new Date(),
+            });
+          }
+
+          showView("analysis");
+        });
+
+        // Back buttons
+        elements.buttons.backToHome.addEventListener("click", () => {
+          showView("home");
+        });
+
+        elements.buttons.backFromRecipe.addEventListener("click", () => {
+          if (state.previousView) {
+            showView(state.previousView);
+          } else {
+            showView("home");
+          }
+        });
+
+        // Recipe cards click
+        document.querySelectorAll(".recipe-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            const recipeId = parseInt(card.dataset.id);
+            showRecipeDetail(recipeId);
+          });
+        });
+
+        // Auth forms
+        elements.buttons.showSignup.addEventListener("click", (e) => {
+          e.preventDefault();
+          elements.auth.loginForm.style.display = "none";
+          elements.auth.signupForm.style.display = "block";
+        });
+
+        elements.buttons.showLogin.addEventListener("click", (e) => {
+          e.preventDefault();
+          elements.auth.signupForm.style.display = "none";
+          elements.auth.loginForm.style.display = "block";
+        });
+
+        elements.buttons.doLogin.addEventListener("click", () => {
+          const email = document.getElementById("loginEmail").value;
+          const password = document.getElementById("loginPassword").value;
+
+          if (!email || !password) {
+            alert("Please fill in all fields");
+            return;
+          }
+
+          // In a real app, you would validate with a server
+          // For demo, just simulate a login
+          doLogin(email);
+        });
+
+        elements.buttons.doSignup.addEventListener("click", () => {
+          const name = document.getElementById("signupName").value;
+          const email = document.getElementById("signupEmail").value;
+          const password = document.getElementById("signupPassword").value;
+
+          if (!name || !email || !password) {
+            alert("Please fill in all fields");
+            return;
+          }
+
+          // In a real app, you would register with a server
+          // For demo, just simulate a registration and login
+          doLogin(email, name);
+        });
+
+        elements.buttons.historyLogin.addEventListener("click", () => {
+          showView("auth");
+        });
+
+        // Buy credits buttons
+        document.querySelectorAll(".buy-credits").forEach((button) => {
+          button.addEventListener("click", () => {
+            const plan = button.dataset.plan;
             if (!state.user) {
-                elements.user.loginPrompt.style.display = 'block';
-                elements.user.historyContent.style.display = 'none';
-                return;
+              alert("Please login before purchasing credits");
+              showView("auth");
+              return;
             }
-            
-            elements.user.loginPrompt.style.display = 'none';
-            elements.user.historyContent.style.display = 'block';
-            
-            // Clear existing history
-            document.getElementById('analysisHistory').innerHTML = '';
-            document.getElementById('recipeHistory').innerHTML = '';
-            
-            // Add analysis history
-            const analysisHistory = state.user.history.filter(item => item.type === 'analysis');
-            if (analysisHistory.length > 0) {
-                analysisHistory.forEach(item => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    historyItem.innerHTML = `
-                        <img src="${item.food.image}" alt="${item.food.name}" class="history-image">
+
+            let credits = 0;
+            switch (plan) {
+              case "basic":
+                credits = 3;
+                break;
+              case "value":
+                credits = 8;
+                break;
+              case "monthly":
+                credits = 30;
+                break;
+              case "yearly":
+                credits = 500;
+                break;
+            }
+
+            // Simulate purchase
+            state.user.credits += credits;
+            elements.user.credits.textContent = state.user.credits;
+            updateLocalStorage();
+
+            alert(
+              `Purchase successful! You now have ${state.user.credits} credits.`
+            );
+            showView("home");
+          });
+        });
+      }
+
+      // Show recipe detail
+      function showRecipeDetail(recipeId) {
+        const recipe = recipes.find((r) => r.id === recipeId);
+        if (!recipe) return;
+
+        state.currentRecipe = recipe;
+
+        // Update recipe detail view
+        elements.recipe.image.src = recipe.image;
+        elements.recipe.title.textContent = recipe.name;
+        elements.recipe.calories.textContent = recipe.calories;
+        elements.recipe.protein.textContent = recipe.protein;
+        elements.recipe.carbs.textContent = recipe.carbs;
+        elements.recipe.fat.textContent = recipe.fat;
+        elements.recipe.time.textContent = recipe.time;
+        elements.recipe.healthTips.textContent = recipe.healthTips;
+
+        // Clear and rebuild ingredients list
+        elements.recipe.ingredients.innerHTML = "";
+        recipe.ingredients.forEach((ingredient) => {
+          const li = document.createElement("li");
+          li.textContent = ingredient;
+          elements.recipe.ingredients.appendChild(li);
+        });
+
+        // Clear and rebuild steps list
+        elements.recipe.steps.innerHTML = "";
+        recipe.steps.forEach((step) => {
+          const li = document.createElement("li");
+          li.textContent = step;
+          elements.recipe.steps.appendChild(li);
+        });
+
+        // Add to history if logged in
+        if (state.user) {
+          addToHistory({
+            type: "recipe",
+            recipe: recipe,
+            date: new Date(),
+          });
+        }
+
+        showView("recipe");
+      }
+
+      // Login function
+      function doLogin(email, name = null) {
+        // In a real app, this would verify credentials with a server
+        // For demo, just create a user object
+        const storedUser = localStorage.getItem("healthyDietUser");
+        let user;
+
+        if (storedUser) {
+          user = JSON.parse(storedUser);
+        } else {
+          user = {
+            name: name || email.split("@")[0],
+            email: email,
+            credits: 5, // Give some starter credits
+            history: [],
+          };
+          localStorage.setItem("healthyDietUser", JSON.stringify(user));
+        }
+
+        state.user = user;
+        updateUserDisplay();
+
+        alert("Login successful!");
+        showView(state.previousView || "home");
+      }
+
+      // Update user display
+      function updateUserDisplay() {
+        if (state.user) {
+          elements.nav.login.style.display = "none";
+          elements.user.info.style.display = "flex";
+          elements.user.credits.textContent = state.user.credits;
+
+          // Set first letter of name as avatar
+          const userAvatar = document.querySelector(".user-avatar");
+          userAvatar.textContent = state.user.name.charAt(0).toUpperCase();
+        } else {
+          elements.nav.login.style.display = "block";
+          elements.user.info.style.display = "none";
+        }
+      }
+
+      // Add item to history
+      function addToHistory(item) {
+        if (!state.user) return;
+
+        state.user.history.unshift(item);
+
+        // Limit history size
+        if (state.user.history.length > 20) {
+          state.user.history.pop();
+        }
+
+        updateLocalStorage();
+      }
+
+      // Update local storage
+      function updateLocalStorage() {
+        if (state.user) {
+          localStorage.setItem("healthyDietUser", JSON.stringify(state.user));
+        }
+      }
+
+      // Update history view
+      function updateHistoryView() {
+        if (!state.user) {
+          elements.user.loginPrompt.style.display = "block";
+          elements.user.historyContent.style.display = "none";
+          return;
+        }
+
+        elements.user.loginPrompt.style.display = "none";
+        elements.user.historyContent.style.display = "block";
+
+        // Clear existing history
+        document.getElementById("analysisHistory").innerHTML = "";
+        document.getElementById("recipeHistory").innerHTML = "";
+
+        // Add analysis history
+        const analysisHistory = state.user.history.filter(
+          (item) => item.type === "analysis"
+        );
+        if (analysisHistory.length > 0) {
+          analysisHistory.forEach((item) => {
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item";
+            historyItem.innerHTML = `
+                        <img src="${item.food.image}" alt="${
+              item.food.name
+            }" class="history-image">
                         <div class="history-content">
-                            <div class="history-date">${new Date(item.date).toLocaleString()}</div>
+                            <div class="history-date">${new Date(
+                              item.date
+                            ).toLocaleString()}</div>
                             <h3 class="history-title">${item.food.name}</h3>
                             <div class="history-meta">
-                                <div><i class="fas fa-fire"></i> ${item.food.calories} Calories</div>
+                                <div><i class="fas fa-fire"></i> ${
+                                  item.food.calories
+                                } Calories</div>
                                 <div>
-                                    <i class="fas ${item.food.isHealthy ? 'fa-check-circle' : 'fa-exclamation-circle'}" 
-                                       style="color: var(${item.food.isHealthy ? '--success-color' : '--warning-color'});"></i> 
-                                    ${item.food.isHealthy ? 'Healthy Choice' : 'Occasional Treat'}
+                                    <i class="fas ${
+                                      item.food.isHealthy
+                                        ? "fa-check-circle"
+                                        : "fa-exclamation-circle"
+                                    }" 
+                                       style="color: var(${
+                                         item.food.isHealthy
+                                           ? "--success-color"
+                                           : "--warning-color"
+                                       });"></i> 
+                                    ${
+                                      item.food.isHealthy
+                                        ? "Healthy Choice"
+                                        : "Occasional Treat"
+                                    }
                                 </div>
                             </div>
                         </div>
                     `;
-                    document.getElementById('analysisHistory').appendChild(historyItem);
-                });
-            } else {
-                document.getElementById('analysisHistory').innerHTML = '<p style="text-align: center; padding: 20px;">No analysis records yet</p>';
-            }
-            
-            // Add recipe history
-            const recipeHistory = state.user.history.filter(item => item.type === 'recipe');
-            if (recipeHistory.length > 0) {
-                recipeHistory.forEach(item => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item recipe-card';
-                    historyItem.dataset.id = item.recipe.id;
-                    historyItem.innerHTML = `
-                        <img src="${item.recipe.image}" alt="${item.recipe.name}" class="history-image">
+            document.getElementById("analysisHistory").appendChild(historyItem);
+          });
+        } else {
+          document.getElementById("analysisHistory").innerHTML =
+            '<p style="text-align: center; padding: 20px;">No analysis records yet</p>';
+        }
+
+        // Add recipe history
+        const recipeHistory = state.user.history.filter(
+          (item) => item.type === "recipe"
+        );
+        if (recipeHistory.length > 0) {
+          recipeHistory.forEach((item) => {
+            const historyItem = document.createElement("div");
+            historyItem.className = "history-item recipe-card";
+            historyItem.dataset.id = item.recipe.id;
+            historyItem.innerHTML = `
+                        <img src="${item.recipe.image}" alt="${
+              item.recipe.name
+            }" class="history-image">
                         <div class="history-content">
-                            <div class="history-date">${new Date(item.date).toLocaleString()}</div>
+                            <div class="history-date">${new Date(
+                              item.date
+                            ).toLocaleString()}</div>
                             <h3 class="history-title">${item.recipe.name}</h3>
                             <div class="history-meta">
-                                <div><i class="fas fa-fire"></i> ${item.recipe.calories} Calories</div>
-                                <div><i class="fas fa-clock"></i> ${item.recipe.time} Minutes</div>
+                                <div><i class="fas fa-fire"></i> ${
+                                  item.recipe.calories
+                                } Calories</div>
+                                <div><i class="fas fa-clock"></i> ${
+                                  item.recipe.time
+                                } Minutes</div>
                             </div>
                         </div>
                     `;
-                    document.getElementById('recipeHistory').appendChild(historyItem);
-                    
-                    // Add click event to recipe history item
-                    historyItem.addEventListener('click', () => {
-                        showRecipeDetail(item.recipe.id);
-                    });
-                });
-            } else {
-                document.getElementById('recipeHistory').innerHTML = '<p style="text-align: center; padding: 20px;">No recipe browsing records yet</p>';
-            }
+            document.getElementById("recipeHistory").appendChild(historyItem);
+
+            // Add click event to recipe history item
+            historyItem.addEventListener("click", () => {
+              showRecipeDetail(item.recipe.id);
+            });
+          });
+        } else {
+          document.getElementById("recipeHistory").innerHTML =
+            '<p style="text-align: center; padding: 20px;">No recipe browsing records yet</p>';
         }
-        
-        // Initialize the app
-        function init() {
-            // Check for existing user
-            const storedUser = localStorage.getItem('healthyDietUser');
-            if (storedUser) {
-                state.user = JSON.parse(storedUser);
-                updateUserDisplay();
-            }
-            
-            initEventListeners();
+      }
+
+      // Initialize the app
+      function init() {
+        // Check for existing user
+        const storedUser = localStorage.getItem("healthyDietUser");
+        if (storedUser) {
+          state.user = JSON.parse(storedUser);
+          updateUserDisplay();
         }
-        
-        // Run initialization when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
+
+        initEventListeners();
+      }
+
+      // Run initialization when DOM is loaded
+      document.addEventListener("DOMContentLoaded", init);
     </script>
-</body>
+  </body>
 </html>
