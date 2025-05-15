@@ -433,6 +433,14 @@ function initEventListeners() {
     // 检查用户积分是否足够
     const userCredits =
       typeof state.user.credits === "number" ? state.user.credits : 0;
+
+    // 确保积分不会为负数
+    if (state.user && state.user.credits < 0) {
+      state.user.credits = 0;
+      updateLocalStorage();
+      updateUserDisplay();
+    }
+
     if (userCredits <= 0) {
       showNotification("Insufficient credits", "warning");
       // 延迟跳转到价格页面，让用户先看到提示
@@ -651,6 +659,13 @@ function initEventListeners() {
               food: state.currentFood,
               date: new Date(),
             });
+          }
+
+          // 分析成功后减少一个积分
+          if (state.user && typeof state.user.credits === "number") {
+            state.user.credits = Math.max(0, state.user.credits - 1); // 确保积分不小于0
+            updateLocalStorage();
+            updateUserDisplay(); // 更新UI显示
           }
 
           // 显示分析结果页面
@@ -916,7 +931,7 @@ function doLogin(email, name = null, user = null) {
     state.user = {
       name: user.name || name || email.split("@")[0],
       email: email,
-      credits: user.credits || 5, // 使用API返回的credits或默认值
+      credits: typeof user.credits === "number" ? user.credits : 0, // 确保使用API返回的积分值
       history: [],
     };
   } else {
@@ -930,12 +945,15 @@ function doLogin(email, name = null, user = null) {
         if (parsed.access_token) {
           state.user.access_token = parsed.access_token;
         }
+        // 确保积分值是正确的数字
+        state.user.credits =
+          typeof state.user.credits === "number" ? state.user.credits : 0;
       } catch (error) {
         console.error("Error parsing stored user data in doLogin:", error);
         state.user = {
           name: name || email.split("@")[0],
           email: email,
-          credits: 5,
+          credits: 0, // 默认积分为0
           history: [],
         };
       }
@@ -943,7 +961,7 @@ function doLogin(email, name = null, user = null) {
       state.user = {
         name: name || email.split("@")[0],
         email: email,
-        credits: 5, // Give some starter credits
+        credits: 0, // 使用API返回的值，不再默认给予积分
         history: [],
       };
     }
@@ -1057,16 +1075,10 @@ function updateUserDisplay() {
       typeof userObj.credits === "number" ? userObj.credits : 0;
     elements.user.credits.textContent = creditsValue;
 
-    // 根据积分数量设置不同的颜色
+    // 统一使用白色显示积分数量，使其在绿色背景下更明显
     const creditsElement = document.getElementById("userCredits");
     if (creditsElement) {
-      if (creditsValue <= 0) {
-        creditsElement.style.color = "#f44336"; // 红色，表示没有积分
-      } else if (creditsValue < 5) {
-        creditsElement.style.color = "#ff9800"; // 橙色，表示积分较少
-      } else {
-        creditsElement.style.color = "#4caf50"; // 绿色，表示积分充足
-      }
+      creditsElement.style.color = "#ffffff"; // 白色，使其在导航栏上更明显
     }
 
     const userAvatar = document.querySelector(".user-avatar");
@@ -1909,8 +1921,11 @@ document.addEventListener("DOMContentLoaded", function () {
           // 维护本地存储和登录状态
           if (data && data.data) {
             const userData = data.data.user || {};
+            // 确保使用API返回的积分值，如果没有则默认为0
             const credits =
               typeof userData.credits === "number" ? userData.credits : 0;
+            console.log("API返回的积分值:", credits);
+
             // 确保token直接保存在顶层，也保留在loginInfo.user中以保证兼容性
             const loginInfo = {
               access_token: data.data.access_token,
@@ -1925,7 +1940,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 avatar_url: userData.avatar_url || "",
                 created_at: userData.created_at,
                 last_login_at: userData.last_login_at,
-                credits: credits,
+                credits: credits, // 使用API返回的积分值
                 access_token: data.data.access_token, // 也在user对象中存储token以兼容各种情况
                 refresh_token: data.data.refresh_token,
               },
