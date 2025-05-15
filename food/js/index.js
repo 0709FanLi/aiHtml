@@ -243,7 +243,6 @@ const elements = {
     links: document.getElementById("navLinks"),
   },
   buttons: {
-    upload: document.getElementById("uploadBtn"),
     analyze: document.getElementById("analyzeBtn"),
     backToHome: document.getElementById("backToHomeBtn"),
     backFromRecipe: document.getElementById("backFromRecipeBtn"),
@@ -399,11 +398,7 @@ function initEventListeners() {
     elements.nav.links.classList.toggle("show");
   });
 
-  // Upload functionality
-  elements.buttons.upload.addEventListener("click", () => {
-    elements.upload.input.click();
-  });
-
+  // Upload functionality - 只保留上传区域的点击事件，删除uploadBtn按钮的点击事件
   elements.upload.area.addEventListener("click", () => {
     elements.upload.input.click();
   });
