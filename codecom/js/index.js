@@ -564,33 +564,33 @@ document.addEventListener("DOMContentLoaded", function () {
       originalLineNumbers.innerHTML = "";
       annotatedLineNumbers.innerHTML = "";
 
-      // 获取代码内容
-      let codeContent = "";
-      const codeTextarea = document.querySelector(".code-textarea");
-      const fileInput = document.getElementById("code-file-input");
-
-      if (codeTextarea && codeTextarea.value.trim()) {
-        codeContent = codeTextarea.value.trim();
-      } else if (fileInput && fileInput.files && fileInput.files.length > 0) {
-        // 已经处理了文件，使用API返回的原始代码（如果有）
-        codeContent =
-          responseData.original_code ||
-          "// Original code was provided as a file";
+      // 隐藏原始代码面板
+      const originalPanel = document.querySelector(".code-panel:first-child");
+      if (originalPanel) {
+        originalPanel.style.display = "none";
       }
 
-      // 显示原始代码
-      const originalLines = codeContent.split("\n");
-      for (let i = 0; i < originalLines.length; i++) {
-        originalLineNumbers.innerHTML += `<div>${i + 1}</div>`;
-        originalCode.innerHTML += `<div>${
-          escapeHtml(originalLines[i]) || " "
-        }</div>`;
+      // 让注释代码面板占据全部宽度
+      const annotatedPanel = document.querySelector(".code-panel:last-child");
+      if (annotatedPanel) {
+        annotatedPanel.style.flexBasis = "100%";
       }
 
       // 处理注释后的代码 - 检查新的API响应格式
       if (responseData.content) {
         // 直接将API返回的content内容展示在annotated code框中
         annotatedCode.innerHTML = responseData.content;
+
+        // 确保pre标签内容不超出宽度
+        const preElements = annotatedCode.querySelectorAll("pre");
+        if (preElements.length > 0) {
+          preElements.forEach((pre) => {
+            pre.style.maxWidth = "100%";
+            pre.style.overflow = "auto";
+            pre.style.whiteSpace = "pre-wrap";
+            pre.style.wordBreak = "break-word";
+          });
+        }
       } else {
         // 旧格式
         const commentedCode =
@@ -630,19 +630,19 @@ document.addEventListener("DOMContentLoaded", function () {
       let codeContent = "";
 
       if (annotatedCode.querySelector("pre code")) {
-        // 如果有pre/code标签，获取code标签中的内容
+        // 如果有pre/code标签，获取code标签中的纯文本内容
         const codeElement = annotatedCode.querySelector("pre code");
-        // 使用innerText获取格式化的纯文本内容，包括换行
-        codeContent = codeElement.innerText;
+        // 获取纯文本
+        codeContent = codeElement.textContent || codeElement.innerText;
       } else if (annotatedCode.innerHTML.includes("<pre")) {
         // 备用方案：如果找不到code元素但有pre标签
         const tempElement = document.createElement("div");
         tempElement.innerHTML = annotatedCode.innerHTML;
         const preElement = tempElement.querySelector("pre");
         if (preElement) {
-          codeContent = preElement.innerText || preElement.textContent;
+          codeContent = preElement.textContent || preElement.innerText;
         } else {
-          codeContent = tempElement.innerText || tempElement.textContent;
+          codeContent = tempElement.textContent || tempElement.innerText;
         }
       } else {
         // 否则获取普通文本内容

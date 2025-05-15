@@ -245,9 +245,8 @@
         <!-- Our Values -->
         <div class="card" style="margin-bottom: 40px">
           <div class="about-values">
-
             <h3>Our Values</h3>
-            
+
             <div class="values-grid">
               <div class="value-item">
                 <i class="fas fa-lightbulb"></i>
@@ -345,14 +344,16 @@
             </button>
           </div>
           <div class="code-comparison">
-            <div class="code-panel">
+            <!-- 隐藏原始代码面板 -->
+            <div class="code-panel" style="display: none">
               <div class="code-panel-header">Original Code</div>
               <div class="code-display">
                 <div class="line-numbers" id="original-line-numbers"></div>
                 <div class="code-content" id="original-code"></div>
               </div>
             </div>
-            <div class="code-panel">
+            <!-- 让注释代码面板占据全部宽度 -->
+            <div class="code-panel" style="flex-basis: 100%">
               <div class="code-panel-header">Annotated Code</div>
               <div class="code-display">
                 <div class="line-numbers" id="annotated-line-numbers"></div>
