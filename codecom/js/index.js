@@ -221,11 +221,22 @@ document.addEventListener("DOMContentLoaded", function () {
       // 创建外层容器来包含预览和操作按钮
       const contentWrapper = document.createElement("div");
       contentWrapper.className = "history-content-wrapper";
+      contentWrapper.style.display = "flex";
+      contentWrapper.style.justifyContent = "space-between";
+      contentWrapper.style.alignItems = "flex-start";
       historyItem.appendChild(contentWrapper);
+
+      // 创建左侧内容区域
+      const contentLeft = document.createElement("div");
+      contentLeft.style.flex = "1";
+      contentLeft.style.marginRight = "15px";
+      contentLeft.style.overflow = "hidden";
+      contentWrapper.appendChild(contentLeft);
 
       // 提取代码预览
       const preview = document.createElement("div");
       preview.className = "history-preview";
+      preview.style.width = "100%";
 
       let previewText = "No preview available";
       if (record.content) {
@@ -261,27 +272,30 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       preview.textContent = previewText;
-      contentWrapper.appendChild(preview);
+      contentLeft.appendChild(preview);
 
-      // 创建操作按钮
+      // 创建操作按钮容器
       const actions = document.createElement("div");
       actions.className = "history-actions";
+      actions.style.display = "flex";
+      actions.style.gap = "10px";
+      actions.style.flexShrink = "0";
+      actions.style.alignSelf = "flex-start";
+      contentWrapper.appendChild(actions);
 
       // 查看按钮
       const viewBtn = document.createElement("button");
       viewBtn.className = "btn btn-sm btn-primary view-history-btn";
       viewBtn.innerHTML = '<i class="fas fa-eye"></i> View';
       viewBtn.addEventListener("click", () => viewCodeRecord(record.id));
+      actions.appendChild(viewBtn);
 
       // 删除按钮
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "btn btn-sm btn-danger delete-history-btn";
       deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
       deleteBtn.addEventListener("click", () => deleteCodeRecord(record.id));
-
-      actions.appendChild(viewBtn);
       actions.appendChild(deleteBtn);
-      contentWrapper.appendChild(actions);
 
       // 添加历史记录项到容器
       container.appendChild(historyItem);
@@ -390,9 +404,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function viewCodeRecord(recordId) {
     if (!recordId) return;
 
-    // 显示加载提示
-    showToast("info", "Loading", "Retrieving code record...");
-
     // 查找缓存中的记录
     const record = codeRecords.items.find((item) => item.id == recordId);
 
@@ -417,19 +428,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // 设置代码内容
       try {
-        // 设置新内容
-        codeDisplay.innerHTML = record.content;
+        // 创建一个主内容容器，用于包含代码
+        const contentWrapper = document.createElement("div");
+        contentWrapper.style.position = "relative";
+        contentWrapper.style.backgroundColor = "#fff";
+        contentWrapper.style.padding = "0";
+        contentWrapper.style.margin = "0";
+        contentWrapper.style.width = "100%";
+        contentWrapper.style.minHeight = "100%";
+        contentWrapper.style.border = "none";
+        contentWrapper.style.outline = "none";
+        contentWrapper.style.boxShadow = "none";
 
-        // 确保预标签内容显示正确
-        const preElements = codeDisplay.querySelectorAll("pre");
+        // 设置新内容
+        contentWrapper.innerHTML = record.content;
+
+        // 处理pre和code元素样式
+        const preElements = contentWrapper.querySelectorAll("pre");
         if (preElements.length > 0) {
           preElements.forEach((pre) => {
             pre.style.maxWidth = "100%";
-            pre.style.overflow = "auto";
+            pre.style.overflow = "visible";
             pre.style.whiteSpace = "pre-wrap";
             pre.style.wordBreak = "break-word";
             pre.style.margin = "0 auto";
             pre.style.boxSizing = "border-box";
+            pre.style.border = "none";
+            pre.style.outline = "none";
+            pre.style.boxShadow = "none";
 
             // 如果有code标签，应用样式
             const codeElement = pre.querySelector("code");
@@ -437,25 +463,58 @@ document.addEventListener("DOMContentLoaded", function () {
               codeElement.style.display = "block";
               codeElement.style.padding = "0 15px";
               codeElement.style.fontFamily = "var(--font-mono)";
+              codeElement.style.border = "none";
+              codeElement.style.outline = "none";
+              codeElement.style.boxShadow = "none";
             }
           });
         }
 
+        // 将内容添加到显示区域
+        codeDisplay.appendChild(contentWrapper);
+
+        // 创建额外的白色空间元素，用于覆盖蓝线
+        const spacer = document.createElement("div");
+        spacer.className = "modal-bottom-spacer";
+        spacer.style.height = "50px";
+        spacer.style.backgroundColor = "#fff";
+        spacer.style.width = "100%";
+        spacer.style.border = "none";
+        spacer.style.margin = "0";
+        spacer.style.padding = "0";
+        spacer.style.position = "sticky";
+        spacer.style.bottom = "0";
+        spacer.style.zIndex = "101";
+
+        // 添加底部空白
+        codeDisplay.appendChild(spacer);
+
+        // 确保所有元素没有边框和轮廓
+        const allElements = codeDisplay.querySelectorAll("*");
+        allElements.forEach((el) => {
+          el.style.border = "none";
+          el.style.outline = "none";
+          el.style.boxShadow = "none";
+        });
+
         // 显示弹框
         codeModal.style.display = "flex";
+
+        // 确保页面滚动被禁用
+        document.body.style.overflow = "hidden";
 
         // 绑定关闭按钮事件
         if (modalCloseBtn) {
           modalCloseBtn.onclick = function () {
-            codeModal.style.display = "none";
+            closeCodeModal(codeModal);
           };
         }
 
         // 点击弹框背景关闭弹框
         // 移除之前可能存在的点击事件处理器
-        codeModal.removeEventListener("click", closeModalOnBackgroundClick);
+        codeModal.removeEventListener("click", handleModalBackgroundClick);
         // 添加新的点击事件处理器
-        codeModal.addEventListener("click", closeModalOnBackgroundClick);
+        codeModal.addEventListener("click", handleModalBackgroundClick);
 
         // 复制按钮事件
         if (modalCopyBtn) {
@@ -470,34 +529,31 @@ document.addEventListener("DOMContentLoaded", function () {
             downloadCode(codeDisplay, `code_record_${record.id}.txt`);
           };
         }
-
-        showToast(
-          "success",
-          "Record Loaded",
-          "Code record has been loaded successfully."
-        );
       } catch (error) {
         console.error("Error displaying code record:", error);
-        showToast(
-          "error",
-          "Display Error",
-          "There was a problem displaying the code record."
-        );
       }
     } else {
-      showToast(
-        "error",
-        "Record Not Found",
-        "Could not find the requested code record."
-      );
+      console.error("Record not found:", recordId);
     }
   }
 
-  // 关闭弹框的辅助函数
-  function closeModalOnBackgroundClick(e) {
+  // 处理弹框背景点击事件
+  function handleModalBackgroundClick(e) {
     if (e.target === this) {
-      this.style.display = "none";
+      closeCodeModal(this);
     }
+  }
+
+  // 关闭代码弹框
+  function closeCodeModal(modal) {
+    // 隐藏弹框
+    modal.style.display = "none";
+
+    // 恢复body样式
+    document.body.style.overflow = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.width = "";
   }
 
   // 复制代码到剪贴板

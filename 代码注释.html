@@ -1280,7 +1280,7 @@
       </div>
     </div>
 
-    <!-- 代码查看弹框 -->
+    <!-- 代码查看弹框 - 优化底部蓝线问题 -->
     <div class="code-modal-backdrop" id="code-view-modal">
       <div class="code-modal">
         <div class="code-modal-header">
@@ -1297,12 +1297,30 @@
         </div>
         <div class="code-modal-body">
           <div class="code-modal-content">
-            <div class="code-modal-display" id="modal-code-display">
-              <!-- 代码内容将动态添加到这里 -->
-            </div>
+            <div class="code-modal-display" id="modal-code-display"></div>
+            <!-- 底部空白元素用于覆盖蓝线 -->
+            <div
+              class="modal-bottom-spacer"
+              style="
+                height: 50px;
+                background-color: #fff;
+                width: 100%;
+                border: none !important;
+                margin: 0;
+                padding: 0;
+                position: sticky;
+                bottom: 0;
+                z-index: 101;
+              "
+            ></div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 版权信息移到脚本上方，防止干扰代码弹框 -->
+    <div class="footer-copyright" style="display: none">
+      © 2025 CodeAnnotator. All rights reserved.
     </div>
 
     <script src="codecom/js/index.js"></script>
