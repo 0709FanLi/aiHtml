@@ -1504,6 +1504,24 @@ async function fetchHistoryItemFromAPI(id) {
     };
     console.log("请求体:", JSON.stringify(requestBody));
 
+    // 在请求发送前，显示一个简单的加载指示器
+    const historyDetailModal = document.getElementById("historyDetailModal");
+    if (historyDetailModal) {
+      const detailContent = document.getElementById("historyDetailContent");
+      if (detailContent) {
+        // 显示加载中动画
+        historyDetailModal.style.display = "flex";
+        detailContent.innerHTML = `
+          <div style="display: flex; justify-content: center; align-items: center; height: 200px; width: 100%;">
+            <div style="text-align: center;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: var(--primary-color); margin-bottom: 15px;"></i>
+              <p style="color: #666;">Loading details...</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     const response = await fetch(url, {
       method: "POST", // 改为POST请求
       headers: {
@@ -1736,8 +1754,12 @@ async function updateHistoryView() {
         const itemId = item.id;
         console.log("点击查看详情，获取ID:", itemId);
 
-        // 显示加载状态
-        showNotification("Loading details...", "info", 1000);
+        // 添加按钮点击效果，但不显示通知
+        const button = this;
+        button.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          button.style.transform = "scale(1)";
+        }, 100);
 
         // 从API获取历史记录项目详情
         fetchHistoryItemFromAPI(itemId)
