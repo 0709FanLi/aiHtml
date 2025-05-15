@@ -1518,12 +1518,7 @@
 
         <div class="recipe-detail-modal">
           <div class="recipe-header">
-            <img
-              src=""
-              alt="Recipe"
-              id="modalRecipeImage"
-              style="display: none"
-            />
+            <img src="" alt="Recipe" id="modalRecipeImage" />
           </div>
 
           <div class="recipe-body">
@@ -1581,345 +1576,208 @@
     <script>
       // 初始化时运行
       document.addEventListener("DOMContentLoaded", function () {
-        try {
-          // 确保DOM元素完全加载后再执行以下代码
-          // 更改界面中的中文文本为英文
-          const analyzedFoodName = document.querySelector("#analyzedFoodName");
-          if (analyzedFoodName) analyzedFoodName.textContent = "Food Name";
+        // 更改界面中的中文文本为英文
+        // 分析结果视图文本修改
+        document.querySelector("#analyzedFoodName").textContent = "Food Name";
+        document.querySelector("#foodHealthTag").textContent = "Healthy Choice";
+        document.querySelector("#foodAnalysisText").textContent =
+          "Analysis results will be displayed here...";
+        document.querySelector("#recommendationsSection h3").textContent =
+          "Recommended Healthy Recipes";
+        document.querySelector("#backToHomeBtn").innerHTML =
+          '<i class="fas fa-arrow-left"></i> Back to Home';
 
-          const foodHealthTag = document.querySelector("#foodHealthTag");
-          if (foodHealthTag) foodHealthTag.textContent = "Healthy Choice";
+        // 历史记录视图文本修改
+        document.querySelector("#historyView .hero h1").textContent =
+          "Your History";
+        document.querySelector("#historyView .hero p").textContent =
+          "View and access previously analyzed foods and browsed recipes.";
+        document.querySelector("#loginPrompt h2").textContent =
+          "Please Login to View Your History";
+        document.querySelector("#loginPrompt p").textContent =
+          "Login to see all analysis records and browsed recipes";
+        document.querySelector("#historyLoginBtn").textContent =
+          "Login / Register";
+        document.querySelector("#analysisTabBtn").textContent = "Food Analysis";
+        document.querySelector("#recipeTabBtn").textContent = "Recipe Browse";
+        document.querySelector("#historySearchInput").placeholder =
+          "Search history...";
+        document.querySelector("#clearHistoryBtn").innerHTML =
+          '<i class="fas fa-trash"></i> Clear History';
 
-          const foodAnalysisText = document.querySelector("#foodAnalysisText");
-          if (foodAnalysisText)
-            foodAnalysisText.textContent =
-              "Analysis results will be displayed here...";
+        // 食谱详情视图文本修改
+        document.querySelector(
+          "#recipeDetailView .recipe-stats .stat-label:nth-child(2)"
+        ).textContent = "Calories";
+        document.querySelector(
+          "#recipeDetailView .recipe-stats .stat-label:nth-child(4)"
+        ).textContent = "Protein";
+        document.querySelector(
+          "#recipeDetailView .recipe-stats .stat-label:nth-child(6)"
+        ).textContent = "Carbs";
+        document.querySelector(
+          "#recipeDetailView .recipe-stats .stat-label:nth-child(8)"
+        ).textContent = "Fat";
+        document.querySelector(
+          "#recipeDetailView .recipe-stats .stat-label:nth-child(10)"
+        ).textContent = "Minutes";
+        document.querySelector(
+          "#recipeDetailView .recipe-section h3:nth-of-type(1)"
+        ).textContent = "Health Tips";
+        document.querySelector(
+          "#recipeDetailView .recipe-section h3:nth-of-type(2)"
+        ).textContent = "Ingredients";
+        document.querySelector(
+          "#recipeDetailView .recipe-section h3:nth-of-type(3)"
+        ).textContent = "Steps";
+        document.querySelector("#backFromRecipeBtn").innerHTML =
+          '<i class="fas fa-arrow-left"></i> Back';
 
-          const recommendationsTitle = document.querySelector(
-            "#recommendationsSection h3"
+        // 实现点击查看详情的弹窗功能
+        function setupRecipeDetailLinks() {
+          // 为所有具有"点击查看详情"的元素添加点击事件
+          const viewDetailButtons = document.querySelectorAll(
+            ".view-recipe-details"
           );
-          if (recommendationsTitle)
-            recommendationsTitle.textContent = "Recommended Healthy Recipes";
-
-          const backToHomeBtn = document.querySelector("#backToHomeBtn");
-          if (backToHomeBtn)
-            backToHomeBtn.innerHTML =
-              '<i class="fas fa-arrow-left"></i> Back to Home';
-
-          // 历史记录视图文本修改
-          const historyTitle = document.querySelector("#historyView .hero h1");
-          if (historyTitle) historyTitle.textContent = "Your History";
-
-          const historyDesc = document.querySelector("#historyView .hero p");
-          if (historyDesc)
-            historyDesc.textContent =
-              "View and access previously analyzed foods and browsed recipes.";
-
-          const loginPromptTitle = document.querySelector("#loginPrompt h2");
-          if (loginPromptTitle)
-            loginPromptTitle.textContent = "Please Login to View Your History";
-
-          const loginPromptDesc = document.querySelector("#loginPrompt p");
-          if (loginPromptDesc)
-            loginPromptDesc.textContent =
-              "Login to see all analysis records and browsed recipes";
-
-          const historyLoginBtn = document.querySelector("#historyLoginBtn");
-          if (historyLoginBtn) historyLoginBtn.textContent = "Login / Register";
-
-          const analysisTabBtn = document.querySelector("#analysisTabBtn");
-          if (analysisTabBtn) analysisTabBtn.textContent = "Food Analysis";
-
-          const recipeTabBtn = document.querySelector("#recipeTabBtn");
-          if (recipeTabBtn) recipeTabBtn.textContent = "Recipe Browse";
-
-          const historySearchInput = document.querySelector(
-            "#historySearchInput"
-          );
-          if (historySearchInput)
-            historySearchInput.placeholder = "Search history...";
-
-          const clearHistoryBtn = document.querySelector("#clearHistoryBtn");
-          if (clearHistoryBtn)
-            clearHistoryBtn.innerHTML =
-              '<i class="fas fa-trash"></i> Clear History';
-
-          // 食谱详情视图文本修改
-          const caloriesLabel = document.querySelector(
-            "#recipeDetailView .recipe-stats .stat-label:nth-child(2)"
-          );
-          if (caloriesLabel) caloriesLabel.textContent = "Calories";
-
-          const proteinLabel = document.querySelector(
-            "#recipeDetailView .recipe-stats .stat-label:nth-child(4)"
-          );
-          if (proteinLabel) proteinLabel.textContent = "Protein";
-
-          const carbsLabel = document.querySelector(
-            "#recipeDetailView .recipe-stats .stat-label:nth-child(6)"
-          );
-          if (carbsLabel) carbsLabel.textContent = "Carbs";
-
-          const fatLabel = document.querySelector(
-            "#recipeDetailView .recipe-stats .stat-label:nth-child(8)"
-          );
-          if (fatLabel) fatLabel.textContent = "Fat";
-
-          const minutesLabel = document.querySelector(
-            "#recipeDetailView .recipe-stats .stat-label:nth-child(10)"
-          );
-          if (minutesLabel) minutesLabel.textContent = "Minutes";
-
-          const healthTipsLabel = document.querySelector(
-            "#recipeDetailView .recipe-section h3:nth-of-type(1)"
-          );
-          if (healthTipsLabel) healthTipsLabel.textContent = "Health Tips";
-
-          const ingredientsLabel = document.querySelector(
-            "#recipeDetailView .recipe-section h3:nth-of-type(2)"
-          );
-          if (ingredientsLabel) ingredientsLabel.textContent = "Ingredients";
-
-          const stepsLabel = document.querySelector(
-            "#recipeDetailView .recipe-section h3:nth-of-type(3)"
-          );
-          if (stepsLabel) stepsLabel.textContent = "Steps";
-
-          const backFromRecipeBtn =
-            document.querySelector("#backFromRecipeBtn");
-          if (backFromRecipeBtn)
-            backFromRecipeBtn.innerHTML =
-              '<i class="fas fa-arrow-left"></i> Back';
-
-          // 实现点击查看详情的弹窗功能
-          function setupRecipeDetailLinks() {
-            // 为所有具有"点击查看详情"的元素添加点击事件
-            const viewDetailButtons = document.querySelectorAll(
-              ".view-recipe-details"
-            );
-            console.log("找到View Details按钮数量:", viewDetailButtons.length);
-
-            if (viewDetailButtons && viewDetailButtons.length > 0) {
-              viewDetailButtons.forEach((button) => {
-                button.textContent = "View Details";
-                button.addEventListener("click", function (e) {
-                  e.preventDefault();
-                  e.stopPropagation(); // 阻止事件冒泡
-                  console.log("View Details按钮被点击");
-                  const recipeId = this.getAttribute("data-recipe-id");
-                  console.log("Recipe ID:", recipeId);
-                  showRecipeDetailsModal(recipeId);
-                });
+          if (viewDetailButtons) {
+            viewDetailButtons.forEach((button) => {
+              button.textContent = "View Details";
+              button.addEventListener("click", function (e) {
+                e.preventDefault();
+                const recipeId = this.getAttribute("data-recipe-id");
+                showRecipeDetailsModal(recipeId);
               });
-            }
-          }
-
-          // 显示食谱详情弹窗
-          function showRecipeDetailsModal(recipeId) {
-            console.log("显示食谱详情弹窗, ID:", recipeId);
-            const modal = document.getElementById("recipeDetailsModal");
-            if (!modal) {
-              console.error("未找到recipeDetailsModal元素");
-              return;
-            }
-
-            // 这里应该根据recipeId获取食谱数据
-            // 为简化示例，这里使用静态数据
-            const recipeData = getRecipeById(recipeId);
-            console.log("获取到的食谱数据:", recipeData);
-
-            if (recipeData) {
-              // 填充弹窗内容
-              const modalTitle = document.getElementById("modalRecipeTitle");
-              if (modalTitle) modalTitle.textContent = recipeData.title;
-
-              // 不显示图片
-              const modalImage = document.getElementById("modalRecipeImage");
-              if (modalImage) modalImage.style.display = "none";
-
-              const modalCalories = document.getElementById(
-                "modalRecipeCalories"
-              );
-              if (modalCalories)
-                modalCalories.textContent = recipeData.calories;
-
-              const modalProtein =
-                document.getElementById("modalRecipeProtein");
-              if (modalProtein) modalProtein.textContent = recipeData.protein;
-
-              const modalCarbs = document.getElementById("modalRecipeCarbs");
-              if (modalCarbs) modalCarbs.textContent = recipeData.carbs;
-
-              const modalFat = document.getElementById("modalRecipeFat");
-              if (modalFat) modalFat.textContent = recipeData.fat;
-
-              const modalTime = document.getElementById("modalRecipeTime");
-              if (modalTime) modalTime.textContent = recipeData.time;
-
-              // 正确处理Health Tips中的HTML标签
-              const modalHealthTips = document.getElementById(
-                "modalRecipeHealthTips"
-              );
-              if (modalHealthTips) {
-                // 如果包含HTML标签，使用innerHTML以正确渲染
-                if (
-                  recipeData.healthTips &&
-                  (recipeData.healthTips.includes("<strong>") ||
-                    recipeData.healthTips.includes("<br>"))
-                ) {
-                  modalHealthTips.innerHTML = recipeData.healthTips;
-                } else {
-                  modalHealthTips.textContent = recipeData.healthTips;
-                }
-              }
-
-              // 填充食材列表
-              const ingredientsList = document.getElementById(
-                "modalRecipeIngredients"
-              );
-              if (ingredientsList) {
-                ingredientsList.innerHTML = "";
-                recipeData.ingredients.forEach((ingredient) => {
-                  const li = document.createElement("li");
-                  li.textContent = ingredient;
-                  ingredientsList.appendChild(li);
-                });
-              }
-
-              // 填充步骤列表
-              const stepsList = document.getElementById("modalRecipeSteps");
-              if (stepsList) {
-                stepsList.innerHTML = "";
-                recipeData.steps.forEach((step) => {
-                  const li = document.createElement("li");
-                  li.textContent = step;
-                  stepsList.appendChild(li);
-                });
-              }
-
-              // 显示弹窗
-              modal.style.display = "flex";
-            } else {
-              console.error("未找到ID为", recipeId, "的食谱数据");
-            }
-          }
-
-          // 模拟从后端获取食谱数据的函数
-          function getRecipeById(id) {
-            // 示例数据
-            const recipes = {
-              1: {
-                title: "Rainbow Vegetable Salad",
-                image:
-                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
-                calories: "180",
-                protein: "5g",
-                carbs: "22g",
-                fat: "8g",
-                time: "15",
-                healthTips:
-                  "This low-calorie salad is rich in vitamins and fiber, making it perfect for weight management.",
-                ingredients: [
-                  "2 cups mixed greens",
-                  "1/2 cup cherry tomatoes, halved",
-                  "1/4 cup cucumber, sliced",
-                  "1/4 cup bell peppers, diced",
-                  "1/4 cup carrots, grated",
-                  "2 tbsp low-fat dressing",
-                ],
-                steps: [
-                  "Wash all vegetables thoroughly.",
-                  "Chop all vegetables as directed.",
-                  "Combine all vegetables in a large bowl.",
-                  "Drizzle with dressing just before serving.",
-                  "Toss gently to coat all ingredients.",
-                ],
-              },
-              2: {
-                title: "High Protein Energy Bowl",
-                image:
-                  "https://images.unsplash.com/photo-1484723091739-30a097e8f929",
-                calories: "320",
-                protein: "28g",
-                carbs: "30g",
-                fat: "10g",
-                time: "20",
-                healthTips:
-                  "High in protein for muscle recovery, this bowl provides sustained energy throughout the day.",
-                ingredients: [
-                  "1/2 cup cooked quinoa",
-                  "100g grilled chicken breast",
-                  "1/4 avocado, sliced",
-                  "1/4 cup cherry tomatoes",
-                  "1/4 cup cucumber",
-                  "1 tbsp olive oil",
-                  "1 tsp lemon juice",
-                  "Salt and pepper to taste",
-                ],
-                steps: [
-                  "Cook quinoa according to package instructions.",
-                  "Grill chicken breast and slice into strips.",
-                  "Arrange quinoa as base in a bowl.",
-                  "Top with chicken, avocado, and vegetables.",
-                  "Drizzle with olive oil and lemon juice.",
-                  "Season with salt and pepper to taste.",
-                ],
-              },
-            };
-
-            // 处理动态生成的食谱ID (1000以上)
-            if (id >= 1000) {
-              // 对于动态生成的食谱，使用默认模板
-              return {
-                title: "Custom Recipe " + id,
-                image:
-                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c", // 默认图片
-                calories: "250",
-                protein: "15g",
-                carbs: "25g",
-                fat: "10g",
-                time: "20",
-                // 移除HTML标签以避免显示问题
-                healthTips:
-                  "This is a custom recipe generated based on your food analysis.",
-                ingredients: ["Ingredient 1", "Ingredient 2", "Ingredient 3"],
-                steps: [
-                  "Step 1: Prepare ingredients",
-                  "Step 2: Cook according to instructions",
-                  "Step 3: Serve and enjoy",
-                ],
-              };
-            }
-
-            return recipes[id];
-          }
-
-          // 初始化时设置"点击查看详情"链接
-          console.log("开始设置View Details链接");
-          setupRecipeDetailLinks();
-
-          // 添加监听器，在动态加载内容后重新设置链接
-          const observer = new MutationObserver(function (mutations) {
-            console.log("检测到DOM变化，重新设置View Details链接");
-            setupRecipeDetailLinks();
-          });
-
-          // 监听文档变化
-          observer.observe(document.body, { childList: true, subtree: true });
-
-          // 为关闭按钮添加事件监听
-          const modalCloseBtn = document.querySelector(
-            "#recipeDetailsModal button"
-          );
-          if (modalCloseBtn) {
-            modalCloseBtn.addEventListener("click", function () {
-              document.getElementById("recipeDetailsModal").style.display =
-                "none";
             });
           }
-        } catch (error) {
-          console.error("初始化脚本时出错:", error);
         }
+
+        // 显示食谱详情弹窗
+        function showRecipeDetailsModal(recipeId) {
+          const modal = document.getElementById("recipeDetailsModal");
+
+          // 这里应该根据recipeId获取食谱数据
+          // 为简化示例，这里使用静态数据
+          const recipeData = getRecipeById(recipeId);
+
+          if (recipeData) {
+            // 填充弹窗内容
+            document.getElementById("modalRecipeTitle").textContent =
+              recipeData.title;
+            document.getElementById("modalRecipeImage").src = recipeData.image;
+            document.getElementById("modalRecipeCalories").textContent =
+              recipeData.calories;
+            document.getElementById("modalRecipeProtein").textContent =
+              recipeData.protein;
+            document.getElementById("modalRecipeCarbs").textContent =
+              recipeData.carbs;
+            document.getElementById("modalRecipeFat").textContent =
+              recipeData.fat;
+            document.getElementById("modalRecipeTime").textContent =
+              recipeData.time;
+            document.getElementById("modalRecipeHealthTips").textContent =
+              recipeData.healthTips;
+
+            // 填充食材列表
+            const ingredientsList = document.getElementById(
+              "modalRecipeIngredients"
+            );
+            ingredientsList.innerHTML = "";
+            recipeData.ingredients.forEach((ingredient) => {
+              const li = document.createElement("li");
+              li.textContent = ingredient;
+              ingredientsList.appendChild(li);
+            });
+
+            // 填充步骤列表
+            const stepsList = document.getElementById("modalRecipeSteps");
+            stepsList.innerHTML = "";
+            recipeData.steps.forEach((step) => {
+              const li = document.createElement("li");
+              li.textContent = step;
+              stepsList.appendChild(li);
+            });
+
+            // 显示弹窗
+            modal.style.display = "flex";
+          }
+        }
+
+        // 模拟从后端获取食谱数据的函数
+        function getRecipeById(id) {
+          // 示例数据
+          const recipes = {
+            1: {
+              title: "Rainbow Vegetable Salad",
+              image:
+                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+              calories: "180",
+              protein: "5g",
+              carbs: "22g",
+              fat: "8g",
+              time: "15",
+              healthTips:
+                "This low-calorie salad is rich in vitamins and fiber, making it perfect for weight management.",
+              ingredients: [
+                "2 cups mixed greens",
+                "1/2 cup cherry tomatoes, halved",
+                "1/4 cup cucumber, sliced",
+                "1/4 cup bell peppers, diced",
+                "1/4 cup carrots, grated",
+                "2 tbsp low-fat dressing",
+              ],
+              steps: [
+                "Wash all vegetables thoroughly.",
+                "Chop all vegetables as directed.",
+                "Combine all vegetables in a large bowl.",
+                "Drizzle with dressing just before serving.",
+                "Toss gently to coat all ingredients.",
+              ],
+            },
+            2: {
+              title: "High Protein Energy Bowl",
+              image:
+                "https://images.unsplash.com/photo-1484723091739-30a097e8f929",
+              calories: "320",
+              protein: "28g",
+              carbs: "30g",
+              fat: "10g",
+              time: "20",
+              healthTips:
+                "High in protein for muscle recovery, this bowl provides sustained energy throughout the day.",
+              ingredients: [
+                "1/2 cup cooked quinoa",
+                "100g grilled chicken breast",
+                "1/4 avocado, sliced",
+                "1/4 cup cherry tomatoes",
+                "1/4 cup cucumber",
+                "1 tbsp olive oil",
+                "1 tsp lemon juice",
+                "Salt and pepper to taste",
+              ],
+              steps: [
+                "Cook quinoa according to package instructions.",
+                "Grill chicken breast and slice into strips.",
+                "Arrange quinoa as base in a bowl.",
+                "Top with chicken, avocado, and vegetables.",
+                "Drizzle with olive oil and lemon juice.",
+                "Season with salt and pepper to taste.",
+              ],
+            },
+          };
+
+          return recipes[id];
+        }
+
+        // 初始化时设置"点击查看详情"链接
+        setupRecipeDetailLinks();
+
+        // 添加监听器，在动态加载内容后重新设置链接
+        const observer = new MutationObserver(function (mutations) {
+          setupRecipeDetailLinks();
+        });
+
+        // 监听文档变化
+        observer.observe(document.body, { childList: true, subtree: true });
       });
     </script>
   </body>

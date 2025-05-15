@@ -439,124 +439,102 @@ function initEventListeners() {
     console.log("Analyze button clicked, checking image...");
     console.log("State.uploadedImage exists:", !!state.uploadedImage);
 
-    try {
-      // 显示分析中的状态
-      elements.buttons.analyze.disabled = true;
-      elements.buttons.analyze.textContent = "Analyzing...";
-      elements.buttons.analyze.style.pointerEvents = "none";
+    // 检查用户是否登录
+    let token = null;
+    const stored = localStorage.getItem("healthyDietUser");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // 优先使用顶层的token，也兼容user对象内的token
+        token =
+          parsed.access_token ||
+          (parsed.user && parsed.user.access_token) ||
+          null;
 
-      // 检查用户是否登录
-      let token = null;
-      const stored = localStorage.getItem("healthyDietUser");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          // 优先使用顶层的token，也兼容user对象内的token
-          token =
-            parsed.access_token ||
-            (parsed.user && parsed.user.access_token) ||
-            null;
-
-          // 确保已登录状态下state.user也是正确的
-          if (token && !state.user) {
-            state.user = parsed.user || parsed;
-            updateUserDisplay();
-            console.log("Analyze按钮恢复用户状态成功，token存在");
-          }
-        } catch (error) {
-          console.error("Error parsing user data:", error);
+        // 确保已登录状态下state.user也是正确的
+        if (token && !state.user) {
+          state.user = parsed.user || parsed;
+          updateUserDisplay();
+          console.log("Analyze按钮恢复用户状态成功，token存在");
         }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
       }
-
-      // 强制状态检查：即使有token也需要确认state.user存在
-      if (!token || !state.user) {
-        console.log(
-          "分析食物前检查登录状态：token=",
-          !!token,
-          "state.user=",
-          !!state.user
-        );
-        showNotification("Please login before analyzing food", "warning");
-        showView("auth");
-        // 重置按钮状态
-        elements.buttons.analyze.disabled = false;
-        elements.buttons.analyze.textContent = "Analyze Food";
-        elements.buttons.analyze.style.pointerEvents = "auto";
-        return;
-      }
-
-      // 检查用户积分是否足够
-      const userCredits =
-        typeof state.user.credits === "number" ? state.user.credits : 0;
-
-      // 确保积分不会为负数
-      if (state.user && state.user.credits < 0) {
-        state.user.credits = 0;
-        updateLocalStorage();
-        updateUserDisplay();
-      }
-
-      if (userCredits <= 0) {
-        showNotification("Insufficient credits", "warning");
-        // 延迟跳转到价格页面，让用户先看到提示
-        setTimeout(() => {
-          showView("pricing");
-        }, 1500);
-        // 重置按钮状态
-        elements.buttons.analyze.disabled = false;
-        elements.buttons.analyze.textContent = "Analyze Food";
-        elements.buttons.analyze.style.pointerEvents = "auto";
-        return;
-      }
-
-      // 检查图片 - 优先使用state.uploadedImage
-      if (!state.uploadedImage) {
-        // 如果state中没有图片，检查input元素
-        const fileInput = document.getElementById("foodImageInput");
-        if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-          showNotification("Please upload a food image first.", "warning");
-          return;
-        }
-
-        const file = fileInput.files[0];
-        if (file.size > 5 * 1024 * 1024) {
-          showNotification("Image size must not exceed 5MB.", "error");
-          return;
-        }
-
-        // 转base64
-        const toBase64 = (file) =>
-          new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-
-        try {
-          const base64 = await toBase64(file);
-          state.uploadedImage = base64; // 保存图片到state
-          processImageAnalysis(base64, token);
-        } catch (error) {
-          console.error("转换图片失败:", error);
-          showNotification("Failed to read image.", "error");
-        }
-        return;
-      }
-
-      // 如果state中有图片，直接使用
-      console.log("使用已上传的图片进行分析");
-      let base64 = state.uploadedImage;
-      console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
-      processImageAnalysis(base64, token);
-    } catch (error) {
-      console.error("Analyze button error:", error);
-      showNotification("Failed to analyze food", "error");
-      // 重置按钮状态
-      elements.buttons.analyze.disabled = false;
-      elements.buttons.analyze.textContent = "Analyze Food";
-      elements.buttons.analyze.style.pointerEvents = "auto";
     }
+
+    // 强制状态检查：即使有token也需要确认state.user存在
+    if (!token || !state.user) {
+      console.log(
+        "分析食物前检查登录状态：token=",
+        !!token,
+        "state.user=",
+        !!state.user
+      );
+      showNotification("Please login before analyzing food", "warning");
+      showView("auth");
+      return;
+    }
+
+    // 检查用户积分是否足够
+    const userCredits =
+      typeof state.user.credits === "number" ? state.user.credits : 0;
+
+    // 确保积分不会为负数
+    if (state.user && state.user.credits < 0) {
+      state.user.credits = 0;
+      updateLocalStorage();
+      updateUserDisplay();
+    }
+
+    if (userCredits <= 0) {
+      showNotification("Insufficient credits", "warning");
+      // 延迟跳转到价格页面，让用户先看到提示
+      setTimeout(() => {
+        showView("pricing");
+      }, 1500);
+      return;
+    }
+
+    // 检查图片 - 优先使用state.uploadedImage
+    if (!state.uploadedImage) {
+      // 如果state中没有图片，检查input元素
+      const fileInput = document.getElementById("foodImageInput");
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        showNotification("Please upload a food image first.", "warning");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification("Image size must not exceed 5MB.", "error");
+        return;
+      }
+
+      // 转base64
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+      try {
+        const base64 = await toBase64(file);
+        state.uploadedImage = base64; // 保存图片到state
+        processImageAnalysis(base64, token);
+      } catch (error) {
+        console.error("转换图片失败:", error);
+        showNotification("Failed to read image.", "error");
+      }
+      return;
+    }
+
+    // 如果state中有图片，直接使用
+    console.log("使用已上传的图片进行分析");
+    let base64 = state.uploadedImage;
+    console.log("处理后的base64前缀:", base64.substring(0, 50) + "...");
+    processImageAnalysis(base64, token);
   };
 
   // 抽取图片分析处理逻辑为独立函数
@@ -565,54 +543,17 @@ function initEventListeners() {
     elements.buttons.analyze.textContent = "Analyzing...";
     elements.buttons.analyze.style.pointerEvents = "none";
 
-    // 压缩图片base64数据，减小数据量
-    let compressedBase64 = base64;
-    try {
-      // 如果base64字符串太长，可能是高分辨率图片，尝试压缩
-      if (base64.length > 500000) {
-        console.log("图片数据过大，尝试压缩...");
-        compressedBase64 = compressImageBase64(base64);
-      }
-    } catch (error) {
-      console.error("压缩图片失败:", error);
-      // 失败时继续使用原始base64
-      compressedBase64 = base64;
-    }
+    // 调试输出，查看base64格式
+    console.log("发送的base64格式:", base64.substring(0, 50) + "...");
 
     // 确保使用完整的base64字符串 (包含data:image前缀)
-    let fullBase64 = compressedBase64;
-    if (!fullBase64.startsWith("data:image")) {
+    let fullBase64 = base64;
+    if (!base64.startsWith("data:image")) {
       // 如果没有前缀，添加前缀
-      fullBase64 = "data:image/jpeg;base64," + compressedBase64;
+      fullBase64 = "data:image/jpeg;base64," + base64;
     }
 
-    console.log("发送base64格式(已处理):", fullBase64.substring(0, 50) + "...");
-
-    // 先清除之前可能存在的结果，减少内存占用
-    state.currentFood = null;
-
-    // 显示加载状态
-    const loadingIndicator = document.createElement("div");
-    loadingIndicator.id = "apiLoadingIndicator";
-    loadingIndicator.innerHTML = `
-      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; justify-content: center; align-items: center;">
-        <div style="background: white; border-radius: 10px; padding: 20px; text-align: center;">
-          <div style="margin-bottom: 15px; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; display: inline-block; animation: spin 2s linear infinite;"></div>
-          <p style="margin: 0;">Analyzing your food...</p>
-        </div>
-      </div>
-      <style>
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
-    `;
-    document.body.appendChild(loadingIndicator);
-
-    // 使用fetch API发送请求，设置超时
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+    console.log("发送完整base64格式:", fullBase64.substring(0, 50) + "...");
 
     fetch("http://web.aigastronome.com/api/v1/gourmet/generate", {
       method: "POST",
@@ -622,11 +563,8 @@ function initEventListeners() {
       },
       body: JSON.stringify({ base64_image: fullBase64 }),
       credentials: "omit",
-      signal: controller.signal,
     })
       .then((response) => {
-        clearTimeout(timeoutId);
-        console.log("API响应状态:", response.status, response.statusText);
         if (response.ok) {
           return response.json();
         } else {
@@ -640,16 +578,10 @@ function initEventListeners() {
         }
       })
       .then((data) => {
-        // 立即移除加载指示器
-        removeLoadingIndicator();
-
         // 处理分析结果，渲染到页面
         if (data && data.ok === 1 && data.data) {
           const result = data.data;
-          console.log("API返回食物分析数据");
-
-          // 这里不再需要保存完整图片，只保存缩略图或URL
-          const thumbnailSrc = getImageThumbnail(state.uploadedImage);
+          console.log("API返回的食物分析数据:", result);
 
           // 将分析结果保存到state
           state.currentFood = {
@@ -657,164 +589,265 @@ function initEventListeners() {
             calories: result.calorie_content || "未知卡路里",
             analysis: result.summary || "无分析结果",
             isHealthy: true, // 默认设置为健康食品
-            image: thumbnailSrc, // 使用缩略图而非完整图片
+            image: state.uploadedImage, // 使用上传的图片作为展示图片
             recommendations: [], // 初始化推荐列表
           };
 
-          // 释放原始图片内存
-          state.uploadedImage = thumbnailSrc;
-
           // 显示分析结果
-          elements.analysis.image.src = thumbnailSrc;
+          elements.analysis.image.src = state.uploadedImage;
           elements.analysis.name.textContent = state.currentFood.name;
           elements.analysis.caloriesTag.textContent =
             state.currentFood.calories;
           elements.analysis.text.textContent = state.currentFood.analysis;
 
-          // 清空并重建推荐食谱列表 - 使用更轻量的方式，不设置过多样式和监听器
+          // 改进分析结果的显示样式
+          const analysisText = document.getElementById("foodAnalysisText");
+          if (analysisText) {
+            analysisText.style.backgroundColor = "#f8f9fa";
+            analysisText.style.padding = "15px";
+            analysisText.style.borderRadius = "8px";
+            analysisText.style.lineHeight = "1.6";
+            analysisText.style.color = "#333";
+            analysisText.style.marginTop = "15px";
+            analysisText.style.border = "1px solid #e0e0e0";
+            analysisText.style.borderLeft = "4px solid var(--primary-color)";
+          }
+
+          // 设置推荐菜谱标题
+          const recommendationsTitle = document.querySelector(
+            "#recommendationsSection h3"
+          );
+          if (recommendationsTitle) {
+            recommendationsTitle.textContent = "推荐健康菜谱";
+            recommendationsTitle.style.textAlign = "center";
+            recommendationsTitle.style.position = "relative";
+            recommendationsTitle.style.paddingBottom = "10px";
+            recommendationsTitle.style.borderBottom =
+              "2px solid var(--primary-color)";
+            recommendationsTitle.style.width = "fit-content";
+            recommendationsTitle.style.margin = "30px auto 20px auto";
+          }
+
+          // 清空并重建推荐食谱列表
           elements.analysis.recipes.innerHTML = "";
-
-          // 优化DOM操作：批量创建DOM元素
-          const fragment = document.createDocumentFragment();
-
-          // 限制处理的推荐数量，避免过多DOM操作
-          const maxRecommendations = 4; // 最多显示4个推荐
 
           // 处理推荐的菜品
           if (
             result.diet_recommendations &&
             result.diet_recommendations.length > 0
           ) {
-            result.diet_recommendations
-              .slice(0, maxRecommendations)
-              .forEach((recommendation, index) => {
-                // 创建简化版的食谱对象
-                const recipeId = 1000 + index;
+            result.diet_recommendations.forEach((recommendation, index) => {
+              // 为每个推荐创建一个虚拟的食谱对象
+              const recipeId = 1000 + index; // 使用1000以上的ID，避免与预定义食谱冲突
 
-                // 从烹饪时间中提取总计时间
-                const timeMatch = (
-                  recommendation.dish_details.cooking_time || ""
-                ).match(/总计(\d+)分钟/);
-                const cookingTime =
-                  timeMatch && timeMatch[1] ? timeMatch[1] : "15";
+              // 处理详细信息
+              const cookingTimeText =
+                recommendation.dish_details.cooking_time || "";
+              // 从烹饪时间中提取总计时间
+              const timeMatch = cookingTimeText.match(/总计(\d+)分钟/);
+              const cookingTime =
+                timeMatch && timeMatch[1] ? timeMatch[1] : "15";
 
-                // 简化健康提示处理
-                let healthTips = "";
-                if (
-                  recommendation.dish_details.health_tips &&
-                  recommendation.dish_details.health_tips.length > 0
-                ) {
-                  healthTips =
-                    recommendation.dish_details.health_tips.join("\n");
-                }
+              // 处理健康提示，从Markdown格式转换为HTML
+              let healthTipsHtml = "";
+              if (
+                recommendation.dish_details.health_tips &&
+                recommendation.dish_details.health_tips.length > 0
+              ) {
+                healthTipsHtml = recommendation.dish_details.health_tips
+                  .map((tip) => {
+                    // 提取加粗部分并应用HTML标签
+                    return tip.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                  })
+                  .join("<br>");
+              }
 
-                // 创建简化的食谱对象
-                const newRecipe = {
-                  id: recipeId,
-                  name: recommendation.dish_details.dish_name,
-                  image: null, // 不使用图片减少内存占用
-                  description: recommendation.recommendation_reason,
-                  calories:
-                    recommendation.dish_details.nutrition_data.calories.replace(
-                      " kcal",
-                      ""
-                    ),
-                  protein: recommendation.dish_details.nutrition_data.protein,
-                  carbs:
-                    recommendation.dish_details.nutrition_data.carbohydrates,
-                  fat: recommendation.dish_details.nutrition_data.fat,
-                  time: cookingTime,
-                  healthTips: healthTips,
-                  ingredients: recommendation.dish_details.ingredients,
-                  steps: recommendation.dish_details.steps,
-                };
+              // 创建新的食谱对象
+              const newRecipe = {
+                id: recipeId,
+                name: recommendation.dish_details.dish_name,
+                image: state.currentFood.image, // 使用当前食物图片
+                description: recommendation.recommendation_reason,
+                calories:
+                  recommendation.dish_details.nutrition_data.calories.replace(
+                    " kcal",
+                    ""
+                  ),
+                protein: recommendation.dish_details.nutrition_data.protein,
+                carbs: recommendation.dish_details.nutrition_data.carbohydrates,
+                fat: recommendation.dish_details.nutrition_data.fat,
+                time: cookingTime,
+                cookingTimeText: cookingTimeText, // 保存完整的烹饪时间文本
+                healthTips: healthTipsHtml,
+                ingredients: recommendation.dish_details.ingredients,
+                steps: recommendation.dish_details.steps,
+              };
 
-                // 将新食谱添加到recipes数组中
-                if (!recipes.find((r) => r.id === recipeId)) {
-                  recipes.push(newRecipe);
-                }
+              // 将新食谱添加到recipes数组中
+              if (!recipes.find((r) => r.id === recipeId)) {
+                recipes.push(newRecipe);
+              }
 
-                // 简化的卡片HTML，减少样式和复杂度
-                const recipeCard = document.createElement("div");
-                recipeCard.className = "card recipe-card";
-                recipeCard.dataset.id = recipeId;
-                recipeCard.innerHTML = `
-                <div class="card-content" style="padding: 15px;">
-                  <h3 class="card-title">${newRecipe.name}</h3>
-                  <p class="card-text">${newRecipe.description}</p>
-                  <div class="card-meta">
-                    <span>${newRecipe.calories} 卡路里</span>
-                    <span>${newRecipe.time} Minutes</span>
-                    <a href="#" class="view-recipe-details" data-recipe-id="${recipeId}">View Details</a>
+              // 创建食谱卡片
+              const recipeCard = document.createElement("div");
+              recipeCard.className = "card recipe-card";
+              recipeCard.dataset.id = recipeId;
+              recipeCard.style.border = "1px solid #e0e0e0";
+              recipeCard.style.borderLeft = "4px solid var(--primary-color)";
+              recipeCard.style.borderRadius = "8px";
+              recipeCard.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
+              recipeCard.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+              // 创建营养数据显示
+              const nutritionDisplay = `
+                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                  <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555;">
+                    <i class="fas fa-fire" style="color: #ff6b6b;"></i> ${newRecipe.calories} 卡路里
+                  </span>
+                  <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555;">
+                    <i class="fas fa-drumstick-bite" style="color: #4d96ff;"></i> ${newRecipe.protein}
+                  </span>
+                  <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555;">
+                    <i class="fas fa-bread-slice" style="color: #ffc078;"></i> ${newRecipe.carbs}
+                  </span>
+                  <span style="background: #f8f9fa; padding: 5px 10px; border-radius: 20px; font-size: 13px; color: #555;">
+                    <i class="fas fa-oil-can" style="color: #ffa94d;"></i> ${newRecipe.fat}
+                  </span>
+                </div>
+              `;
+
+              recipeCard.innerHTML = `
+                <div class="card-content" style="padding: 20px;">
+                  <h3 class="card-title" style="margin-bottom: 10px; color: var(--primary-color);">${newRecipe.name}</h3>
+                  <p class="card-text" style="margin-bottom: 15px; line-height: 1.5; color: #555;">${newRecipe.description}</p>
+                  ${nutritionDisplay}
+                  <div class="card-meta" style="margin-top: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="color: #666;"><i class="fas fa-clock" style="color: #20c997;"></i> ${newRecipe.time} Minutes</span>
+                    <a href="#" class="view-recipe-details" data-recipe-id="${recipeId}" style="color: #4caf50; font-weight: bold; text-decoration: none;">View Details <i class="fas fa-chevron-right"></i></a>
                   </div>
                 </div>
               `;
 
-                // 只添加必要的事件监听器
-                const viewDetailsBtn = recipeCard.querySelector(
-                  ".view-recipe-details"
-                );
-                if (viewDetailsBtn) {
-                  viewDetailsBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    showRecipeDetail(recipeId);
-                  });
+              // 添加点击和悬停效果
+              recipeCard.addEventListener("click", (e) => {
+                // 检查如果点击的是"查看详情"链接，则不要触发整个卡片的点击事件
+                if (e.target.closest(".view-recipe-details")) {
+                  e.preventDefault();
+                  return;
                 }
-
-                fragment.appendChild(recipeCard);
-
-                // 将推荐ID添加到当前食物的推荐列表中
-                state.currentFood.recommendations.push(recipeId);
+                showRecipeDetail(recipeId);
               });
 
-            // 一次性添加所有卡片到DOM，减少重排和重绘
-            elements.analysis.recipes.appendChild(fragment);
+              // 添加悬停效果
+              recipeCard.addEventListener("mouseenter", () => {
+                recipeCard.style.transform = "translateY(-5px)";
+                recipeCard.style.boxShadow = "0 5px 15px rgba(0,0,0,0.1)";
+              });
+
+              recipeCard.addEventListener("mouseleave", () => {
+                recipeCard.style.transform = "translateY(0)";
+                recipeCard.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
+              });
+
+              // 添加到推荐列表
+              elements.analysis.recipes.appendChild(recipeCard);
+
+              // 将推荐ID添加到当前食物的推荐列表中
+              state.currentFood.recommendations.push(recipeId);
+            });
           }
 
-          // 异步处理历史记录，避免阻塞UI
+          // 添加到历史记录
+          if (state.user) {
+            try {
+              // 限制历史记录长度，防止存储溢出
+              if (state.user.history && state.user.history.length > 10) {
+                state.user.history = state.user.history.slice(0, 10);
+              }
+
+              // 限制食物图片大小，防止存储溢出
+              let safeFood = {
+                ...state.currentFood,
+                image: null, // 不保存图片到localStorage
+              };
+
+              addToHistory({
+                type: "analysis",
+                food: safeFood,
+                date: new Date(),
+              });
+            } catch (err) {
+              console.error("添加历史记录出错:", err);
+            }
+          }
+
+          // 分析成功后减少一个积分
+          if (state.user && typeof state.user.credits === "number") {
+            state.user.credits = Math.max(0, state.user.credits - 1); // 确保积分不小于0
+            try {
+              updateLocalStorage();
+            } catch (err) {
+              console.error("更新本地存储出错:", err);
+              // 即使存储失败也继续显示
+              showNotification(
+                "Storage quota exceeded, some data may not be saved",
+                "warning"
+              );
+            }
+            updateUserDisplay(); // 更新UI显示
+          }
+
+          // 显示分析结果页面 - 使用延时执行防止localStorage错误阻塞UI切换
+          console.log("准备跳转到分析结果页面...");
+
+          // 使用setTimeout来确保其他代码完成执行后再进行页面切换
           setTimeout(() => {
             try {
-              if (state.user) {
-                // 不保存图片到历史记录
-                const safeFood = {
-                  ...state.currentFood,
-                  image: null,
-                };
-                addToHistory({
-                  type: "analysis",
-                  food: safeFood,
-                  date: new Date(),
-                });
+              // 确保视图元素存在
+              if (!elements.views.analysis) {
+                console.error("分析结果视图元素不存在:", elements.views);
+                // 尝试重新获取元素
+                elements.views.analysis =
+                  document.getElementById("analysisView");
               }
 
-              // 分析成功后减少积分
-              if (state.user && typeof state.user.credits === "number") {
-                state.user.credits = Math.max(0, state.user.credits - 1);
-                try {
-                  // 使用最小化的用户数据更新存储
-                  const minimalData = {
-                    name: state.user.name,
-                    email: state.user.email,
-                    credits: state.user.credits,
-                    access_token: state.user.access_token,
-                  };
-                  localStorage.setItem(
-                    "healthyDietUser",
-                    JSON.stringify(minimalData)
-                  );
-                } catch (e) {
-                  console.error("更新存储失败:", e);
+              if (elements.views.analysis) {
+                // 确保使用函数来显示视图，而不是直接操作DOM
+                showView("analysis");
+                console.log("成功显示分析结果页面");
+              } else {
+                console.error("无法找到分析结果视图元素");
+                // 直接使用DOM操作作为备选方案
+                document
+                  .querySelectorAll(".view")
+                  .forEach((view) => view.classList.remove("active"));
+                const analysisView = document.getElementById("analysisView");
+                if (analysisView) {
+                  analysisView.classList.add("active");
+                  console.log("使用备选方法显示分析结果页面");
                 }
-                updateUserDisplay();
               }
-            } catch (err) {
-              console.error("处理历史记录或积分时出错:", err);
-            }
-          }, 500);
 
-          // 简化页面跳转逻辑，直接切换到分析视图
-          showView("analysis");
+              // 滚动到页面顶部
+              window.scrollTo(0, 0);
+            } catch (err) {
+              console.error("显示分析结果页面时出错:", err);
+
+              // 最后的备选方法 - 直接操作DOM
+              try {
+                const allViews = document.querySelectorAll(".view");
+                allViews.forEach((v) => v.classList.remove("active"));
+                const analysis = document.getElementById("analysisView");
+                if (analysis) {
+                  analysis.classList.add("active");
+                  console.log("使用最终备选方法显示分析结果页面");
+                }
+              } catch (finalErr) {
+                console.error("所有显示方法都失败:", finalErr);
+              }
+            }
+          }, 100); // 延迟100毫秒执行
+
           showNotification("Food analysis successful!", "success");
         } else if (
           data &&
@@ -823,69 +856,31 @@ function initEventListeners() {
         ) {
           // 积分不足的情况
           showNotification("Insufficient credits", "warning");
-          setTimeout(() => showView("pricing"), 1000);
+          // 延迟跳转到价格页面
+          setTimeout(() => {
+            showView("pricing");
+          }, 1500);
         } else {
           // 其他异常情况
           showNotification("Unable to analyze food", "warning");
         }
       })
       .catch((error) => {
-        // 移除加载指示器
-        removeLoadingIndicator();
-
-        if (error.name === "AbortError") {
-          showNotification("Request timed out. Please try again.", "error");
-        } else if (error.message.includes("积分不足")) {
+        if (error.message.includes("积分不足")) {
           showNotification("Insufficient credits", "warning");
-          setTimeout(() => showView("pricing"), 1000);
+          // 延迟跳转到价格页面，让用户先看到提示
+          setTimeout(() => {
+            showView("pricing");
+          }, 1500);
         } else {
           showNotification(error.message, "error");
         }
       })
       .finally(() => {
-        // 恢复按钮状态
         elements.buttons.analyze.disabled = false;
         elements.buttons.analyze.textContent = "Analyze Food";
         elements.buttons.analyze.style.pointerEvents = "auto";
       });
-  }
-
-  // 辅助函数：创建图片缩略图
-  function getImageThumbnail(base64) {
-    // 如果是URL而非base64，直接返回
-    if (!base64 || base64.indexOf("data:image") !== 0) {
-      return base64;
-    }
-
-    try {
-      // 创建简单缩略图逻辑 - 截取前100KB左右的数据作为缩略图标识符
-      // 这里并不是真正的缩略图处理，但可以减少内存占用
-      const maxLength = 1000; // 保留标识符长度
-      if (base64.length > maxLength) {
-        return base64.substring(0, maxLength) + "...";
-      }
-      return base64;
-    } catch (e) {
-      console.error("创建缩略图失败:", e);
-      return null;
-    }
-  }
-
-  // 辅助函数：压缩base64图片
-  function compressImageBase64(base64) {
-    // 简单实现，在实际项目中应该使用canvas进行真正的图片压缩
-    if (!base64 || base64.length < 500000) return base64;
-
-    // 截断过长的base64字符串
-    return base64.substring(0, 500000);
-  }
-
-  // 辅助函数：移除加载指示器
-  function removeLoadingIndicator() {
-    const indicator = document.getElementById("apiLoadingIndicator");
-    if (indicator) {
-      indicator.remove();
-    }
   }
 
   // Back buttons
@@ -1560,8 +1555,8 @@ function updateHistoryView() {
             <button class="btn-icon delete-item" title="删除">
               <i class="fas fa-trash"></i>
             </button>
-          </div>
-        `;
+                        </div>
+                    `;
       } else {
         historyItem.innerHTML = `
                         <img src="${item.recipe.image}" alt="${
@@ -1586,8 +1581,8 @@ function updateHistoryView() {
             <button class="btn-icon delete-item" title="删除">
               <i class="fas fa-trash"></i>
             </button>
-          </div>
-        `;
+                        </div>
+                    `;
       }
 
       historyContainer.appendChild(historyItem);
@@ -1953,33 +1948,6 @@ function init() {
     }
   });
 
-  // 添加hash变化监听
-  window.addEventListener("hashchange", function () {
-    const hash = location.hash.replace("#", "");
-    console.log("URL hash changed to:", hash);
-
-    // 如果hash对应某个视图名称，切换到该视图
-    if (
-      hash &&
-      ["home", "analysis", "recipe", "pricing", "history", "auth"].includes(
-        hash
-      )
-    ) {
-      showView(hash);
-    }
-  });
-
-  // 检查初始hash
-  const initialHash = location.hash.replace("#", "");
-  if (
-    initialHash &&
-    ["home", "analysis", "recipe", "pricing", "history", "auth"].includes(
-      initialHash
-    )
-  ) {
-    showView(initialHash);
-  }
-
   // Check for existing user
   const storedUser = localStorage.getItem("healthyDietUser");
   if (storedUser) {
@@ -2012,12 +1980,6 @@ function init() {
       showView("history");
       updateHistoryView();
     });
-  });
-
-  // 添加自定义事件监听
-  window.addEventListener("analysisReady", function () {
-    console.log("收到analysisReady事件，准备切换到分析视图");
-    showView("analysis");
   });
 }
 
