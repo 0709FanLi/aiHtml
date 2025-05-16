@@ -62,25 +62,44 @@ document.addEventListener("DOMContentLoaded", initApp);
 // Initialize App
 function initApp() {
   // 从本地存储加载用户状态
-  isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const tripWeaverUser = localStorage.getItem("tripWeaverUser");
 
-  // 如果已登录，加载用户数据
-  if (isLoggedIn) {
+  if (tripWeaverUser) {
     try {
-      userData = JSON.parse(localStorage.getItem("userData") || "null");
-      if (userData) {
+      const loginInfo = JSON.parse(tripWeaverUser);
+
+      if (loginInfo && loginInfo.user) {
+        isLoggedIn = true;
+        // 创建userData对象，设置积分信息
+        userData = {
+          name: loginInfo.user.name || loginInfo.user.email || "",
+          email: loginInfo.user.email || "",
+          id: loginInfo.user.id,
+          credits: 0, // 默认积分为0，后续应当从API获取
+        };
+
+        // 检查是否有临时设置的积分
+        if (localStorage.getItem("userCredits")) {
+          userData.credits = parseInt(
+            localStorage.getItem("userCredits") || "0"
+          );
+        }
+
         updateUserDisplay(userData);
       } else {
-        // 数据不存在，视为未登录
+        // 数据不完整，视为未登录
         isLoggedIn = false;
-        localStorage.removeItem("isLoggedIn");
+        userData = null;
       }
     } catch (e) {
       console.error("Error parsing user data:", e);
       // 数据解析错误，视为未登录
       isLoggedIn = false;
-      localStorage.removeItem("isLoggedIn");
+      userData = null;
     }
+  } else {
+    isLoggedIn = false;
+    userData = null;
   }
 
   // 更新UI状态
@@ -148,9 +167,15 @@ function initApp() {
   document
     .getElementById("closePrivacyModal")
     .addEventListener("click", closePrivacy);
-  document
-    .getElementById("plannerForm")
-    .addEventListener("submit", generatePlan);
+  // 绑定表单提交事件并添加调试
+  const plannerForm = document.getElementById("plannerForm");
+  if (plannerForm) {
+    console.log("Found planner form, adding submit event listener");
+    plannerForm.addEventListener("submit", generatePlan);
+    console.log("Submit event listener added to planner form");
+  } else {
+    console.error("Planner form not found!");
+  }
   document
     .getElementById("downloadPlan")
     .addEventListener("click", handleDownloadPlan);
@@ -211,88 +236,87 @@ function switchToLoginForm(e) {
 // Handle Login
 function handleLogin(e) {
   e.preventDefault();
-
-  // 获取表单值
+  console.log("handleLogin被调用");
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
-
-  // 验证协议复选框
   const agreement = document.getElementById("agreeTerms");
   if (!agreement.checked) {
-    showNotification("您必须同意服务条款和隐私政策才能登录。", "warning");
+    showToast(
+      "You must agree to the Terms of Service and Privacy Policy to log in.",
+      "warning"
+    );
     return;
   }
-
-  // 基本验证
   if (!email || !password) {
-    showNotification("请填写所有必填字段。", "warning");
+    showToast("Please fill in all required fields.", "warning");
     return;
   }
-
-  // 禁用按钮防止多次提交
   const submitBtn = document.getElementById("doLoginBtn");
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
-
-  // 使用MD5加密密码
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
   const hashedPassword = md5(password);
-
-  // 准备请求数据
-  const requestData = {
-    email: email,
-    password: hashedPassword,
-  };
-
-  // API登录调用
+  const requestData = { email: email, password: hashedPassword };
+  console.log("发送登录请求...", { email, password: "[已加密]" });
   fetch("http://web.doaitravel.com/api/v1/auth/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(requestData),
+    credentials: "omit",
   })
     .then((response) => {
-      if (!response.ok) {
-        throw new Error("登录失败");
-      }
+      console.log("收到登录请求响应:", response.status, response.statusText);
       return response.json();
     })
-    .then((data) => {
-      if (data.success) {
-        // 保存令牌和用户数据
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        localStorage.setItem("userData", JSON.stringify(data.user));
-
-        // 更新应用状态
+    .then((response) => {
+      console.log("解析登录响应JSON:", response);
+      if (response.ok === 1 && response.data) {
+        // 登录成功
+        const data = response.data;
+        const loginInfo = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          token_type: data.token_type,
+          access_token_expires: data.access_token_expires,
+          refresh_token_expires: data.refresh_token_expires,
+          user: data.user || {
+            id: data.user_id || 0,
+            name: data.user_name || email,
+            email: email,
+          },
+        };
+        localStorage.setItem("tripWeaverUser", JSON.stringify(loginInfo));
+        localStorage.setItem("userCredits", "5");
         isLoggedIn = true;
-        userData = data.user;
-
-        // 更新UI
+        userData = {
+          name: loginInfo.user.name || loginInfo.user.email,
+          email: loginInfo.user.email,
+          id: loginInfo.user.id,
+          credits: 5,
+        };
         updateUserDisplay(userData);
         updateUIState();
-
-        // 关闭模态窗口
         closeModal();
-
-        // 加载用户历史记录
         loadHistory();
-
-        // 显示成功消息
-        showToast(`欢迎回来，${userData.name}！`, "success");
+        showToast(`Welcome back, ${userData.name}!`, "success");
       } else {
-        throw new Error(data.message || "登录失败");
+        // 登录失败
+        debugger;
+        showToast(
+          response.message || "Login failed. Please check your credentials.",
+          "error"
+        );
       }
     })
     .catch((error) => {
-      console.error("Login error:", error);
-      showNotification(error.message || "登录失败，请检查您的凭据。", "error");
+      showToast(
+        "An error occurred during login. Please try again later.",
+        "error"
+      );
     })
     .finally(() => {
-      // 恢复按钮状态
+      console.log("登录请求完成，恢复按钮状态");
       submitBtn.disabled = false;
-      submitBtn.innerHTML = "登录";
+      submitBtn.innerHTML = "Login";
     });
 }
 
@@ -521,11 +545,16 @@ function completeLogout() {
 function generatePlan(e) {
   e.preventDefault();
 
+  // 添加调试信息
+  console.log("Generate Plan function called!");
+
   // 获取表单值
   const location = document.getElementById("location").value;
   const startTime = document.getElementById("startTime").value;
   const endTime = document.getElementById("endTime").value;
   const travelers = document.getElementById("travelers").value;
+
+  console.log("Form values:", { location, startTime, endTime, travelers });
 
   // 基本验证 - 按照顺序验证各字段
 
@@ -592,21 +621,34 @@ function generatePlan(e) {
     document.getElementById("travelers").setCustomValidity("");
   }
 
-  // 检查用户是否登录且有足够积分
-  if (isLoggedIn) {
-    if (userData && userData.credits < 1) {
-      showToast("您的积分不足，请购买套餐后继续使用。", "error");
-      document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
-      return;
-    }
-  } else {
-    // 未登录用户有使用限制
-    if (usageCount >= 1) {
-      showToast("免费使用次数已用完，请注册账号继续使用。", "error");
-      openSignupModal();
-      return;
-    }
+  // 添加调试日志
+  console.log("登录状态检查:", { isLoggedIn, userData });
+
+  // 检查用户是否登录
+  if (!isLoggedIn) {
+    // 未登录用户必须先登录
+    console.log("用户未登录，显示登录弹窗");
+    showToast("Please log in to generate a travel plan", "warning");
+    openLoginModal();
+    return;
   }
+
+  // 检查登录用户是否有足够积分
+  console.log(
+    "用户已登录，检查积分:",
+    userData ? userData.credits : "无积分信息"
+  );
+  if (!userData || userData.credits < 1) {
+    console.log("积分不足，跳转到购买页面");
+    showToast(
+      "You don't have enough credits. Please purchase a plan to continue.",
+      "warning"
+    );
+    document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+
+  console.log("登录和积分检查通过，继续生成旅行计划");
 
   // 显示加载中，隐藏结果
   planLoader.classList.add("active");
@@ -620,10 +662,10 @@ function generatePlan(e) {
 
   // 准备请求数据
   const requestData = {
-    location: location,
-    startTime: startTime,
-    endTime: endTime,
-    travelers: parseInt(travelers),
+    destination: location,
+    start_time: startTime,
+    end_time: endTime,
+    people_count: parseInt(travelers),
   };
 
   // 发送实际请求到 API
@@ -634,7 +676,16 @@ function generatePlan(e) {
 
   // 如果用户已登录，添加授权头
   if (isLoggedIn) {
-    headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
+    try {
+      const tripWeaverUser = JSON.parse(
+        localStorage.getItem("tripWeaverUser") || "{}"
+      );
+      if (tripWeaverUser && tripWeaverUser.access_token) {
+        headers["Authorization"] = `Bearer ${tripWeaverUser.access_token}`;
+      }
+    } catch (e) {
+      console.error("Error parsing access token:", e);
+    }
   }
 
   fetch(apiUrl, {
@@ -648,27 +699,29 @@ function generatePlan(e) {
       }
       return response.json();
     })
-    .then((data) => {
+    .then((response) => {
       // 隐藏加载中，显示结果
       planLoader.classList.remove("active");
       results.classList.add("active");
 
-      if (data.success) {
+      if (response.ok === 1 && response.data) {
+        const data = response.data;
+
         // 更新计划详情
-        planTitle.textContent = data.plan.title || `Exploring ${location}`;
-        planLocation.textContent = location;
-        planTime.textContent = `${formatTime(startTime)} - ${formatTime(
-          endTime
+        planTitle.textContent = `Exploring ${data.destination}`;
+        planLocation.textContent = data.destination;
+        planTime.textContent = `${formatTime(data.start_time)} - ${formatTime(
+          data.end_time
         )}`;
-        planPeople.textContent = `${travelers} ${
-          travelers == 1 ? "Traveler" : "Travelers"
+        planPeople.textContent = `${data.people_count} ${
+          data.people_count == 1 ? "Traveler" : "Travelers"
         }`;
 
         // 处理并显示时间线
-        const timelineData = data.plan.timeline.map((activity) => ({
+        const timelineData = data.content.map((activity) => ({
           time: new Date(`2000-01-01T${activity.time}`),
           title: activity.title,
-          description: activity.description,
+          description: activity.info,
         }));
 
         displayTimelinePlan(timelineData);
@@ -676,19 +729,19 @@ function generatePlan(e) {
         // 保存当前计划
         currentPlan = {
           id: Date.now(),
-          title: data.plan.title || `Exploring ${location}`,
-          location: location,
-          startTime: startTime,
-          endTime: endTime,
-          travelers: parseInt(travelers),
+          title: `Exploring ${data.destination}`,
+          location: data.destination,
+          startTime: data.start_time,
+          endTime: data.end_time,
+          travelers: data.people_count,
           date: new Date().toISOString().split("T")[0],
           timeline: timelineData,
         };
 
         // 已登录用户减少积分并添加到历史
         if (isLoggedIn && userData) {
-          userData.credits--;
-          localStorage.setItem("userData", JSON.stringify(userData));
+          userData.credits = Math.max(0, userData.credits - 1);
+          localStorage.setItem("userCredits", userData.credits.toString());
           updateUserDisplay(userData);
           addToHistory(currentPlan);
         }
@@ -699,7 +752,7 @@ function generatePlan(e) {
         // 显示成功消息
         showToast("Travel plan generated successfully!", "success");
       } else {
-        throw new Error(data.message || "Plan generation failed");
+        throw new Error(response.message || "Plan generation failed");
       }
     })
     .catch((error) => {
@@ -1110,7 +1163,8 @@ function handleBuyPlan(plan) {
     // 模拟更新用户数据
     if (userData) {
       userData.credits = (userData.credits || 0) + creditsToAdd;
-      localStorage.setItem("userData", JSON.stringify(userData));
+      // 将积分存储到localStorage，以便下次加载时使用
+      localStorage.setItem("userCredits", userData.credits.toString());
       updateUserDisplay(userData);
     }
 
@@ -1129,89 +1183,248 @@ function handleBuyPlan(plan) {
 
 // Show Toast Notification
 function showToast(message, type = "success") {
-  const toastMessage = document.getElementById("toastMessage");
+  debugger;
+  console.log("showToast被调用:", message, type);
+
+  // 首先检查notification元素是否存在
+  let toast = document.getElementById("notification");
+  let toastMessage = document.getElementById("notificationMessage");
+
+  // 如果元素不存在，则创建一个新的Toast元素
+  if (!toast) {
+    console.log("创建新的Toast元素");
+    toast = document.createElement("div");
+    toast.id = "notification";
+    toast.className = "toast";
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      min-width: 300px;
+      pointer-events: auto;
+    `;
+
+    // 创建Toast图标
+    const icon = document.createElement("i");
+    icon.classList.add("fas");
+    toast.appendChild(icon);
+
+    // 创建Toast消息文本
+    toastMessage = document.createElement("span");
+    toastMessage.id = "notificationMessage";
+    toastMessage.style.marginLeft = "10px";
+    toast.appendChild(toastMessage);
+
+    // 创建关闭按钮
+    const closeBtn = document.createElement("button");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.style.cssText = `
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      margin-left: auto;
+      cursor: pointer;
+    `;
+    closeBtn.onclick = function () {
+      toast.classList.remove("show");
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 300);
+    };
+    toast.appendChild(closeBtn);
+
+    // 添加到body
+    document.body.appendChild(toast);
+  }
+
+  // 如果提示消息元素不存在
+  if (!toastMessage) {
+    toastMessage = document.createElement("span");
+    toastMessage.id = "notificationMessage";
+    toastMessage.style.marginLeft = "10px";
+    toast.appendChild(toastMessage);
+  }
+
+  // 设置Toast消息文本
   toastMessage.textContent = message;
 
-  // Set icon based on type
-  const toastIcon = toast.querySelector("i");
-  if (type === "success") {
-    toastIcon.className = "fas fa-check-circle";
-    toast.className = "toast success";
-  } else {
-    toastIcon.className = "fas fa-exclamation-circle";
-    toast.className = "toast error";
-  }
-
-  // Show toast
-  toast.classList.add("active");
-
-  // Hide toast after 3 seconds
-  setTimeout(() => {
-    toast.classList.remove("active");
-  }, 3000);
-}
-
-// 添加通知函数
-function showNotification(message, type = "success", duration = 3000) {
-  const notification = document.getElementById("notification");
-  const notificationMessage = document.getElementById("notificationMessage");
-  notificationMessage.textContent = message;
-
-  // 设置图标样式
-  const notificationIcon = notification.querySelector("i");
-  if (type === "success") {
-    notificationIcon.className = "fas fa-check-circle";
-    notification.className = "toast success";
-  } else if (type === "warning") {
-    notificationIcon.className = "fas fa-exclamation-triangle";
-    notification.className = "toast warning";
-  } else {
-    notificationIcon.className = "fas fa-exclamation-circle";
-    notification.className = "toast error";
-  }
-
-  // 显示通知
-  notification.style.display = "flex";
-  setTimeout(() => {
-    notification.classList.add("show");
-  }, 10);
-
-  // 自动关闭
-  if (duration > 0) {
-    setTimeout(() => {
-      notification.classList.remove("show");
-      setTimeout(() => {
-        notification.style.display = "none";
-      }, 300);
-    }, duration);
-  }
-}
-
-// Animate elements when they come into view
-function animateOnScroll() {
-  const fadeElements = document.querySelectorAll(".fade-in");
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = "1";
-          entry.target.style.transform = "translateY(0)";
-        }
-      });
-    },
-    {
-      threshold: 0.1,
+  // 设置Toast图标和颜色
+  const icon = toast.querySelector("i");
+  if (icon) {
+    icon.className = "fas"; // 清除所有类
+    if (type === "success") {
+      icon.className += " fa-check-circle";
+      toast.style.backgroundColor = "#28a745";
+    } else if (type === "warning") {
+      icon.className += " fa-exclamation-triangle";
+      toast.style.backgroundColor = "#ffc107";
+      toast.style.color = "#333";
+    } else {
+      icon.className += " fa-exclamation-circle";
+      toast.style.backgroundColor = "#dc3545";
     }
-  );
+  }
 
-  fadeElements.forEach((element) => {
-    element.style.opacity = "0";
-    element.style.transform = "translateY(20px)";
-    element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-    observer.observe(element);
-  });
+  // 清除旧定时器
+  if (toast.hideTimer) clearTimeout(toast.hideTimer);
+  if (toast.removeTimer) clearTimeout(toast.removeTimer);
+
+  // 强制显示Toast
+  toast.style.display = "flex";
+  toast.classList.add("show");
+
+  // 添加Toast动画样式
+  if (!document.getElementById("toast-animation-style")) {
+    const style = document.createElement("style");
+    style.id = "toast-animation-style";
+    style.innerHTML = `
+      .toast {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        transform: translateY(-20px) translateX(-50%);
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // 在一定时间后自动隐藏Toast
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove("show");
+    toast.removeTimer = setTimeout(() => {
+      toast.style.display = "none";
+    }, 300);
+  }, 3000);
+
+  // 添加闪烁效果
+  let flashCount = 0;
+  const flashInterval = setInterval(() => {
+    if (flashCount >= 2) {
+      clearInterval(flashInterval);
+      return;
+    }
+    toast.style.transform = "translateY(0) translateX(-50%) scale(1.05)";
+    setTimeout(() => {
+      toast.style.transform = "translateY(0) translateX(-50%) scale(1)";
+    }, 100);
+    flashCount++;
+  }, 200);
+
+  // 返回Toast对象，方便调用方使用
+  return toast;
 }
+
+// 添加注册事件处理
+document.addEventListener("DOMContentLoaded", function () {
+  // 登录事件处理已在initApp函数中通过handleLogin函数绑定，此处不再重复绑定
+  console.log("DOMContentLoaded: 登录事件处理器已在initApp函数中绑定");
+
+  // 注册按钮事件处理
+  const signupBtn = document.getElementById("doSignupBtn");
+  if (signupBtn) {
+    signupBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const confirmPassword = document.getElementById(
+        "signupPasswordConfirm"
+      ).value;
+      const agreement = document.getElementById("agreeTermsSignup");
+
+      // 校验
+      if (!name || !email || !password || !confirmPassword) {
+        showNotification("Please fill in all required fields.", "warning");
+        return;
+      }
+
+      const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        showNotification("Please enter a valid email address.", "warning");
+        return;
+      }
+
+      if (password.length < 6) {
+        showNotification("Password must be at least 6 characters.", "warning");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showNotification("Passwords do not match.", "warning");
+        document.getElementById("passwordMatchError").style.display = "block";
+        return;
+      } else {
+        document.getElementById("passwordMatchError").style.display = "none";
+      }
+
+      if (!agreement || !agreement.checked) {
+        showNotification(
+          "You must agree to the Terms of Service and Privacy Policy before signing up.",
+          "warning"
+        );
+        return;
+      }
+
+      // 禁用按钮防止重复提交
+      signupBtn.disabled = true;
+      signupBtn.textContent = "Signing up...";
+
+      // md5加密
+      const md5Password = md5(password);
+      const md5Confirm = md5(confirmPassword);
+
+      // 注册API
+      fetch("http://web.doaitravel.com/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password: md5Password,
+          password_confirm: md5Confirm,
+        }),
+        credentials: "omit",
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            return response.json().then((data) => {
+              throw new Error(data.message || "Registration failed.");
+            });
+          }
+        })
+        .then((data) => {
+          showNotification("Registration successful! Please login.", "success");
+          // 切换到登录表单
+          loginForm.classList.add("active");
+          signupForm.classList.remove("active");
+          authModalTitle.textContent = "Login";
+          document.getElementById("loginEmail").value = email;
+        })
+        .catch((error) => {
+          showNotification(error.message, "error");
+        })
+        .finally(() => {
+          signupBtn.disabled = false;
+          signupBtn.textContent = "Sign Up";
+        });
+    });
+  }
+});
 
 // Show Terms of Service Modal
 function showTerms(e, source) {
@@ -1484,196 +1697,214 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// 添加注册事件处理
-document.addEventListener("DOMContentLoaded", function () {
-  // 登录表单提交事件处理
-  const loginBtn = document.getElementById("doLoginBtn");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      const agreement = document.getElementById("agreeTerms");
-      if (agreement && !agreement.checked) {
-        showNotification(
-          "You must agree to the Terms of Service and Privacy Policy before logging in.",
-          "warning"
-        );
-        return;
-      }
+// Show Notification
+function showNotification(message, type = "success", duration = 3000) {
+  return showToast(message, type);
+}
 
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
+// Animate elements when they come into view
+function animateOnScroll() {
+  const fadeElements = document.querySelectorAll(".fade-in");
 
-      if (!email || !password) {
-        showNotification("Please fill in all required fields.", "warning");
-        return;
-      }
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = "1";
+          entry.target.style.transform = "translateY(0)";
+        }
+      });
+    },
+    {
+      threshold: 0.1,
+    }
+  );
 
-      const submitBtn = document.getElementById("doLoginBtn");
-      const originalText = submitBtn.textContent;
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Logging in...";
+  fadeElements.forEach((element) => {
+    element.style.opacity = "0";
+    element.style.transform = "translateY(20px)";
+    element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+    observer.observe(element);
+  });
+}
 
-      // md5加密
-      const md5Password = md5(password);
-      const requestData = {
-        email: email,
-        password: md5Password,
-      };
+// 添加调试信息
+console.log("HTML页面加载中...");
 
-      fetch("http://web.doaitravel.com/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-        credentials: "omit",
-      })
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            return response.json().then((data) => {
-              throw new Error(data.message || "Login failed");
-            });
-          }
-        })
-        .then((data) => {
-          showNotification("Login successful!", "success");
-
-          // 保存用户数据和令牌
-          if (data && data.data) {
-            const userData = data.data.user || {};
-            const loginInfo = {
-              access_token: data.data.access_token,
-              refresh_token: data.data.refresh_token,
-              token_type: data.data.token_type,
-              access_token_expires: data.data.access_token_expires,
-              refresh_token_expires: data.data.refresh_token_expires,
-              user: {
-                id: userData.id,
-                name: userData.name || userData.email || "",
-                email: userData.email || "",
-                created_at: userData.created_at,
-                last_login_at: userData.last_login_at,
-                access_token: data.data.access_token,
-                refresh_token: data.data.refresh_token,
-              },
-            };
-
-            localStorage.setItem("tripWeaverUser", JSON.stringify(loginInfo));
-
-            // 更新登录状态
-            isLoggedIn = true;
-            document.body.classList.remove("logged-out");
-            document.body.classList.add("logged-in");
-
-            // 关闭模态框
-            authModal.classList.remove("active");
-
-            // 加载历史记录
-            loadHistory();
-          }
-        })
-        .catch((error) => {
-          showNotification("Login error: " + error.message, "error", 4000);
-        })
-        .finally(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
+// 直接绑定按钮点击事件
+window.addEventListener("load", function () {
+  const generateBtn = document.getElementById("generatePlanBtn");
+  if (generateBtn) {
+    console.log("找到生成按钮，添加点击事件");
+    generateBtn.addEventListener("click", function (e) {
+      console.log("生成按钮被点击");
+      // 手动触发表单提交
+      const plannerForm = document.getElementById("plannerForm");
+      if (plannerForm) {
+        console.log("找到表单，手动触发submit事件");
+        // 创建并分发一个submit事件
+        const submitEvent = new Event("submit", {
+          bubbles: true,
+          cancelable: true,
         });
-    });
-  }
-
-  // 注册按钮事件处理
-  const signupBtn = document.getElementById("doSignupBtn");
-  if (signupBtn) {
-    signupBtn.addEventListener("click", function (e) {
-      e.preventDefault();
-      const name = document.getElementById("signupName").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      const confirmPassword = document.getElementById(
-        "signupPasswordConfirm"
-      ).value;
-      const agreement = document.getElementById("agreeTermsSignup");
-
-      // 校验
-      if (!name || !email || !password || !confirmPassword) {
-        showNotification("Please fill in all required fields.", "warning");
-        return;
-      }
-
-      const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-      if (!emailRegex.test(email)) {
-        showNotification("Please enter a valid email address.", "warning");
-        return;
-      }
-
-      if (password.length < 6) {
-        showNotification("Password must be at least 6 characters.", "warning");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        showNotification("Passwords do not match.", "warning");
-        document.getElementById("passwordMatchError").style.display = "block";
-        return;
+        plannerForm.dispatchEvent(submitEvent);
       } else {
-        document.getElementById("passwordMatchError").style.display = "none";
+        console.error("找不到plannerForm表单!");
       }
+    });
+  } else {
+    console.error("找不到生成按钮!");
+  }
 
-      if (!agreement || !agreement.checked) {
-        showNotification(
-          "You must agree to the Terms of Service and Privacy Policy before signing up.",
-          "warning"
-        );
-        return;
-      }
-
-      // 禁用按钮防止重复提交
-      signupBtn.disabled = true;
-      signupBtn.textContent = "Signing up...";
-
-      // md5加密
-      const md5Password = md5(password);
-      const md5Confirm = md5(confirmPassword);
-
-      // 注册API
-      fetch("http://web.doaitravel.com/api/v1/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password: md5Password,
-          password_confirm: md5Confirm,
-        }),
-        credentials: "omit",
-      })
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            return response.json().then((data) => {
-              throw new Error(data.message || "Registration failed.");
-            });
-          }
-        })
-        .then((data) => {
-          showNotification("Registration successful! Please login.", "success");
-          // 切换到登录表单
-          loginForm.classList.add("active");
-          signupForm.classList.remove("active");
-          authModalTitle.textContent = "Login";
-          document.getElementById("loginEmail").value = email;
-        })
-        .catch((error) => {
-          showNotification(error.message, "error");
-        })
-        .finally(() => {
-          signupBtn.disabled = false;
-          signupBtn.textContent = "Sign Up";
-        });
+  // 特别注册登录表单提交监听
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    console.log("注册登录表单提交监听器");
+    loginForm.addEventListener("submit", function (e) {
+      console.log("登录表单提交被捕获");
     });
   }
+});
+
+// 设置表单所有输入为英文语言环境，防止出现中文提示
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM内容已加载，开始初始化...");
+
+  // 设置HTML语言
+  document.documentElement.lang = "en";
+  console.log("HTML语言设置为:", document.documentElement.lang);
+
+  // 设置所有表单元素的语言为英文
+  const formElements = document.querySelectorAll("input, select, textarea");
+  formElements.forEach((el) => {
+    el.setAttribute("lang", "en");
+  });
+  console.log("已设置", formElements.length, "个表单元素的语言为英文");
+
+  // 专门处理旅行计划表单，确保按顺序验证
+  const plannerForm = document.getElementById("plannerForm");
+  if (plannerForm) {
+    console.log("找到plannerForm表单，准备设置验证");
+
+    // 注释掉novalidate设置，使用浏览器原生验证
+    // plannerForm.setAttribute("novalidate", "true");
+    if (plannerForm.hasAttribute("novalidate")) {
+      plannerForm.removeAttribute("novalidate");
+      console.log("移除了novalidate属性");
+    }
+
+    // 移除原有的submit事件处理器
+    const oldSubmit = plannerForm.onsubmit;
+    plannerForm.onsubmit = null;
+    console.log("重置了表单的onsubmit事件");
+
+    // 添加新的submit事件处理器
+    plannerForm.addEventListener("submit", function (e) {
+      console.log("表单提交事件触发");
+      e.preventDefault();
+
+      // 按顺序获取表单字段
+      const location = document.getElementById("location");
+      const startTime = document.getElementById("startTime");
+      const endTime = document.getElementById("endTime");
+      const travelers = document.getElementById("travelers");
+
+      // 1. 首先验证目的地
+      if (!location.value.trim()) {
+        location.setCustomValidity("Please enter a destination");
+        location.reportValidity();
+        location.focus();
+        return false;
+      } else {
+        location.setCustomValidity("");
+      }
+
+      // 2. 然后验证开始时间
+      const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+      if (!startTime.value.trim()) {
+        startTime.setCustomValidity("Please enter a start time");
+        startTime.reportValidity();
+        startTime.focus();
+        return false;
+      } else if (!timeRegex.test(startTime.value.trim())) {
+        startTime.setCustomValidity(
+          "Please enter time in 24-hour format (HH:MM)"
+        );
+        startTime.reportValidity();
+        startTime.focus();
+        return false;
+      } else {
+        startTime.setCustomValidity("");
+      }
+
+      // 3. 接着验证结束时间
+      if (!endTime.value.trim()) {
+        endTime.setCustomValidity("Please enter an end time");
+        endTime.reportValidity();
+        endTime.focus();
+        return false;
+      } else if (!timeRegex.test(endTime.value.trim())) {
+        endTime.setCustomValidity(
+          "Please enter time in 24-hour format (HH:MM)"
+        );
+        endTime.reportValidity();
+        endTime.focus();
+        return false;
+      } else {
+        endTime.setCustomValidity("");
+      }
+
+      // 4. 最后验证旅行人数
+      if (!travelers.value || parseInt(travelers.value) < 1) {
+        travelers.setCustomValidity("Please enter number of travelers");
+        travelers.reportValidity();
+        travelers.focus();
+        return false;
+      } else {
+        travelers.setCustomValidity("");
+      }
+
+      // 如果验证通过，转发到原始的submit处理器（如果存在的话）
+      if (typeof oldSubmit === "function") {
+        return oldSubmit.call(this, e);
+      }
+
+      // 如果没有原始处理器，则允许表单提交
+      return true;
+    });
+  }
+
+  // 处理其他表单（使用常规验证）
+  const otherForms = document.querySelectorAll("form:not(#plannerForm)");
+  otherForms.forEach((form) => {
+    form.setAttribute("novalidate", "true");
+    form.addEventListener("submit", function (e) {
+      if (!this.checkValidity()) {
+        e.preventDefault();
+
+        // 查找第一个无效元素并显示自定义消息
+        const invalidElements = form.querySelectorAll(":invalid");
+        if (invalidElements.length > 0) {
+          const firstInvalid = invalidElements[0];
+
+          // 如果没有自定义消息，则添加一个默认的英文消息
+          if (
+            !firstInvalid.validationMessage ||
+            firstInvalid.validationMessage.indexOf("请") >= 0
+          ) {
+            const fieldName = firstInvalid.id || firstInvalid.name || "field";
+            firstInvalid.setCustomValidity(
+              `Please fill in this ${fieldName} correctly`
+            );
+          }
+
+          // 报告验证消息
+          firstInvalid.reportValidity();
+
+          // 聚焦到这个元素
+          firstInvalid.focus();
+        }
+      }
+    });
+  });
 });

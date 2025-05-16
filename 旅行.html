@@ -155,7 +155,11 @@
               </div>
             </div>
             <div class="form-buttons">
-              <button type="submit" class="btn btn-primary btn-lg">
+              <button
+                type="submit"
+                id="generatePlanBtn"
+                class="btn btn-primary btn-lg"
+              >
                 Generate Trip Plan
               </button>
             </div>
@@ -1105,140 +1109,5 @@
     </div>
 
     <script src="trace/js/index.js"></script>
-    <script>
-      // 设置表单所有输入为英文语言环境，防止出现中文提示
-      document.addEventListener("DOMContentLoaded", function () {
-        // 设置HTML语言
-        document.documentElement.lang = "en";
-
-        // 设置所有表单元素的语言为英文
-        const formElements = document.querySelectorAll(
-          "input, select, textarea"
-        );
-        formElements.forEach((el) => {
-          el.setAttribute("lang", "en");
-        });
-
-        // 专门处理旅行计划表单，确保按顺序验证
-        const plannerForm = document.getElementById("plannerForm");
-        if (plannerForm) {
-          // 禁用HTML5原生验证，使用自定义验证
-          plannerForm.setAttribute("novalidate", "true");
-
-          // 移除原有的submit事件处理器
-          const oldSubmit = plannerForm.onsubmit;
-          plannerForm.onsubmit = null;
-
-          // 添加新的submit事件处理器
-          plannerForm.addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            // 按顺序获取表单字段
-            const location = document.getElementById("location");
-            const startTime = document.getElementById("startTime");
-            const endTime = document.getElementById("endTime");
-            const travelers = document.getElementById("travelers");
-
-            // 1. 首先验证目的地
-            if (!location.value.trim()) {
-              location.setCustomValidity("Please enter a destination");
-              location.reportValidity();
-              location.focus();
-              return false;
-            } else {
-              location.setCustomValidity("");
-            }
-
-            // 2. 然后验证开始时间
-            const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
-            if (!startTime.value.trim()) {
-              startTime.setCustomValidity("Please enter a start time");
-              startTime.reportValidity();
-              startTime.focus();
-              return false;
-            } else if (!timeRegex.test(startTime.value.trim())) {
-              startTime.setCustomValidity(
-                "Please enter time in 24-hour format (HH:MM)"
-              );
-              startTime.reportValidity();
-              startTime.focus();
-              return false;
-            } else {
-              startTime.setCustomValidity("");
-            }
-
-            // 3. 接着验证结束时间
-            if (!endTime.value.trim()) {
-              endTime.setCustomValidity("Please enter an end time");
-              endTime.reportValidity();
-              endTime.focus();
-              return false;
-            } else if (!timeRegex.test(endTime.value.trim())) {
-              endTime.setCustomValidity(
-                "Please enter time in 24-hour format (HH:MM)"
-              );
-              endTime.reportValidity();
-              endTime.focus();
-              return false;
-            } else {
-              endTime.setCustomValidity("");
-            }
-
-            // 4. 最后验证旅行人数
-            if (!travelers.value || parseInt(travelers.value) < 1) {
-              travelers.setCustomValidity("Please enter number of travelers");
-              travelers.reportValidity();
-              travelers.focus();
-              return false;
-            } else {
-              travelers.setCustomValidity("");
-            }
-
-            // 如果验证通过，转发到原始的submit处理器（如果存在的话）
-            if (typeof oldSubmit === "function") {
-              return oldSubmit.call(this, e);
-            }
-
-            // 如果没有原始处理器，则允许表单提交
-            return true;
-          });
-        }
-
-        // 处理其他表单（使用常规验证）
-        const otherForms = document.querySelectorAll("form:not(#plannerForm)");
-        otherForms.forEach((form) => {
-          form.setAttribute("novalidate", "true");
-          form.addEventListener("submit", function (e) {
-            if (!this.checkValidity()) {
-              e.preventDefault();
-
-              // 查找第一个无效元素并显示自定义消息
-              const invalidElements = form.querySelectorAll(":invalid");
-              if (invalidElements.length > 0) {
-                const firstInvalid = invalidElements[0];
-
-                // 如果没有自定义消息，则添加一个默认的英文消息
-                if (
-                  !firstInvalid.validationMessage ||
-                  firstInvalid.validationMessage.indexOf("请") >= 0
-                ) {
-                  const fieldName =
-                    firstInvalid.id || firstInvalid.name || "field";
-                  firstInvalid.setCustomValidity(
-                    `Please fill in this ${fieldName} correctly`
-                  );
-                }
-
-                // 报告验证消息
-                firstInvalid.reportValidity();
-
-                // 聚焦到这个元素
-                firstInvalid.focus();
-              }
-            }
-          });
-        });
-      });
-    </script>
   </body>
 </html>
