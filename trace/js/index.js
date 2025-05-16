@@ -44,6 +44,8 @@ const footerPrivacy = document.getElementById("footerPrivacy");
 const userName = document.getElementById("userName");
 const userInitial = document.getElementById("userInitial");
 const userCredits = document.getElementById("userCredits");
+const startTimeInput = document.getElementById("startTime");
+const endTimeInput = document.getElementById("endTime");
 let activeModal = null;
 let sourceElement = null;
 
@@ -83,6 +85,9 @@ function initApp() {
 
   // 更新UI状态
   updateUIState();
+
+  // 初始化时间选择器
+  initTimeInputs();
 
   // 加载历史记录（只有登录后才加载）
   if (isLoggedIn) {
@@ -207,41 +212,38 @@ function switchToLoginForm(e) {
 function handleLogin(e) {
   e.preventDefault();
 
-  // Get form values
+  // 获取表单值
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
 
-  // Validate agreement checkbox
+  // 验证协议复选框
   const agreement = document.getElementById("agreeTerms");
   if (!agreement.checked) {
-    showNotification(
-      "You must agree to the Terms of Service and Privacy Policy before logging in.",
-      "warning"
-    );
+    showNotification("您必须同意服务条款和隐私政策才能登录。", "warning");
     return;
   }
 
-  // Basic validation
+  // 基本验证
   if (!email || !password) {
-    showNotification("Please fill in all required fields.", "warning");
+    showNotification("请填写所有必填字段。", "warning");
     return;
   }
 
-  // Disable button to prevent multiple submissions
+  // 禁用按钮防止多次提交
   const submitBtn = document.getElementById("doLoginBtn");
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
 
-  // Encrypt password with MD5
+  // 使用MD5加密密码
   const hashedPassword = md5(password);
 
-  // Prepare request data
+  // 准备请求数据
   const requestData = {
     email: email,
     password: hashedPassword,
   };
 
-  // API call for login
+  // API登录调用
   fetch("http://web.doaitravel.com/api/v1/auth/login", {
     method: "POST",
     headers: {
@@ -249,56 +251,48 @@ function handleLogin(e) {
     },
     body: JSON.stringify(requestData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("登录失败");
+      }
+      return response.json();
+    })
     .then((data) => {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = "Login";
-
-      if (data.ok === 1) {
-        // Login successful
-        // Save user data
-        userData = data.data.user;
-
-        // Save access token and user info
-        localStorage.setItem("accessToken", data.data.access_token);
-        localStorage.setItem("refreshToken", data.data.refresh_token);
-        localStorage.setItem("userData", JSON.stringify(userData));
+      if (data.success) {
+        // 保存令牌和用户数据
         localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("userData", JSON.stringify(data.user));
 
-        // Update state
+        // 更新应用状态
         isLoggedIn = true;
+        userData = data.user;
 
-        // Update UI
+        // 更新UI
         updateUserDisplay(userData);
         updateUIState();
 
-        // 加载历史记录
-        loadHistory();
-
-        // Close modal
+        // 关闭模态窗口
         closeModal();
 
-        // Show success message
-        showNotification("Login successful", "success");
+        // 加载用户历史记录
+        loadHistory();
 
-        // Reset form
-        loginForm.reset();
+        // 显示成功消息
+        showToast(`欢迎回来，${userData.name}！`, "success");
       } else {
-        // Login failed
-        showNotification(
-          data.message || "Login failed. Please check your credentials.",
-          "error"
-        );
+        throw new Error(data.message || "登录失败");
       }
     })
     .catch((error) => {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = "Login";
-      showNotification(
-        "An error occurred during login. Please try again.",
-        "error"
-      );
       console.error("Login error:", error);
+      showNotification(error.message || "登录失败，请检查您的凭据。", "error");
+    })
+    .finally(() => {
+      // 恢复按钮状态
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "登录";
     });
 }
 
@@ -335,7 +329,7 @@ function updateUIState() {
 function handleSignup(e) {
   e.preventDefault();
 
-  // Get form values
+  // 获取表单值
   const name = document.getElementById("signupName").value;
   const email = document.getElementById("signupEmail").value;
   const password = document.getElementById("signupPassword").value;
@@ -343,48 +337,56 @@ function handleSignup(e) {
     "signupPasswordConfirm"
   ).value;
 
-  // Validate terms agreement
+  // 验证协议复选框
   const agreement = document.getElementById("agreeTermsSignup");
   if (!agreement.checked) {
-    showNotification(
-      "You must agree to the Terms of Service and Privacy Policy before signing up.",
-      "warning"
-    );
+    showNotification("您必须同意服务条款和隐私政策才能注册账号。", "warning");
     return;
   }
 
-  // Basic validation
+  // 基本验证
   if (!name || !email || !password || !passwordConfirm) {
-    showNotification("Please fill in all required fields.", "warning");
+    showNotification("请填写所有必填字段。", "warning");
     return;
   }
 
-  // Validate password match
+  if (!isValidEmail(email)) {
+    document.getElementById("signupEmailError").style.display = "block";
+    return;
+  } else {
+    document.getElementById("signupEmailError").style.display = "none";
+  }
+
+  if (password.length < 6) {
+    document.getElementById("signupPasswordError").style.display = "block";
+    return;
+  } else {
+    document.getElementById("signupPasswordError").style.display = "none";
+  }
+
   if (password !== passwordConfirm) {
     document.getElementById("passwordMatchError").style.display = "block";
-    showNotification("Passwords do not match.", "warning");
     return;
   } else {
     document.getElementById("passwordMatchError").style.display = "none";
   }
 
-  // Disable button to prevent multiple submissions
+  // 禁用按钮防止多次提交
   const submitBtn = document.getElementById("doSignupBtn");
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing up...';
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 注册中...';
 
-  // Encrypt password with MD5
+  // 加密密码
   const hashedPassword = md5(password);
 
-  // Prepare request data
+  // 准备请求数据
   const requestData = {
     name: name,
     email: email,
     password: hashedPassword,
-    password_confirmation: hashedPassword,
   };
 
-  // API call for registration
+  // API注册调用
   fetch("http://web.doaitravel.com/api/v1/auth/register", {
     method: "POST",
     headers: {
@@ -392,53 +394,55 @@ function handleSignup(e) {
     },
     body: JSON.stringify(requestData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("注册失败");
+      }
+      return response.json();
+    })
     .then((data) => {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = "Sign Up";
-
-      if (data.ok === 1) {
-        // Registration successful
-        // Save user data
-        userData = data.data.user;
-
-        // Save access token and user info
-        localStorage.setItem("accessToken", data.data.access_token);
-        localStorage.setItem("refreshToken", data.data.refresh_token);
-        localStorage.setItem("userData", JSON.stringify(userData));
+      if (data.success) {
+        // 保存用户数据
+        userData = data.user;
         localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("userData", JSON.stringify(userData));
 
-        // Update state
+        // 更新应用状态
         isLoggedIn = true;
 
-        // Update UI
+        // 更新UI
         updateUserDisplay(userData);
         updateUIState();
 
-        // Close modal
+        // 关闭模态窗口
         closeModal();
 
-        // Show success message
-        showNotification("Account created successfully", "success");
+        // 显示成功消息和欢迎信息
+        showToast(`欢迎加入 TripWeaver, ${name}！`, "success");
 
-        // Reset form
-        signupForm.reset();
+        // 重置免费使用计数
+        usageCount = 0;
+        localStorage.setItem("usageCount", "0");
+
+        // 加载（空的）历史记录
+        loadHistory();
       } else {
-        // Registration failed
-        showNotification(
-          data.message || "Registration failed. Please try again.",
-          "error"
-        );
+        throw new Error(data.message || "注册失败");
       }
     })
     .catch((error) => {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = "Sign Up";
+      console.error("Signup error:", error);
       showNotification(
-        "An error occurred during registration. Please try again.",
+        error.message || "注册过程中出现错误，请稍后重试。",
         "error"
       );
-      console.error("Registration error:", error);
+    })
+    .finally(() => {
+      // 恢复按钮状态
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "注册";
     });
 }
 
@@ -517,257 +521,283 @@ function completeLogout() {
 function generatePlan(e) {
   e.preventDefault();
 
-  // Check if user is logged in and has credits
-  if (isLoggedIn) {
-    if (userData && userData.credits < 1) {
-      showToast(
-        "You don't have enough credits. Please purchase a plan to continue.",
-        "error"
-      );
-      document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
-      return;
-    }
-  } else {
-    // For non-logged in users
-    if (usageCount >= 1) {
-      showToast(
-        "Free usage limit reached. Please sign up to continue.",
-        "error"
-      );
-      openSignupModal();
-      return;
-    }
-  }
-
-  // Get form values
+  // 获取表单值
   const location = document.getElementById("location").value;
   const startTime = document.getElementById("startTime").value;
   const endTime = document.getElementById("endTime").value;
   const travelers = document.getElementById("travelers").value;
 
-  // Basic validation
-  if (!location || !startTime || !endTime || !travelers) {
-    showToast("Please fill in all fields", "error");
+  // 基本验证 - 按照顺序验证各字段
+
+  // 1. 验证目的地
+  if (!location.trim()) {
+    document
+      .getElementById("location")
+      .setCustomValidity("Please enter a destination");
+    document.getElementById("location").reportValidity();
+    document.getElementById("location").focus();
     return;
+  } else {
+    document.getElementById("location").setCustomValidity("");
   }
 
-  // Show loader, hide results
+  // 2. 验证开始时间
+  const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+  if (!startTime.trim()) {
+    document
+      .getElementById("startTime")
+      .setCustomValidity("Please enter a start time");
+    document.getElementById("startTime").reportValidity();
+    document.getElementById("startTime").focus();
+    return;
+  } else if (!timeRegex.test(startTime.trim())) {
+    document
+      .getElementById("startTime")
+      .setCustomValidity("Please enter time in 24-hour format (HH:MM)");
+    document.getElementById("startTime").reportValidity();
+    document.getElementById("startTime").focus();
+    return;
+  } else {
+    document.getElementById("startTime").setCustomValidity("");
+  }
+
+  // 3. 验证结束时间
+  if (!endTime.trim()) {
+    document
+      .getElementById("endTime")
+      .setCustomValidity("Please enter an end time");
+    document.getElementById("endTime").reportValidity();
+    document.getElementById("endTime").focus();
+    return;
+  } else if (!timeRegex.test(endTime.trim())) {
+    document
+      .getElementById("endTime")
+      .setCustomValidity("Please enter time in 24-hour format (HH:MM)");
+    document.getElementById("endTime").reportValidity();
+    document.getElementById("endTime").focus();
+    return;
+  } else {
+    document.getElementById("endTime").setCustomValidity("");
+  }
+
+  // 4. 验证旅行人数
+  if (!travelers || parseInt(travelers) < 1) {
+    document
+      .getElementById("travelers")
+      .setCustomValidity("Please enter number of travelers");
+    document.getElementById("travelers").reportValidity();
+    document.getElementById("travelers").focus();
+    return;
+  } else {
+    document.getElementById("travelers").setCustomValidity("");
+  }
+
+  // 检查用户是否登录且有足够积分
+  if (isLoggedIn) {
+    if (userData && userData.credits < 1) {
+      showToast("您的积分不足，请购买套餐后继续使用。", "error");
+      document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+  } else {
+    // 未登录用户有使用限制
+    if (usageCount >= 1) {
+      showToast("免费使用次数已用完，请注册账号继续使用。", "error");
+      openSignupModal();
+      return;
+    }
+  }
+
+  // 显示加载中，隐藏结果
   planLoader.classList.add("active");
   results.classList.remove("active");
 
-  // Increment usage count for non-logged in users
+  // 增加未登录用户的使用次数
   if (!isLoggedIn) {
     usageCount++;
     localStorage.setItem("usageCount", usageCount);
-  } else {
-    // Decrement credits for logged-in users
-    userData.credits--;
-    localStorage.setItem("userData", JSON.stringify(userData));
-    updateUserDisplay(userData);
   }
 
-  // Simulate API call to generate plan
-  setTimeout(() => {
-    // Hide loader, show results
-    planLoader.classList.remove("active");
-    results.classList.add("active");
+  // 准备请求数据
+  const requestData = {
+    location: location,
+    startTime: startTime,
+    endTime: endTime,
+    travelers: parseInt(travelers),
+  };
 
-    // Update plan details
-    planTitle.textContent = `Your Perfect Day in ${location}`;
-    planLocation.textContent = location;
-    planTime.textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
-    planPeople.textContent = `${travelers} ${
-      travelers == 1 ? "Traveler" : "Travelers"
-    }`;
+  // 发送实际请求到 API
+  const apiUrl = "http://web.doaitravel.com/api/v1/travel/generate";
+  const headers = {
+    "Content-Type": "application/json",
+  };
 
-    // Generate and display timeline
-    const plan = generateTimelinePlan(location, startTime, endTime, travelers);
-    displayTimelinePlan(plan);
+  // 如果用户已登录，添加授权头
+  if (isLoggedIn) {
+    headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
+  }
 
-    // Save current plan
-    currentPlan = {
-      id: Date.now(),
-      title: `Your Perfect Day in ${location}`,
-      location: location,
-      startTime: startTime,
-      endTime: endTime,
-      travelers: parseInt(travelers),
-      date: new Date().toISOString().split("T")[0],
-      timeline: plan,
-    };
+  fetch(apiUrl, {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(requestData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Plan generation failed");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // 隐藏加载中，显示结果
+      planLoader.classList.remove("active");
+      results.classList.add("active");
 
-    // Add to history if logged in
-    if (isLoggedIn) {
-      addToHistory(currentPlan);
+      if (data.success) {
+        // 更新计划详情
+        planTitle.textContent = data.plan.title || `Exploring ${location}`;
+        planLocation.textContent = location;
+        planTime.textContent = `${formatTime(startTime)} - ${formatTime(
+          endTime
+        )}`;
+        planPeople.textContent = `${travelers} ${
+          travelers == 1 ? "Traveler" : "Travelers"
+        }`;
+
+        // 处理并显示时间线
+        const timelineData = data.plan.timeline.map((activity) => ({
+          time: new Date(`2000-01-01T${activity.time}`),
+          title: activity.title,
+          description: activity.description,
+        }));
+
+        displayTimelinePlan(timelineData);
+
+        // 保存当前计划
+        currentPlan = {
+          id: Date.now(),
+          title: data.plan.title || `Exploring ${location}`,
+          location: location,
+          startTime: startTime,
+          endTime: endTime,
+          travelers: parseInt(travelers),
+          date: new Date().toISOString().split("T")[0],
+          timeline: timelineData,
+        };
+
+        // 已登录用户减少积分并添加到历史
+        if (isLoggedIn && userData) {
+          userData.credits--;
+          localStorage.setItem("userData", JSON.stringify(userData));
+          updateUserDisplay(userData);
+          addToHistory(currentPlan);
+        }
+
+        // 滚动到结果
+        results.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // 显示成功消息
+        showToast("Travel plan generated successfully!", "success");
+      } else {
+        throw new Error(data.message || "Plan generation failed");
+      }
+    })
+    .catch((error) => {
+      console.error("Plan generation error:", error);
+      planLoader.classList.remove("active");
+      showToast(
+        error.message ||
+          "Unable to generate travel plan, please try again later",
+        "error"
+      );
+    });
+}
+
+// 初始化时间选择器
+function initTimeInputs() {
+  // 获取输入框元素
+  const startTimeInput = document.getElementById("startTime");
+  const endTimeInput = document.getElementById("endTime");
+  const locationInput = document.getElementById("location");
+
+  // 为自定义时间输入框添加输入验证
+  startTimeInput.addEventListener("input", validateTimeInput);
+  endTimeInput.addEventListener("input", validateTimeInput);
+
+  // 添加点击图标时获取焦点的功能
+  const timeIcons = document.querySelectorAll(".time-icon");
+  timeIcons.forEach((icon) => {
+    icon.addEventListener("click", function () {
+      this.previousElementSibling.focus();
+    });
+  });
+
+  // 添加目的地图标点击功能
+  const destinationIcon = document.querySelector(".destination-icon");
+  if (destinationIcon) {
+    destinationIcon.addEventListener("click", function () {
+      locationInput.focus();
+    });
+  }
+}
+
+// 验证时间输入
+function validateTimeInput(e) {
+  const input = e.target;
+  const timeValue = input.value;
+
+  // 正则表达式验证时间格式 (HH:MM - 24小时制)
+  const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+  if (timeValue && !timeRegex.test(timeValue)) {
+    input.setCustomValidity(
+      "Please enter a valid time in 24-hour format (e.g., 13:30)"
+    );
+  } else {
+    input.setCustomValidity("");
+
+    // 格式化输入，确保两位数字
+    if (timeRegex.test(timeValue)) {
+      const [hours, minutes] = timeValue.split(":");
+      input.value = `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+    }
+  }
+}
+
+// Format time (e.g., "14:30" to "14:30" or "2:30 PM" to "14:30")
+function formatTime(timeString) {
+  // 确保时间使用24小时制格式
+  try {
+    // 如果已经是24小时制格式，直接返回
+    if (/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(timeString)) {
+      const [hours, minutes] = timeString.split(":");
+      return `${hours.padStart(2, "0")}:${minutes}`;
     }
 
-    // Scroll to results
-    results.scrollIntoView({ behavior: "smooth", block: "start" });
+    // 否则尝试转换成24小时制
+    if (timeString.includes("AM") || timeString.includes("PM")) {
+      const [time, modifier] = timeString.split(" ");
+      let [hours, minutes] = time.split(":");
 
-    // Show success message
-    showToast("Travel plan generated successfully!", "success");
-  }, 2000);
-}
+      if (modifier === "PM" && hours !== "12") {
+        hours = parseInt(hours, 10) + 12;
+      }
 
-// Format time (e.g., "14:30" to "14:30")
-function formatTime(timeString) {
-  return timeString;
-}
+      if (modifier === "AM" && hours === "12") {
+        hours = "00";
+      }
 
-// Generate Timeline Plan (Simulated AI response)
-function generateTimelinePlan(location, startTime, endTime, travelers) {
-  // Parse start and end times to calculate duration
-  const start = new Date(`2000-01-01T${startTime}`);
-  const end = new Date(`2000-01-01T${endTime}`);
+      return `${hours.padStart(2, "0")}:${minutes}`;
+    }
 
-  // If end time is earlier than start time, assume it's the next day
-  if (end < start) {
-    end.setDate(end.getDate() + 1);
+    return timeString;
+  } catch (e) {
+    console.error("Error formatting time:", e);
+    return timeString; // 出错时返回原始字符串
   }
-
-  const durationHours = (end - start) / (1000 * 60 * 60);
-
-  // Generate different plans based on location and duration
-  let activities = [];
-
-  // This would normally be AI-generated but we'll use predefined data for demo
-  if (location.toLowerCase().includes("paris")) {
-    activities = [
-      {
-        time: addHours(start, 0),
-        title: "Breakfast at a Local Café",
-        description:
-          "Start your day with fresh croissants and coffee at a charming Parisian café.",
-      },
-      {
-        time: addHours(start, 1.5),
-        title: "Visit the Eiffel Tower",
-        description:
-          "Experience breathtaking views of Paris from the iconic Eiffel Tower.",
-      },
-      {
-        time: addHours(start, 3.5),
-        title: "Lunch at a Bistro",
-        description:
-          "Enjoy a classic French lunch with wine at a traditional bistro.",
-      },
-      {
-        time: addHours(start, 5),
-        title: "Louvre Museum",
-        description:
-          "Explore world-famous art collections including the Mona Lisa.",
-      },
-      {
-        time: addHours(start, 7.5),
-        title: "Seine River Cruise",
-        description: "Relax on a scenic boat tour along the Seine River.",
-      },
-    ];
-  } else if (
-    location.toLowerCase().includes("new york") ||
-    location.toLowerCase().includes("nyc")
-  ) {
-    activities = [
-      {
-        time: addHours(start, 0),
-        title: "Breakfast at a Deli",
-        description:
-          "Start with a classic New York bagel and coffee at a local deli.",
-      },
-      {
-        time: addHours(start, 1.5),
-        title: "Visit Times Square",
-        description:
-          "Experience the energy and bright lights of this iconic location.",
-      },
-      {
-        time: addHours(start, 3),
-        title: "Lunch in Little Italy",
-        description:
-          "Enjoy authentic Italian cuisine in this historic neighborhood.",
-      },
-      {
-        time: addHours(start, 4.5),
-        title: "Central Park Stroll",
-        description:
-          "Take a relaxing walk through the urban oasis of Central Park.",
-      },
-      {
-        time: addHours(start, 6.5),
-        title: "Empire State Building",
-        description:
-          "Take in spectacular views of the city from this famous skyscraper.",
-      },
-    ];
-  } else if (location.toLowerCase().includes("tokyo")) {
-    activities = [
-      {
-        time: addHours(start, 0),
-        title: "Breakfast at Tsukiji Outer Market",
-        description:
-          "Try fresh Japanese breakfast items at this famous food market.",
-      },
-      {
-        time: addHours(start, 1.5),
-        title: "Visit Senso-ji Temple",
-        description:
-          "Explore Tokyo's oldest and most significant Buddhist temple.",
-      },
-      {
-        time: addHours(start, 3),
-        title: "Lunch at a Ramen Shop",
-        description:
-          "Savor authentic Japanese ramen at a local specialty shop.",
-      },
-      {
-        time: addHours(start, 4.5),
-        title: "Shopping in Shibuya",
-        description:
-          "Experience the famous Shibuya Crossing and shop at trendy stores.",
-      },
-      {
-        time: addHours(start, 6.5),
-        title: "Tokyo Skytree",
-        description:
-          "Enjoy panoramic views of Tokyo from one of the world's tallest towers.",
-      },
-    ];
-  } else {
-    // Generic plan for any location
-    activities = [
-      {
-        time: addHours(start, 0),
-        title: "Breakfast Experience",
-        description: `Start your day with local breakfast specialties in ${location}.`,
-      },
-      {
-        time: addHours(start, 1.5),
-        title: "Morning Exploration",
-        description: `Visit the top attractions in ${location} during the less crowded morning hours.`,
-      },
-      {
-        time: addHours(start, 3.5),
-        title: "Local Lunch",
-        description: `Taste authentic local cuisine at a highly-rated restaurant in ${location}.`,
-      },
-      {
-        time: addHours(start, 5),
-        title: "Afternoon Activity",
-        description: `Experience unique cultural or recreational activities in ${location}.`,
-      },
-      {
-        time: addHours(start, 7),
-        title: "Evening Entertainment",
-        description: `End your day with local entertainment options in ${location}.`,
-      },
-    ];
-  }
-
-  // Ensure activities fit within the time range
-  return activities.filter((activity) => activity.time <= end);
 }
 
-// Add hours to a date
+// 添加小时到日期
 function addHours(date, hours) {
   const newDate = new Date(date);
   newDate.setTime(newDate.getTime() + hours * 60 * 60 * 1000);
@@ -997,38 +1027,104 @@ function handleSharePlan() {
 // Handle Buy Plan
 function handleBuyPlan(plan) {
   if (!isLoggedIn) {
-    showToast("Please log in to purchase a plan", "error");
+    showToast("请先登录后再购买套餐", "error");
     openLoginModal();
     return;
   }
 
-  // In a real app, this would redirect to a payment processor
-  // For demo purposes, we'll just show a success message
+  // 禁用按钮防止重复点击
+  const buttons = document.querySelectorAll(".buy-plan");
+  buttons.forEach((btn) => {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+  });
 
-  let planName, credits;
-  switch (plan) {
-    case "basic":
-      planName = "Basic Plan";
-      credits = 3;
-      break;
-    case "standard":
-      planName = "Standard Plan";
-      credits = 8;
-      break;
-    case "monthly":
-      planName = "Monthly Subscription";
-      credits = 30;
-      break;
-    case "annual":
-      planName = "Annual Subscription";
-      credits = 500;
-      break;
-  }
+  // 准备请求数据
+  const requestData = {
+    planType: plan,
+  };
 
-  showToast(
-    `Thank you for purchasing the ${planName}! ${credits} credits added.`,
-    "success"
-  );
+  // 显示处理中提示
+  showToast("正在处理您的购买请求...", "success");
+
+  // API调用实现
+  /*
+  fetch("http://web.doaitravel.com/api/v1/payment/purchase", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+    },
+    body: JSON.stringify(requestData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("购买请求失败");
+    }
+    return response.json();
+  })
+  .then(data => {
+    // 更新用户积分
+    if (data.success && data.user) {
+      userData = data.user;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      updateUserDisplay(userData);
+    }
+    
+    // 显示成功消息
+    showToast(data.message || "套餐购买成功！", "success");
+  })
+  .catch(error => {
+    console.error("Payment error:", error);
+    showToast("处理您的支付时出现问题，请稍后再试", "error");
+  })
+  .finally(() => {
+    // 恢复按钮状态
+    buttons.forEach(btn => {
+      btn.disabled = false;
+      let planType = btn.dataset.plan;
+      btn.innerHTML = planType === "monthly" || planType === "annual" ? "订阅" : "开始使用";
+    });
+  });
+  */
+
+  // 临时模拟成功响应（在实际实现中移除此代码）
+  setTimeout(() => {
+    // 添加模拟的积分
+    let creditsToAdd = 0;
+    switch (plan) {
+      case "basic":
+        creditsToAdd = 3;
+        break;
+      case "standard":
+        creditsToAdd = 8;
+        break;
+      case "monthly":
+        creditsToAdd = 30;
+        break;
+      case "annual":
+        creditsToAdd = 500;
+        break;
+    }
+
+    // 模拟更新用户数据
+    if (userData) {
+      userData.credits = (userData.credits || 0) + creditsToAdd;
+      localStorage.setItem("userData", JSON.stringify(userData));
+      updateUserDisplay(userData);
+    }
+
+    // 显示成功消息
+    showToast(`套餐购买成功！已添加 ${creditsToAdd} 积分。`, "success");
+
+    // 恢复按钮状态
+    buttons.forEach((btn) => {
+      btn.disabled = false;
+      let planType = btn.dataset.plan;
+      btn.innerHTML =
+        planType === "monthly" || planType === "annual" ? "订阅" : "开始使用";
+    });
+  }, 1500);
 }
 
 // Show Toast Notification
@@ -1328,6 +1424,65 @@ function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
+// 确保时间输入框使用24小时制
+document.addEventListener("DOMContentLoaded", function () {
+  // initTimeInputs函数已存在，此处只添加可能缺失的功能
+
+  // 获取时间输入框
+  const startTime = document.getElementById("startTime");
+  const endTime = document.getElementById("endTime");
+
+  if (!startTime || !endTime) return; // 确保元素存在
+
+  // 添加事件监听器处理时间格式验证
+  // 注意：这些事件监听器会在页面初始化时添加
+  // 如果initTimeInputs函数已经执行过，则这里不会重复绑定
+  if (!startTime.hasTimeValidation) {
+    startTime.hasTimeValidation = true;
+
+    startTime.addEventListener("input", function (e) {
+      validateTimeFormat(e);
+    });
+
+    startTime.addEventListener("blur", function () {
+      formatTimeInput(this);
+    });
+  }
+
+  if (!endTime.hasTimeValidation) {
+    endTime.hasTimeValidation = true;
+
+    endTime.addEventListener("input", function (e) {
+      validateTimeFormat(e);
+    });
+
+    endTime.addEventListener("blur", function () {
+      formatTimeInput(this);
+    });
+  }
+
+  // 验证时间格式
+  function validateTimeFormat(e) {
+    const input = e.target;
+    const value = input.value;
+    const regex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+    if (value && !regex.test(value)) {
+      input.setCustomValidity("Please enter time in 24-hour format (HH:MM)");
+    } else {
+      input.setCustomValidity("");
+    }
+  }
+
+  // 格式化时间输入，确保两位数字
+  function formatTimeInput(input) {
+    if (input.value && /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(input.value)) {
+      const [hours, minutes] = input.value.split(":");
+      input.value = `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+    }
+  }
+});
 
 // 添加注册事件处理
 document.addEventListener("DOMContentLoaded", function () {
