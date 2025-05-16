@@ -609,14 +609,9 @@ function generatePlan(e) {
   }, 2000);
 }
 
-// Format time (e.g., "14:30" to "2:30 PM")
+// Format time (e.g., "14:30" to "14:30")
 function formatTime(timeString) {
-  const [hours, minutes] = timeString.split(":");
-  let hour = parseInt(hours);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  hour = hour % 12;
-  hour = hour ? hour : 12; // Convert 0 to 12
-  return `${hour}:${minutes} ${ampm}`;
+  return timeString;
 }
 
 // Generate Timeline Plan (Simulated AI response)
@@ -789,6 +784,7 @@ function displayTimelinePlan(plan) {
     const timeString = activity.time.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: false,
     });
 
     const timelineItem = document.createElement("div");
@@ -953,6 +949,7 @@ function handleDownloadPlan() {
     const timeString = activity.time.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: false,
     });
     planText += `${timeString} - ${activity.title}\n`;
     planText += `${activity.description}\n\n`;

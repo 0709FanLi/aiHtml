@@ -786,15 +786,6 @@ function initEventListeners() {
                 ...state.currentFood,
                 image: null, // 不保存图片到localStorage
               };
-
-              addToHistory({
-                food: {
-                  name: safeFood.name,
-                  calories: safeFood.calories,
-                  analysis: safeFood.analysis,
-                  isHealthy: safeFood.isHealthy,
-                },
-              });
             } catch (err) {
               console.error("添加历史记录出错:", err);
             }
@@ -1096,16 +1087,6 @@ function showRecipeDetail(recipeId) {
     ),
     steps: recipe.steps.map((step) => step.replace(/^\d+\.\s*/, "")),
   });
-
-  // Add to history if logged in
-  // Recipe history is no longer supported with the new API
-  // if (state.user) {
-  //   addToHistory({
-  //     type: "recipe",
-  //     recipe: recipe,
-  //     date: new Date(),
-  //   });
-  // }
 }
 
 // Login function
@@ -1315,51 +1296,6 @@ function updateUserDisplay() {
 
 function setupLogoutButton() {
   bindLogoutEvent();
-}
-
-// Add item to history
-async function addToHistory(item) {
-  if (!state.user || !state.user.access_token) return;
-
-  try {
-    // Note: 我们假设item的结构适合直接发送到API
-    // 在实际使用时可能需要转换数据格式
-    const url = "/api/v1/gourmet/record";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${state.user.access_token}`,
-      },
-      body: JSON.stringify({
-        food_name: item.food.name,
-        calorie_content: item.food.calories,
-        analysis_result: item.food.analysis,
-        summary: item.food.isHealthy
-          ? "Healthy Choice"
-          : "Occasional Consumption",
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.ok !== 1) {
-      console.error("API error when adding to history:", data.message);
-      return;
-    }
-
-    // 如果成功，增加total计数
-    if (typeof state.historyTotal === "number") {
-      state.historyTotal++;
-    }
-
-    // 刷新历史记录视图（如果当前在历史页面）
-    if (state.currentView === "history") {
-      updateHistoryView();
-    }
-  } catch (error) {
-    console.error("Error adding to history:", error);
-  }
 }
 
 // Update local storage
@@ -2326,18 +2262,7 @@ function init() {
 
   console.log("应用程序初始化完成");
 
-  // 为History导航链接添加点击事件
-  console.log("为History导航链接添加点击事件");
-  const historyLinks = document.querySelectorAll(".nav-history");
-  historyLinks.forEach((link) => {
-    console.log("找到History链接:", link);
-    link.addEventListener("click", function (e) {
-      console.log("点击了History链接");
-      e.preventDefault();
-      showView("history");
-      updateHistoryView();
-    });
-  });
+  // 删除重复的History导航链接点击事件绑定，因为已经在initEventListeners()中绑定过了
 
   // 绑定静态页面中的"View Details"按钮
   console.log("绑定静态的View Details按钮");
