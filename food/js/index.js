@@ -2112,14 +2112,8 @@ function showRecipeDetailsModal(recipe) {
   // 填充弹窗内容
   document.getElementById("modalRecipeTitle").textContent = recipe.title;
 
-  // 处理图片：有图像则显示，没有则隐藏图像元素
-  const imageElement = document.getElementById("modalRecipeImage");
-  if (recipe.image && recipe.image.trim().length > 0) {
-    imageElement.src = recipe.image;
-    imageElement.style.display = "block";
-  } else {
-    imageElement.style.display = "none";
-  }
+  // 不处理图片，忽略图片数据
+  // 删除处理图片的代码块
 
   document.getElementById("modalRecipeCalories").textContent = recipe.calories
     .toString()

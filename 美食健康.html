@@ -197,7 +197,7 @@
             <div class="result-header">
               <img
                 src=""
-                alt="已分析食物"
+                alt="Analyzed Food"
                 class="result-image"
                 id="analyzedFoodImage"
               />
@@ -231,7 +231,7 @@
                 </h3>
 
                 <div class="grid" id="relatedRecipes">
-                  <!-- 相关菜谱将在这里动态插入 -->
+                  <!-- Related recipes will be dynamically inserted here -->
                 </div>
               </div>
             </div>
@@ -250,9 +250,9 @@
         <div class="container">
           <div class="recipe-detail">
             <div class="recipe-header">
-              <img src="" alt="食谱" id="recipeDetailImage" />
+              <img src="" alt="Recipe" id="recipeDetailImage" />
               <div class="recipe-title-container">
-                <h2 id="recipeDetailTitle">食谱标题</h2>
+                <h2 id="recipeDetailTitle">Recipe Title</h2>
               </div>
             </div>
 
@@ -290,14 +290,14 @@
               <div class="recipe-section">
                 <h3>Ingredients</h3>
                 <ul class="ingredient-list" id="recipeIngredients">
-                  <!-- 食材将在这里动态插入 -->
+                  <!-- Ingredients will be dynamically inserted here -->
                 </ul>
               </div>
 
               <div class="recipe-section">
                 <h3>Steps</h3>
                 <ol class="step-list" id="recipeSteps">
-                  <!-- 步骤将在这里动态插入 -->
+                  <!-- Steps will be dynamically inserted here -->
                 </ol>
               </div>
             </div>
@@ -447,7 +447,7 @@
           </div>
 
           <div id="historyContent">
-            <!-- 历史记录导航栏 -->
+            <!-- History navigation bar -->
             <div
               class="history-nav"
               style="
@@ -499,7 +499,7 @@
               </div>
             </div>
 
-            <!-- 分页控制 -->
+            <!-- Items per page -->
             <div
               class="pagination-controls"
               style="
@@ -510,7 +510,7 @@
               "
             >
               <div class="page-size">
-                每页显示:
+                Items per page:
                 <select
                   id="historyPageSize"
                   style="
@@ -519,9 +519,9 @@
                     border: 1px solid #ddd;
                   "
                 >
-                  <option value="5">5条</option>
-                  <option value="10" selected>10条</option>
-                  <option value="20">20条</option>
+                  <option value="5">5 items</option>
+                  <option value="10" selected>10 items</option>
+                  <option value="20">20 items</option>
                 </select>
               </div>
               <div class="pagination" id="historyPagination">
@@ -529,8 +529,8 @@
                   <i class="fas fa-chevron-left"></i>
                 </button>
                 <span id="currentPageInfo" style="margin: 0 15px"
-                  >第 <span id="currentPage">1</span> 页，共
-                  <span id="totalPages">1</span> 页</span
+                  >Page <span id="currentPage">1</span> of
+                  <span id="totalPages">1</span></span
                 >
                 <button class="btn btn-outline" id="nextPageBtn" disabled>
                   <i class="fas fa-chevron-right"></i>
@@ -538,14 +538,14 @@
               </div>
             </div>
 
-            <!-- 食物分析历史标签页 -->
+            <!-- Food analysis history tab -->
             <div id="analysisHistoryTab">
               <div class="section-header">
                 <h2 class="section-title">Food Analysis History Records</h2>
               </div>
 
               <div id="analysisHistory" class="history-list">
-                <!-- 历史记录将通过JavaScript动态添加 -->
+                <!-- History records will be dynamically inserted -->
                 <div
                   style="
                     text-align: center;
@@ -583,7 +583,7 @@
           </div>
         </div>
 
-        <!-- 确认删除弹窗 -->
+        <!-- Delete confirmation modal -->
         <div
           id="deleteConfirmModal"
           class="modal"
@@ -653,7 +653,7 @@
           </div>
         </div>
 
-        <!-- 历史记录详情弹窗 -->
+        <!-- History details modal -->
         <div
           id="historyDetailModal"
           class="modal"
@@ -689,7 +689,7 @@
                 margin-bottom: 15px;
               "
             >
-              <h3 id="detailTitle" style="margin: 0">历史记录详情</h3>
+              <h3 id="detailTitle" style="margin: 0">History Details</h3>
               <button
                 id="closeDetailBtn"
                 class="btn-icon"
@@ -699,7 +699,7 @@
               </button>
             </div>
             <div id="historyDetailContent">
-              <!-- 详情内容将通过JavaScript动态生成 -->
+              <!-- Detail content will be dynamically generated -->
             </div>
           </div>
         </div>
@@ -918,7 +918,7 @@
       </div>
     </footer>
 
-    <!-- 在footer前添加弹窗HTML -->
+    <!-- Add modals before footer -->
     <div
       id="privacyModal"
       class="modal"
@@ -1218,7 +1218,114 @@
       </div>
     </div>
 
-    <!-- 在terms modal后添加忘记密码弹窗 -->
+    <!-- Add recipe details modal -->
+    <div
+      id="recipeDetailsModal"
+      class="modal"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: #fff;
+          padding: 30px;
+          max-width: 800px;
+          width: 90vw;
+          border-radius: 8px;
+          position: relative;
+          max-height: 80vh;
+          overflow: auto;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2 style="margin: 0" id="modalRecipeTitle">Recipe Details</h2>
+          <button
+            onclick="document.getElementById('recipeDetailsModal').style.display='none'"
+            class="btn btn-outline"
+            style="padding: 5px 10px; margin: 0"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="recipe-detail-modal">
+          <div class="recipe-body">
+            <div class="recipe-stats">
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeCalories">250</div>
+                <div class="stat-label">Calories</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeProtein">18g</div>
+                <div class="stat-label">Protein</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeCarbs">30g</div>
+                <div class="stat-label">Carbs</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeFat">10g</div>
+                <div class="stat-label">Fat</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="modalRecipeTime">25</div>
+                <div class="stat-label">Minutes</div>
+              </div>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Health Tips</h3>
+              <div id="modalRecipeHealthTips" class="health-tips-container">
+                Health tips will be displayed here...
+              </div>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Ingredients</h3>
+              <ul class="ingredient-list" id="modalRecipeIngredients">
+                <!-- Ingredients will be dynamically inserted here -->
+              </ul>
+            </div>
+
+            <div class="recipe-section">
+              <h3>Steps</h3>
+              <ol class="step-list" id="modalRecipeSteps">
+                <!-- Steps will be dynamically inserted here -->
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification" class="notification" style="display: none">
+      <span id="notificationMessage"></span>
+      <button
+        class="notification-close"
+        onclick="document.getElementById('notification').classList.remove('show');document.getElementById('notification').style.display='none';"
+      >
+        &times;
+      </button>
+    </div>
+
+    <!-- Add password reset modal after terms modal -->
     <div
       id="forgotPasswordModal"
       class="modal"
@@ -1386,117 +1493,6 @@
           >
             Reset Password
           </button>
-        </div>
-      </div>
-    </div>
-
-    <div id="notification" class="notification" style="display: none">
-      <span id="notificationMessage"></span>
-      <button
-        class="notification-close"
-        onclick="document.getElementById('notification').classList.remove('show');document.getElementById('notification').style.display='none';"
-      >
-        &times;
-      </button>
-    </div>
-
-    <!-- 添加食谱详情弹窗 -->
-    <div
-      id="recipeDetailsModal"
-      class="modal"
-      style="
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-      "
-    >
-      <div
-        style="
-          background: #fff;
-          padding: 30px;
-          max-width: 800px;
-          width: 90vw;
-          border-radius: 8px;
-          position: relative;
-          max-height: 80vh;
-          overflow: auto;
-        "
-      >
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-          "
-        >
-          <h2 style="margin: 0" id="modalRecipeTitle">Recipe Details</h2>
-          <button
-            onclick="document.getElementById('recipeDetailsModal').style.display='none'"
-            class="btn btn-outline"
-            style="padding: 5px 10px; margin: 0"
-          >
-            Close
-          </button>
-        </div>
-
-        <div class="recipe-detail-modal">
-          <div class="recipe-header">
-            <img src="" alt="Recipe" id="modalRecipeImage" />
-          </div>
-
-          <div class="recipe-body">
-            <div class="recipe-stats">
-              <div class="stat">
-                <div class="stat-value" id="modalRecipeCalories">250</div>
-                <div class="stat-label">Calories</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value" id="modalRecipeProtein">18g</div>
-                <div class="stat-label">Protein</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value" id="modalRecipeCarbs">30g</div>
-                <div class="stat-label">Carbs</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value" id="modalRecipeFat">10g</div>
-                <div class="stat-label">Fat</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value" id="modalRecipeTime">25</div>
-                <div class="stat-label">Minutes</div>
-              </div>
-            </div>
-
-            <div class="recipe-section">
-              <h3>Health Tips</h3>
-              <div id="modalRecipeHealthTips" class="health-tips-container">
-                Health tips will be displayed here...
-              </div>
-            </div>
-
-            <div class="recipe-section">
-              <h3>Ingredients</h3>
-              <ul class="ingredient-list" id="modalRecipeIngredients">
-                <!-- Ingredients will be dynamically inserted here -->
-              </ul>
-            </div>
-
-            <div class="recipe-section">
-              <h3>Steps</h3>
-              <ol class="step-list" id="modalRecipeSteps">
-                <!-- Steps will be dynamically inserted here -->
-              </ol>
-            </div>
-          </div>
         </div>
       </div>
     </div>
